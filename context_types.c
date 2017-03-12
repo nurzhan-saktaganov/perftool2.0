@@ -104,6 +104,8 @@ schedule_type get_schedule_type_from_name(const char *schedule_name)
 		return STATIC;
 	} else if (strcmp(schedule_name, "DYNAMIC") == 0){
 		return DYNAMIC;
+	} else if (strcmp(schedule_name, "GUIDED") == 0) {
+		return GUIDED;
 	} else if (strcmp(schedule_name, "RUNTIME") == 0){
 		return RUNTIME;
 	}
