@@ -13,7 +13,7 @@ context_type get_context_type_from_name(const char *context_name)
 		return BARRIER;
 	} else if (strcmp(context_name, "critical") == 0){
 		return CRITICAL;
-	} else if (strcmp(context_name, "filename") == 0){
+	} else if (strcmp(context_name, "file_name") == 0){
 		return FILENAME;
 	} else if (strcmp(context_name, "flush") == 0){
 		return FLUSH;
