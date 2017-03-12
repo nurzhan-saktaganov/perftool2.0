@@ -2,7 +2,7 @@
 #define CONTEXT_TYPES_H
 
 typedef enum {
-	UNKNOWN,
+	UNKNOWN_CONTEXT,
 	ARRAY_NAME,
 	BARRIER,
 	COMMON_NAME,

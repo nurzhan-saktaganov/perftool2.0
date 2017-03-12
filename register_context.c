@@ -4,25 +4,25 @@
 #include "context_types.h"
 #include "register_context.h"
 
-array_name_context *register_array_name_context(const char *context_string);
-barrier_context *register_barrier_context(const char *context_string);
-common_name_context *register_common_name_context(const char *context_string);
-critical_context *register_critical_context(const char *context_string);
-file_name_context *register_filename_context(const char *context_string);
-flush_context *register_flush_context(const char *context_string);
-function_context *register_function_context(const char *context_string);
-func_call_context *register_func_call_context(const char *context_string);
-master_context *register_master_context(const char *context_string);
-omploop_context *register_omploop_context(const char *context_string);
-ordered_context *register_ordered_context(const char *context_string);
-parallel_context *register_parallel_context(const char *context_string);
-sections_context *register_sections_context(const char *context_string);
-section_event_context *register_section_event_context(const char *context_string);
-seqloop_context *register_seqloop_context(const char *context_string);
-single_context *register_single_context(const char *context_string);
-threadprivate_context *register_threadprivate_context(const char *context_string);
-variable_name_context *register_variable_name_context(const char *context_string);
-workshare_context *register_workshare_context(const char *context_string);
+array_name_context_descriptor *register_array_name_context(const char *context_string);
+barrier_context_descriptor *register_barrier_context(const char *context_string);
+common_name_context_descriptor *register_common_name_context(const char *context_string);
+critical_context_descriptor *register_critical_context(const char *context_string);
+file_name_context_descriptor *register_filename_context(const char *context_string);
+flush_context_descriptor *register_flush_context(const char *context_string);
+function_context_descriptor *register_function_context(const char *context_string);
+func_call_context_descriptor *register_func_call_context(const char *context_string);
+master_context_descriptor *register_master_context(const char *context_string);
+omploop_context_descriptor *register_omploop_context(const char *context_string);
+ordered_context_descriptor *register_ordered_context(const char *context_string);
+parallel_context_descriptor *register_parallel_context(const char *context_string);
+sections_context_descriptor *register_sections_context(const char *context_string);
+section_event_context_descriptor *register_section_event_context(const char *context_string);
+seqloop_context_descriptor *register_seqloop_context(const char *context_string);
+single_context_descriptor *register_single_context(const char *context_string);
+threadprivate_context_descriptor *register_threadprivate_context(const char *context_string);
+variable_name_context_descriptor *register_variable_name_context(const char *context_string);
+workshare_context_descriptor *register_workshare_context(const char *context_string);
 
 long register_context(const char *context_string)
 {
@@ -88,10 +88,10 @@ long register_context(const char *context_string)
 	return (long) context_desc;
 }
 
-array_name_context *register_array_name_context(const char *context_string)
+array_name_context_descriptor *register_array_name_context(const char *context_string)
 {
-	array_name_context *context;
-	context = (array_name_context *) malloc(sizeof(array_name_context));
+	array_name_context_descriptor *context;
+	context = (array_name_context_descriptor *) malloc(sizeof(array_name_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	context->arr_name = get_param_str_value(context_string, "name1");
@@ -104,20 +104,20 @@ array_name_context *register_array_name_context(const char *context_string)
 }
 
 
-barrier_context *register_barrier_context(const char *context_string)
+barrier_context_descriptor *register_barrier_context(const char *context_string)
 {
-	barrier_context *context;
-	context = (barrier_context *) malloc(sizeof(barrier_context));
+	barrier_context_descriptor *context;
+	context = (barrier_context_descriptor *) malloc(sizeof(barrier_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	return context;
 }
 
 
-common_name_context *register_common_name_context(const char *context_string)
+common_name_context_descriptor *register_common_name_context(const char *context_string)
 {
-	common_name_context *context;	
-	context = (common_name_context *) malloc(sizeof(common_name_context));
+	common_name_context_descriptor *context;	
+	context = (common_name_context_descriptor *) malloc(sizeof(common_name_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	context->block_name = get_param_str_value(context_string, "name1");
@@ -126,10 +126,10 @@ common_name_context *register_common_name_context(const char *context_string)
 }
 
 
-critical_context *register_critical_context(const char *context_string)
+critical_context_descriptor *register_critical_context(const char *context_string)
 {
-	critical_context *context;
-	context = (critical_context *) malloc(sizeof(critical_context));
+	critical_context_descriptor *context;
+	context = (critical_context_descriptor *) malloc(sizeof(critical_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->name = get_param_str_value(context_string, "name1");
 	context->begin_line = get_param_int_value(context_string, "line1");
@@ -138,20 +138,20 @@ critical_context *register_critical_context(const char *context_string)
 }
 
 
-file_name_context *register_filename_context(const char *context_string)
+file_name_context_descriptor *register_filename_context(const char *context_string)
 {
-	file_name_context *context;
-	context = (file_name_context *) malloc(sizeof(file_name_context));
+	file_name_context_descriptor *context;
+	context = (file_name_context_descriptor *) malloc(sizeof(file_name_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	return context;
 }
 
 
-flush_context *register_flush_context(const char *context_string)
+flush_context_descriptor *register_flush_context(const char *context_string)
 {
-	flush_context *context;
-	context = (flush_context *) malloc (sizeof(flush_context));
+	flush_context_descriptor *context;
+	context = (flush_context_descriptor *) malloc (sizeof(flush_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	context->flushed = get_param_names_list(context_string, "name1");
@@ -159,10 +159,10 @@ flush_context *register_flush_context(const char *context_string)
 }
 
 
-function_context *register_function_context(const char *context_string)
+function_context_descriptor *register_function_context(const char *context_string)
 {
-	function_context *context;
-	context = (function_context *) malloc(sizeof(function_context));
+	function_context_descriptor *context;
+	context = (function_context_descriptor *) malloc(sizeof(function_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -172,10 +172,10 @@ function_context *register_function_context(const char *context_string)
 }
 
 
-func_call_context *register_func_call_context(const char *context_string)
+func_call_context_descriptor *register_func_call_context(const char *context_string)
 {
-	func_call_context *context;
-	context = (func_call_context *) malloc(sizeof(func_call_context));
+	func_call_context_descriptor *context;
+	context = (func_call_context_descriptor *) malloc(sizeof(func_call_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	context->name = get_param_str_value(context_string, "name1");
@@ -184,10 +184,10 @@ func_call_context *register_func_call_context(const char *context_string)
 }
 
 
-master_context *register_master_context(const char *context_string)
+master_context_descriptor *register_master_context(const char *context_string)
 {
-	master_context *context;
-	context = (master_context *) malloc(sizeof(master_context));
+	master_context_descriptor *context;
+	context = (master_context_descriptor *) malloc(sizeof(master_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -195,12 +195,12 @@ master_context *register_master_context(const char *context_string)
 }
 
 
-omploop_context *register_omploop_context(const char *context_string)
+omploop_context_descriptor *register_omploop_context(const char *context_string)
 {
-	omploop_context *context;
+	omploop_context_descriptor *context;
 	char *str_val;
 	
-	context = (omploop_context *) malloc(sizeof(omploop_context));
+	context = (omploop_context_descriptor *) malloc(sizeof(omploop_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -230,10 +230,10 @@ omploop_context *register_omploop_context(const char *context_string)
 }
 
 
-ordered_context *register_ordered_context(const char *context_string)
+ordered_context_descriptor *register_ordered_context(const char *context_string)
 {
-	ordered_context *context;
-	context = (ordered_context *) malloc(sizeof(ordered_context));
+	ordered_context_descriptor *context;
+	context = (ordered_context_descriptor *) malloc(sizeof(ordered_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -241,12 +241,12 @@ ordered_context *register_ordered_context(const char *context_string)
 }
 
 
-parallel_context *register_parallel_context(const char *context_string)
+parallel_context_descriptor *register_parallel_context(const char *context_string)
 {
-	parallel_context *context;
+	parallel_context_descriptor *context;
 	char *str_val;
 	
-	context = (parallel_context *) malloc(sizeof(parallel_context));
+	context = (parallel_context_descriptor *) malloc(sizeof(parallel_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -275,12 +275,12 @@ parallel_context *register_parallel_context(const char *context_string)
 }
 
 
-sections_context *register_sections_context(const char *context_string)
+sections_context_descriptor *register_sections_context(const char *context_string)
 {
-	sections_context *context;
+	sections_context_descriptor *context;
 	char *str_val;
 	
-	context = (sections_context *) malloc(sizeof(sections_context));
+	context = (sections_context_descriptor *) malloc(sizeof(sections_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -301,10 +301,10 @@ sections_context *register_sections_context(const char *context_string)
 }
 
 
-section_event_context *register_section_event_context(const char *context_string)
+section_event_context_descriptor *register_section_event_context(const char *context_string)
 {
-	section_event_context *context;
-	context = (section_event_context *) malloc(sizeof(section_event_context));
+	section_event_context_descriptor *context;
+	context = (section_event_context_descriptor *) malloc(sizeof(section_event_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -312,10 +312,10 @@ section_event_context *register_section_event_context(const char *context_string
 }
 
 
-seqloop_context *register_seqloop_context(const char *context_string)
+seqloop_context_descriptor *register_seqloop_context(const char *context_string)
 {
-	seqloop_context *context;
-	context = (seqloop_context *) malloc(sizeof(seqloop_context));
+	seqloop_context_descriptor *context;
+	context = (seqloop_context_descriptor *) malloc(sizeof(seqloop_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -323,10 +323,10 @@ seqloop_context *register_seqloop_context(const char *context_string)
 }
 
 
-single_context *register_single_context(const char *context_string)
+single_context_descriptor *register_single_context(const char *context_string)
 {
-	single_context *context;
-	context = (single_context *) malloc(sizeof(single_context));
+	single_context_descriptor *context;
+	context = (single_context_descriptor *) malloc(sizeof(single_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
@@ -338,10 +338,10 @@ single_context *register_single_context(const char *context_string)
 }
 
 
-threadprivate_context *register_threadprivate_context(const char *context_string)
+threadprivate_context_descriptor *register_threadprivate_context(const char *context_string)
 {
-	threadprivate_context *context;
-	context = (threadprivate_context *) malloc(sizeof(threadprivate_context));
+	threadprivate_context_descriptor *context;
+	context = (threadprivate_context_descriptor *) malloc(sizeof(threadprivate_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	context->threadprivate = get_param_names_list(context_string, "name1");
@@ -349,11 +349,11 @@ threadprivate_context *register_threadprivate_context(const char *context_string
 }
 
 
-variable_name_context *register_variable_name_context(const char *context_string)
+variable_name_context_descriptor *register_variable_name_context(const char *context_string)
 {
-	variable_name_context *context;
+	variable_name_context_descriptor *context;
 	char *str_val;
-	context = (variable_name_context *) malloc(sizeof(variable_name_context));
+	context = (variable_name_context_descriptor *) malloc(sizeof(variable_name_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	context->var_name = get_param_str_value(context_string, "name1");
@@ -371,10 +371,10 @@ variable_name_context *register_variable_name_context(const char *context_string
 }
 
 
-workshare_context *register_workshare_context(const char *context_string)
+workshare_context_descriptor *register_workshare_context(const char *context_string)
 {
-	workshare_context *context;
-	context = (workshare_context *) malloc(sizeof(workshare_context));
+	workshare_context_descriptor *context;
+	context = (workshare_context_descriptor *) malloc(sizeof(workshare_context_descriptor));
 	context->filename = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
