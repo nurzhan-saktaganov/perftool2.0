@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "context_string.h"
@@ -34,50 +35,71 @@ long register_context(const char *context_string)
 	switch (type){
 		case ARRAY_NAME:
 			context_ptr = (void *) register_array_name_context(context_string);
+			break;
 		case BARRIER:
 			context_ptr = (void *) register_barrier_context(context_string);
+			break;
 		case COMMON_NAME:
 			context_ptr = (void *) register_common_name_context(context_string);
+			break;
 		case CRITICAL:
 			context_ptr = (void *) register_critical_context(context_string);
+			break;
 		case FILENAME:
 			context_ptr = (void *) register_filename_context(context_string);
+			break;
 		case FLUSH:
 			context_ptr = (void *) register_flush_context(context_string);
+			break;
 		case FUNCTION:
 			context_ptr = (void *) register_function_context(context_string);
+			break;
 		case FUNC_CALL:
 			context_ptr = (void *) register_func_call_context(context_string);
+			break;
 		case MASTER:
 			context_ptr = (void *) register_master_context(context_string);
+			break;
 		case OMPLOOP:
 			context_ptr = (void *) register_omploop_context(context_string);
+			break;
 		case ORDERED:
 			context_ptr = (void *) register_ordered_context(context_string);
+			break;
 		case PARALLEL:
 			context_ptr = (void *) register_parallel_context(context_string);
+			break;
 		case SECTIONS:
 			context_ptr = (void *) register_sections_context(context_string);
+			break;
 		case SECTION_EVENT:
 			context_ptr = (void *) register_section_event_context(context_string);
+			break;
 		case SEQLOOP:
 			context_ptr = (void *) register_seqloop_context(context_string);
+			break;
 		case SINGLE:
 			context_ptr = (void *) register_single_context(context_string);
+			break;
 		case THREADPRIVATE:
 			context_ptr = (void *) register_threadprivate_context(context_string);
+			break;
 		case UNKNOWN_CONTEXT:
 			context_ptr = (void *) NULL;
+			break;
 		case VARIABLE_NAME:
 			context_ptr = (void *) register_variable_name_context(context_string);
+			break;
 		case WORKSHARE:
 			context_ptr = (void *) register_workshare_context(context_string);
+			break;
 		default:
 			context_ptr = (void *) NULL;
+			break;
 	}
 	
 	if (context_ptr == NULL){
-		
+		fprintf(stderr, "Unknown context string format: %s\n", context_string);
 		context_desc = NULL;
 	} else {
 		context_desc = (context_descriptor *) malloc(sizeof(context_descriptor));
