@@ -11,10 +11,12 @@ context_type get_context_type_from_name(const char *context_name)
 		return ARRAY_NAME;
 	} else if (strcmp(context_name, "barrier") == 0){
 		return BARRIER;
+	} else if (strcmp(context_name, "common_name") == 0 ){
+		return COMMON_NAME;
 	} else if (strcmp(context_name, "critical") == 0){
 		return CRITICAL;
 	} else if (strcmp(context_name, "file_name") == 0){
-		return FILENAME;
+		return FILE_NAME;
 	} else if (strcmp(context_name, "flush") == 0){
 		return FLUSH;
 	} else if (strcmp(context_name, "function") == 0){
@@ -46,6 +48,17 @@ context_type get_context_type_from_name(const char *context_name)
 	}
 	fprintf (stderr, "Unknown context name: %s\n", context_name); 
 	return UNKNOWN_CONTEXT;
+}
+
+context_type get_context_string_type(const char *context_string)
+{
+	context_type type;
+	char *context_type_name = get_param_str_value(context_string, "type");
+	type = get_context_type_from_name(context_type_name);
+	if (context_type_name != NULL){
+		free(context_type_name);
+	}
+	return type;
 }
 
 redop_type get_redop_type_from_name(const char *redop_name)
@@ -81,6 +94,17 @@ redop_type get_redop_type_from_name(const char *redop_name)
 	return UNKNOWN_REDOP;
 }
 
+redop_type get_redop_type(const char *context_string)
+{
+	redop_type redop;
+	char *redop_name = get_param_str_value(context_string, "redop");
+	redop = get_redop_type_from_name(redop_name);
+	if (redop_name != NULL){
+		free(redop_name);
+	}
+	return redop;
+}
+
 behavior_type get_behavior_type_from_name(const char *behavior_name)
 {
 	if (behavior_name == NULL){
@@ -94,6 +118,17 @@ behavior_type get_behavior_type_from_name(const char *behavior_name)
 	}
 	fprintf(stderr, "Unknown behavior name: %s\n", behavior_name);
 	return UNKNOWN_BEHAVIOR;
+}
+
+behavior_type get_behavior_type(const char *context_string)
+{
+	behavior_type behavior;
+	char *behavior_name = get_param_str_value(context_string, "default");
+	behavior = get_behavior_type_from_name(behavior_name);
+	if (behavior_name != NULL){
+		free(behavior_name);
+	}
+	return behavior;
 }
 
 schedule_type get_schedule_type_from_name(const char *schedule_name)
@@ -111,6 +146,17 @@ schedule_type get_schedule_type_from_name(const char *schedule_name)
 	}
 	fprintf(stderr, "Unknown schedule name: %s\n", schedule_name);
 	return UNKNOWN_SCHEDULING;
+}
+
+schedule_type get_schedule_type(const char *context_string)
+{
+	schedule_type schedule;
+	char *schedule_name = get_param_str_value(context_string, "schedule");
+	schedule = get_schedule_type_from_name(schedule_name);
+	if (schedule_name != NULL){
+		free(schedule_name);
+	}
+	return schedule;
 }
 
 variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
@@ -136,15 +182,15 @@ variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
 	return UNKNOWN_RT_TYPE;
 }
 
-context_type get_context_string_type(const char *context_string)
+variable_rt_type get_variable_rt_type(const char *context_string)
 {
-	context_type type;
-	char *context_type_name = get_param_str_value(context_string, "type");
-	type = get_context_type_from_name(context_type_name);
-	if (context_type_name != NULL){
-		free(context_type_name);
+	variable_rt_type variable_type;
+	char *str_val = get_param_str_value(context_string, "vtype");
+	variable_type = get_variable_rt_type_from_name(str_val);
+	if (str_val != NULL){
+		free(str_val);
 	}
-	return type;
+	return variable_type;
 }
 
 /*

@@ -7,7 +7,7 @@ typedef enum {
 	BARRIER,
 	COMMON_NAME,
 	CRITICAL,
-	FILENAME,
+	FILE_NAME,
 	FLUSH,
 	FUNCTION,
 	FUNC_CALL,
@@ -72,7 +72,7 @@ typedef struct {
 } names_list;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 	names_list *private;
@@ -87,7 +87,7 @@ typedef struct {
 } parallel_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 	int is_ordered;
@@ -102,7 +102,7 @@ typedef struct {
 } omploop_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 	int is_nowait;
@@ -114,13 +114,13 @@ typedef struct {
 } sections_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 } section_event_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 	int is_nowait;
@@ -130,50 +130,50 @@ typedef struct {
 } single_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 	int is_nowait;
 } workshare_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 } master_context_descriptor;
 
 typedef struct {
-	char *filename;
-	char *name;
+	char *file_name;
+	char *critical_name;
 	int begin_line;
 	int end_line;
 } critical_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int line_number;
 } barrier_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int line_number;
 	names_list *flushed;
 } flush_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 } ordered_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int line_number;
 	names_list *threadprivate;
 } threadprivate_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int line_number;
 	char *var_name;
 	variable_rt_type variable_type;
@@ -183,7 +183,7 @@ typedef struct {
 } variable_name_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int line_number;
 	char *arr_name;
 	variable_rt_type variable_type;
@@ -194,32 +194,32 @@ typedef struct {
 } array_name_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int line_number;
 	char *block_name;
 	names_list *components;
 } common_name_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int line_number;
 } file_name_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 } seqloop_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int line_number;
-	char *name;
+	char *func_name;
 	int args_count;
 } func_call_context_descriptor;
 
 typedef struct {
-	char *filename;
+	char *file_name;
 	int begin_line;
 	int end_line;
 	char *func_name;
