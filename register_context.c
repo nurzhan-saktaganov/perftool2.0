@@ -35,64 +35,64 @@ long register_context(const char *context_string)
 	
 	type = get_context_string_type(context_string);
 	switch (type){
-		case ARRAY_NAME:
+		case CONTEXT_ARRAY_NAME:
 			context_ptr = (void *) register_array_name_context(context_string);
 			break;
-		case BARRIER:
+		case CONTEXT_BARRIER:
 			context_ptr = (void *) register_barrier_context(context_string);
 			break;
-		case COMMON_NAME:
+		case CONTEXT_COMMON_NAME:
 			context_ptr = (void *) register_common_name_context(context_string);
 			break;
-		case CRITICAL:
+		case CONTEXT_CRITICAL:
 			context_ptr = (void *) register_critical_context(context_string);
 			break;
-		case FILE_NAME:
+		case CONTEXT_FILE_NAME:
 			context_ptr = (void *) register_filename_context(context_string);
 			break;
-		case FLUSH:
+		case CONTEXT_FLUSH:
 			context_ptr = (void *) register_flush_context(context_string);
 			break;
-		case FUNCTION:
+		case CONTEXT_FUNCTION:
 			context_ptr = (void *) register_function_context(context_string);
 			break;
-		case FUNC_CALL:
+		case CONTEXT_FUNC_CALL:
 			context_ptr = (void *) register_func_call_context(context_string);
 			break;
-		case MASTER:
+		case CONTEXT_MASTER:
 			context_ptr = (void *) register_master_context(context_string);
 			break;
-		case OMPLOOP:
+		case CONTEXT_OMPLOOP:
 			context_ptr = (void *) register_omploop_context(context_string);
 			break;
-		case ORDERED:
+		case CONTEXT_ORDERED:
 			context_ptr = (void *) register_ordered_context(context_string);
 			break;
-		case PARALLEL:
+		case CONTEXT_PARALLEL:
 			context_ptr = (void *) register_parallel_context(context_string);
 			break;
-		case SECTIONS:
+		case CONTEXT_SECTIONS:
 			context_ptr = (void *) register_sections_context(context_string);
 			break;
-		case SECTION_EVENT:
+		case CONTEXT_SECTION_EVENT:
 			context_ptr = (void *) register_section_event_context(context_string);
 			break;
-		case SEQLOOP:
+		case CONTEXT_SEQLOOP:
 			context_ptr = (void *) register_seqloop_context(context_string);
 			break;
-		case SINGLE:
+		case CONTEXT_SINGLE:
 			context_ptr = (void *) register_single_context(context_string);
 			break;
-		case THREADPRIVATE:
+		case CONTEXT_THREADPRIVATE:
 			context_ptr = (void *) register_threadprivate_context(context_string);
 			break;
-		case UNKNOWN_CONTEXT:
+		case CONTEXT_UNKNOWN:
 			context_ptr = (void *) NULL;
 			break;
-		case VARIABLE_NAME:
+		case CONTEXT_VARIABLE_NAME:
 			context_ptr = (void *) register_variable_name_context(context_string);
 			break;
-		case WORKSHARE:
+		case CONTEXT_WORKSHARE:
 			context_ptr = (void *) register_workshare_context(context_string);
 			break;
 		default:

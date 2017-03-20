@@ -6,48 +6,48 @@
 context_type get_context_type_from_name(const char *context_name)
 {
 	if (context_name == NULL){
-		return UNKNOWN_CONTEXT;
+		return CONTEXT_UNKNOWN;
 	} else if (strcmp(context_name, "arr_name") == 0){
-		return ARRAY_NAME;
+		return CONTEXT_ARRAY_NAME;
 	} else if (strcmp(context_name, "barrier") == 0){
-		return BARRIER;
+		return CONTEXT_BARRIER;
 	} else if (strcmp(context_name, "common_name") == 0 ){
-		return COMMON_NAME;
+		return CONTEXT_COMMON_NAME;
 	} else if (strcmp(context_name, "critical") == 0){
-		return CRITICAL;
+		return CONTEXT_CRITICAL;
 	} else if (strcmp(context_name, "file_name") == 0){
-		return FILE_NAME;
+		return CONTEXT_FILE_NAME;
 	} else if (strcmp(context_name, "flush") == 0){
-		return FLUSH;
+		return CONTEXT_FLUSH;
 	} else if (strcmp(context_name, "function") == 0){
-		return FUNCTION;
+		return CONTEXT_FUNCTION;
 	} else if (strcmp(context_name, "func_call") == 0){
-		return FUNC_CALL;
+		return CONTEXT_FUNC_CALL;
 	} else if (strcmp(context_name, "master") == 0){
-		return MASTER;
+		return CONTEXT_MASTER;
 	} else if (strcmp(context_name, "omploop") == 0){
-		return OMPLOOP;
+		return CONTEXT_OMPLOOP;
 	} else if (strcmp(context_name, "ordered") == 0){
-		return ORDERED;
+		return CONTEXT_ORDERED;
 	} else if (strcmp(context_name, "parallel") == 0){
-		return PARALLEL;
+		return CONTEXT_PARALLEL;
 	} else if (strcmp(context_name, "sections") == 0){
-		return SECTIONS;
+		return CONTEXT_SECTIONS;
 	} else if (strcmp(context_name, "sect_ev") == 0){
-		return SECTION_EVENT;
+		return CONTEXT_SECTION_EVENT;
 	} else if (strcmp(context_name, "seqloop") == 0){
-		return SEQLOOP;
+		return CONTEXT_SEQLOOP;
 	} else if (strcmp(context_name, "single") == 0){
-		return SINGLE;
+		return CONTEXT_SINGLE;
 	} else if (strcmp(context_name, "threadprivate") == 0){
-		return THREADPRIVATE;
+		return CONTEXT_THREADPRIVATE;
 	} else if (strcmp(context_name, "var_name") == 0){
-		return VARIABLE_NAME;
+		return CONTEXT_VARIABLE_NAME;
 	} else if (strcmp(context_name, "workshare") == 0){
-		return WORKSHARE;
+		return CONTEXT_WORKSHARE;
 	}
 	fprintf (stderr, "Unknown context name: %s\n", context_name); 
-	return UNKNOWN_CONTEXT;
+	return CONTEXT_UNKNOWN;
 }
 
 context_type get_context_string_type(const char *context_string)
@@ -64,34 +64,34 @@ context_type get_context_string_type(const char *context_string)
 redop_type get_redop_type_from_name(const char *redop_name)
 {
 	if (redop_name == NULL){
-		return UNKNOWN_REDOP;
+		return REDOP_UNKNOWN;
 	} else if (strcmp(redop_name, "PLUS") == 0){
-		return PLUS;
+		return REDOP_PLUS;
 	} else if (strcmp(redop_name, "MINUS") == 0){
-		return MINUS;
+		return REDOP_MINUS;
 	} else if (strcmp(redop_name, "PRODUCT") == 0){
-		return PRODUCT;
+		return REDOP_PRODUCT;
 	} else if (strcmp(redop_name, "AND") == 0){
-		return AND;
+		return REDOP_AND;
 	} else if (strcmp(redop_name, "OR") == 0){
-		return OR;
+		return REDOP_OR;
 	} else if (strcmp(redop_name, "EQV") == 0){
-		return EQV;
+		return REDOP_EQV;
 	} else if (strcmp(redop_name, "NEQV") == 0){
-		return NEQV;
+		return REDOP_NEQV;
 	} else if (strcmp(redop_name, "MAX") == 0){
-		return MAX;
+		return REDOP_MAX;
 	} else if (strcmp(redop_name, "MIN") == 0){
-		return MIN;
+		return REDOP_MIN;
 	} else if (strcmp(redop_name, "IAND") == 0){
-		return IAND;
+		return REDOP_IAND;
 	} else if (strcmp(redop_name, "IOR") == 0){
-		return IOR;
+		return REDOP_IOR;
 	} else if (strcmp(redop_name, "IEOR") == 0){
-		return IEOR;
+		return REDOP_IEOR;
 	}
 	fprintf(stderr, "Unknown redop name: %s\n", redop_name);
-	return UNKNOWN_REDOP;
+	return REDOP_UNKNOWN;
 }
 
 redop_type get_redop_type(const char *context_string)
@@ -108,16 +108,16 @@ redop_type get_redop_type(const char *context_string)
 behavior_type get_behavior_type_from_name(const char *behavior_name)
 {
 	if (behavior_name == NULL){
-		return UNKNOWN_BEHAVIOR;
+		return BEHAVIOR_UNKNOWN;
 	} else if (strcmp(behavior_name, "PRIVATE") == 0){
-		return PRIVATE;
+		return BEHAVIOR_PRIVATE;
 	} else if (strcmp(behavior_name, "SHARED") == 0){
-		return SHARED;
+		return BEHAVIOR_SHARED;
 	} else if (strcmp(behavior_name, "NONE") == 0){
-		return NONE;
+		return BEHAVIOR_NONE;
 	}
 	fprintf(stderr, "Unknown behavior name: %s\n", behavior_name);
-	return UNKNOWN_BEHAVIOR;
+	return BEHAVIOR_UNKNOWN;
 }
 
 behavior_type get_behavior_type(const char *context_string)
@@ -134,18 +134,18 @@ behavior_type get_behavior_type(const char *context_string)
 schedule_type get_schedule_type_from_name(const char *schedule_name)
 {
 	if (schedule_name == NULL){
-		return UNKNOWN_SCHEDULING;
+		return SCHEDULING_UNKNOWN;
 	} else if (strcmp(schedule_name, "STATIC") == 0){
-		return STATIC;
+		return SCHEDULING_STATIC;
 	} else if (strcmp(schedule_name, "DYNAMIC") == 0){
-		return DYNAMIC;
+		return SCHEDULING_DYNAMIC;
 	} else if (strcmp(schedule_name, "GUIDED") == 0) {
-		return GUIDED;
+		return SCHEDULING_GUIDED;
 	} else if (strcmp(schedule_name, "RUNTIME") == 0){
-		return RUNTIME;
+		return SCHEDULING_RUNTIME;
 	}
 	fprintf(stderr, "Unknown schedule name: %s\n", schedule_name);
-	return UNKNOWN_SCHEDULING;
+	return SCHEDULING_UNKNOWN;
 }
 
 schedule_type get_schedule_type(const char *context_string)
@@ -162,7 +162,7 @@ schedule_type get_schedule_type(const char *context_string)
 variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
 {
 	if (rt_type_name == NULL) {
-		return UNKNOWN_RT_TYPE;
+		return RT_UNKNOWN;
 	} else if (strcmp(rt_type_name, "0") == 0) {
 		return RT_CHAR;
 	} else if (strcmp(rt_type_name, "1") == 0) {
@@ -179,7 +179,7 @@ variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
 		return RT_DOUBLE_COMPLEX;
 	}
 	fprintf(stderr, "Unknown rt type name: %s\n", rt_type_name);
-	return UNKNOWN_RT_TYPE;
+	return RT_UNKNOWN;
 }
 
 variable_rt_type get_variable_rt_type(const char *context_string)
