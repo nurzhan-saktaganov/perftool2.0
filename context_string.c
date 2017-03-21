@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include "list.h"
 #include "context_string.h"
 
 /* Ищет строковое значение параметра с именем param_name
@@ -103,12 +104,9 @@ int get_param_int_value(const char *context_string, const char *param_name)
 	return int_value;
 }
 
-
-// Возвращаемая память должна быть освобожденая следующим образом
-// освобождать каждый указатель в names->names
-names_list * get_names_list(const char *comma_separated_names)
+list *get_names_list(const char *comma_separated_names)
 {
-	names_list *names;
+	list *names;
 	char *token, *save_ptr;
 	char *_comma_separated_names;
 	
@@ -117,31 +115,25 @@ names_list * get_names_list(const char *comma_separated_names)
 	}
 	
 	_comma_separated_names = strdup(comma_separated_names);
-
-	names = (names_list *) malloc(sizeof(names_list));
-	names->count = 0;
-	names->names = NULL;
 	
 	token = strtok_r(_comma_separated_names, ",", &save_ptr);
-	while(token != NULL){
-		names->count++;
-		names->names = (char **) realloc(names->names, names->count * sizeof(char *));
-		names->names[names->count - 1] = strdup(token);
+	if (token == NULL){
+		free(_comma_separated_names);
+		return NULL;
+	}
+	names = list_create();
+	while (token != NULL) {
+		list_append_tail(names, strdup(token));
 		token = strtok_r(NULL, ",", &save_ptr);
 	}
 	free(_comma_separated_names);
-	
-	if (names->count == 0){
-		free(names);
-		names = NULL;
-	}
 	return names;
 }
 
 
-names_list *get_param_names_list(const char *context_string, const char *param_name)
+list *get_param_names_list(const char *context_string, const char *param_name)
 {
-	names_list *names;
+	list *names;
 	char *str_value;
 	str_value = get_param_str_value(context_string, param_name);
 	if (str_value == NULL){

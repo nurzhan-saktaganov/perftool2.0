@@ -146,7 +146,7 @@ common_name_context_descriptor *register_common_name_context(const char *context
 	context->file_name = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
 	context->block_name = get_param_str_value(context_string, "name1");
-	context->components = get_param_names_list(context_string, "name2");
+	context->names_components = get_param_names_list(context_string, "name2");
 	return context;
 }
 
@@ -179,7 +179,7 @@ flush_context_descriptor *register_flush_context(const char *context_string)
 	context = (flush_context_descriptor *) malloc (sizeof(flush_context_descriptor));
 	context->file_name = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
-	context->flushed = get_param_names_list(context_string, "name1");
+	context->names_flushed = get_param_names_list(context_string, "name1");
 	return context;
 }
 
@@ -229,10 +229,10 @@ omploop_context_descriptor *register_omploop_context(const char *context_string)
 	context->end_line = get_param_int_value(context_string, "line2");
 	context->is_ordered = get_param_int_value(context_string, "ordered");
 	context->is_nowait = get_param_int_value(context_string, "nowait");
-	context->private = get_param_names_list(context_string, "private");
-	context->firstprivate = get_param_names_list(context_string, "firstprivate");
-	context->lastprivate = get_param_names_list(context_string, "lastprivate");
-	context->reduction = get_param_names_list(context_string, "reduction");
+	context->names_private = get_param_names_list(context_string, "private");
+	context->names_firstprivate = get_param_names_list(context_string, "firstprivate");
+	context->names_lastprivate = get_param_names_list(context_string, "lastprivate");
+	context->names_reduction = get_param_names_list(context_string, "reduction");
 	context->redop = get_redop_type(context_string);
 	context->schedule = get_schedule_type(context_string);
 	context->chunk_size = get_param_str_value(context_string, "chunk_size");
@@ -258,11 +258,11 @@ parallel_context_descriptor *register_parallel_context(const char *context_strin
 	context->file_name = get_param_str_value(context_string, "file");
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
-	context->private = get_param_names_list(context_string, "private");
-	context->shared = get_param_names_list(context_string, "shared");
-	context->firstprivate = get_param_names_list(context_string, "firstprivate");
-	context->copyin = get_param_names_list(context_string, "copyin");
-	context->reduction = get_param_names_list(context_string, "reduction");
+	context->names_private = get_param_names_list(context_string, "private");
+	context->names_shared = get_param_names_list(context_string, "shared");
+	context->names_firstprivate = get_param_names_list(context_string, "firstprivate");
+	context->names_copyin = get_param_names_list(context_string, "copyin");
+	context->names_reduction = get_param_names_list(context_string, "reduction");
 	context->redop = get_redop_type(context_string);
 	context->default_behavior = get_behavior_type(context_string);
 	context->if_text = get_param_str_value(context_string, "if");
@@ -279,10 +279,10 @@ sections_context_descriptor *register_sections_context(const char *context_strin
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
 	context->is_nowait = get_param_int_value(context_string, "nowait");
-	context->private = get_param_names_list(context_string, "private");
-	context->firstprivate = get_param_names_list(context_string, "firstprivate");
-	context->lastprivate = get_param_names_list(context_string, "lastprivate");
-	context->reduction = get_param_names_list(context_string, "reduction");
+	context->names_private = get_param_names_list(context_string, "private");
+	context->names_firstprivate = get_param_names_list(context_string, "firstprivate");
+	context->names_lastprivate = get_param_names_list(context_string, "lastprivate");
+	context->names_reduction = get_param_names_list(context_string, "reduction");
 	context->redop = get_redop_type(context_string);
 	return context;
 }
@@ -318,9 +318,9 @@ single_context_descriptor *register_single_context(const char *context_string)
 	context->begin_line = get_param_int_value(context_string, "line1");
 	context->end_line = get_param_int_value(context_string, "line2");
 	context->is_nowait = get_param_int_value(context_string, "nowait");
-	context->private = get_param_names_list(context_string, "private");
-	context->firstprivate = get_param_names_list(context_string, "firstprivate");
-	context->copyprivate = get_param_names_list(context_string, "copyprivate");
+	context->names_private = get_param_names_list(context_string, "private");
+	context->names_firstprivate = get_param_names_list(context_string, "firstprivate");
+	context->names_copyprivate = get_param_names_list(context_string, "copyprivate");
 	return context;
 }
 
@@ -331,7 +331,7 @@ threadprivate_context_descriptor *register_threadprivate_context(const char *con
 	context = (threadprivate_context_descriptor *) malloc(sizeof(threadprivate_context_descriptor));
 	context->file_name = get_param_str_value(context_string, "file");
 	context->line_number = get_param_int_value(context_string, "line1");
-	context->threadprivate = get_param_names_list(context_string, "name1");
+	context->names_threadprivate = get_param_names_list(context_string, "name1");
 	return context;
 }
 

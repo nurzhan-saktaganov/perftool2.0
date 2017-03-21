@@ -70,11 +70,11 @@ typedef struct {
 	char *file_name;
 	int begin_line;
 	int end_line;
-	names_list *private;
-	names_list *shared;
-	names_list *firstprivate;
-	names_list *copyin;
-	names_list *reduction;
+	list *names_private;
+	list *names_shared;
+	list *names_firstprivate;
+	list *names_copyin;
+	list *names_reduction;
 	redop_type redop;
 	behavior_type default_behavior;
 	char *if_text;
@@ -87,10 +87,10 @@ typedef struct {
 	int end_line;
 	int is_ordered;
 	int is_nowait;
-	names_list *private;
-	names_list *firstprivate;
-	names_list *lastprivate;
-	names_list *reduction;
+	list *names_private;
+	list *names_firstprivate;
+	list *names_lastprivate;
+	list *names_reduction;
 	redop_type redop;
 	schedule_type schedule;
 	char *chunk_size;
@@ -101,10 +101,10 @@ typedef struct {
 	int begin_line;
 	int end_line;
 	int is_nowait;
-	names_list *private;
-	names_list *firstprivate;
-	names_list *lastprivate;
-	names_list *reduction;
+	list *names_private;
+	list *names_firstprivate;
+	list *names_lastprivate;
+	list *names_reduction;
 	redop_type redop;
 } sections_context_descriptor;
 
@@ -119,9 +119,9 @@ typedef struct {
 	int begin_line;
 	int end_line;
 	int is_nowait;
-	names_list *private;
-	names_list *firstprivate;
-	names_list *copyprivate;
+	list *names_private;
+	list *names_firstprivate;
+	list *names_copyprivate;
 } single_context_descriptor;
 
 typedef struct {
@@ -152,7 +152,7 @@ typedef struct {
 typedef struct {
 	char *file_name;
 	int line_number;
-	names_list *flushed;
+	list *names_flushed;
 } flush_context_descriptor;
 
 typedef struct {
@@ -164,7 +164,7 @@ typedef struct {
 typedef struct {
 	char *file_name;
 	int line_number;
-	names_list *threadprivate;
+	list *names_threadprivate;
 } threadprivate_context_descriptor;
 
 typedef struct {
@@ -192,7 +192,7 @@ typedef struct {
 	char *file_name;
 	int line_number;
 	char *block_name;
-	names_list *components;
+	list *names_components;
 } common_name_context_descriptor;
 
 typedef struct {
