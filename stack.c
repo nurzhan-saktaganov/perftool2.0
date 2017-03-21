@@ -6,9 +6,9 @@ stack *stack_create()
 	return list_create();
 }
 
-void stack_delete(list **s_p_p, void (*delete_data)(void *))
+void stack_delete(list *s_p, void (*delete_data)(void *))
 {
-	list_delete(s_p_p, delete_data);
+	list_delete(s_p, delete_data);
 }
 
 void stack_push(stack *s_p, void *data)

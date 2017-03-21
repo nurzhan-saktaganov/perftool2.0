@@ -10,13 +10,13 @@ list *list_create()
 	return l_p;
 }
 
-void list_delete(list **l_p_p, void (*delete_data)(void *))
+void list_delete(list *l_p, void (*delete_data)(void *))
 {
-	if (l_p_p == NULL || *l_p_p == NULL){
+	if (l_p == NULL){
 		return;
 	}
 	node *current, *next;
-	current = (*l_p_p)->head;
+	current = l_p->head;
 	while (current != NULL){
 		if (delete_data != NULL){
 			delete_data(current->data);
@@ -25,8 +25,7 @@ void list_delete(list **l_p_p, void (*delete_data)(void *))
 		free(current);
 		current = next;
 	}
-	free(*l_p_p);
-	*l_p_p = NULL;
+	free(l_p);
 	return;
 }
 
@@ -142,11 +141,10 @@ void *list_iterator_next(list_iterator *li_p){
 	return data;
 }
 
-void list_iterator_destroy(list_iterator **li_p_p) {
-	if (li_p_p == NULL || *li_p_p == NULL){
+void list_iterator_destroy(list_iterator *li_p) {
+	if (li_p == NULL){
 		return;
 	}
-	free(*li_p_p);
-	*li_p_p = NULL;
+	free(li_p);
 	return;
 }
