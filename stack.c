@@ -8,7 +8,7 @@ stack *stack_create()
 
 void stack_delete(list *s_p, void (*delete_data)(void *))
 {
-	list_delete(s_p, delete_data);
+	list_destroy(s_p, delete_data);
 }
 
 void stack_push(stack *s_p, void *data)

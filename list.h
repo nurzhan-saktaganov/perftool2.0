@@ -18,7 +18,7 @@ typedef struct _list_iterator {
 } list_iterator;
 
 list *list_create();
-void list_delete(list *l_p, void (*delete_data)(void *));
+void list_destroy(list *l_p, void (*destroy_data)(void *));
 void list_append_head(list *l_p, void *data);
 void *list_remove_head(list *l_p);
 void list_append_tail(list *l_p, void *data);
