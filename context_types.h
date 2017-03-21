@@ -67,11 +67,6 @@ typedef enum {
 } variable_rt_type;
 
 typedef struct {
-	int count; // количество имен
-	char **names; //список имен
-} names_list;
-
-typedef struct {
 	char *file_name;
 	int begin_line;
 	int end_line;

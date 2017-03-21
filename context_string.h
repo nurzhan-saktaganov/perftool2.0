@@ -1,7 +1,11 @@
 #ifndef CONTEXT_STRING_H
 #define CONTEXT_STRING_H
 
-#include "context_types.h"
+
+typedef struct {
+	int count; // количество имен
+	char **names; //список имен
+} names_list;
 
 char *get_param_str_value(const char *context_string, const char *param_name);
 int get_param_int_value(const char *context_string, const char *param_name);
