@@ -118,3 +118,35 @@ int list_size(list *l_p){
 	return l_p != NULL ? l_p->size : 0;
 }
 
+list_iterator *list_iterator_new(list *l_p)
+{
+	if (l_p == NULL){
+		return NULL;
+	}
+	list_iterator *li_p = (list_iterator *) malloc(sizeof(list_iterator));
+	li_p->current = l_p->head;
+	return li_p;
+}
+
+int list_iterator_has_next(list_iterator *li_p)
+{
+	if (li_p == NULL || li_p->current == NULL){
+		return 0;
+	}
+	return 1;
+}
+
+void *list_iterator_next(list_iterator *li_p){
+	void *data = li_p->current->data;
+	li_p->current = li_p->current->next;
+	return data;
+}
+
+void list_iterator_destroy(list_iterator **li_p_p) {
+	if (li_p_p == NULL || *li_p_p == NULL){
+		return;
+	}
+	free(*li_p_p);
+	*li_p_p = NULL;
+	return;
+}

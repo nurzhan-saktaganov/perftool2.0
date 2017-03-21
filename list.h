@@ -13,6 +13,9 @@ typedef struct _list{
 	int size;
 } list;
 
+typedef struct _list_iterator {
+	node *current;
+} list_iterator;
 
 list *list_create();
 void list_delete(list **l_pp, void (*delete_data)(void *));
@@ -23,5 +26,10 @@ void *list_remove_tail(list *l_p);
 void *list_peek_head(list *l_p);
 void *list_peek_tail(list *l_p);
 int list_size(list *l_p);
+
+list_iterator *list_iterator_new(list *l_p);
+int list_iterator_has_next(list_iterator *li_p);
+void *list_iterator_next(list_iterator *li_p);
+void list_iterator_destroy(list_iterator **li_p_p);
 
 #endif
