@@ -25,6 +25,10 @@ void omp_event_destroy(omp_event *event_p)
 	if (event_p == NULL){
 		return;
 	}
+	if (event_p->type == OMP_EVENT_PARALLEL_REGION) {
+		pthread_mutex_destroy(event_p->mutex);
+		free(event_p->mutex);
+	}
 	omp_event *subevent_p;
 	list_iterator *li_p = list_iterator_new(event_p->subevents);
 	while (list_iterator_has_next(li_p)){
