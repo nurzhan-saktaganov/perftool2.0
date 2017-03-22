@@ -15,6 +15,7 @@ omp_event *omp_event_create(omp_event_type event_type)
 	}
 	event_p->begin_time = 0.0;
 	event_p->end_time = 0.0;
+	event_p->thread_id = 0L;
 	event_p->subevents = NULL;
 	return event_p;
 }
