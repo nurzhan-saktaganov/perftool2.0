@@ -6,7 +6,7 @@ stack *stack_create()
 	return list_create();
 }
 
-void stack_delete(stack *s_p, void (*delete_data)(void *))
+void stack_destroy(stack *s_p, void (*delete_data)(void *))
 {
 	list_destroy(s_p, delete_data);
 }
