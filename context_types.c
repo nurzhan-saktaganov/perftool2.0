@@ -49,7 +49,7 @@ context_type get_context_type_from_name(const char *context_name)
 	} else if (strcmp(context_name, CTN_WORKSHARE) == 0){
 		return CONTEXT_WORKSHARE;
 	}
-	fprintf (stderr, "Unknown context name: %s\n", context_name); 
+	fprintf (stderr, "Unknown context name: \"%s\"\n", context_name); 
 	return CONTEXT_UNKNOWN;
 }
 
@@ -93,7 +93,7 @@ redop_type get_redop_type_from_name(const char *redop_name)
 	} else if (strcmp(redop_name, RTN_IEOR) == 0){
 		return REDOP_IEOR;
 	}
-	fprintf(stderr, "Unknown redop name: %s\n", redop_name);
+	fprintf(stderr, "Unknown redop name: \"%s\"\n", redop_name);
 	return REDOP_UNKNOWN;
 }
 
@@ -119,7 +119,7 @@ behavior_type get_behavior_type_from_name(const char *behavior_name)
 	} else if (strcmp(behavior_name, BTN_NONE) == 0){
 		return BEHAVIOR_NONE;
 	}
-	fprintf(stderr, "Unknown behavior name: %s\n", behavior_name);
+	fprintf(stderr, "Unknown behavior name: \"%s\"\n", behavior_name);
 	return BEHAVIOR_UNKNOWN;
 }
 
@@ -147,7 +147,7 @@ schedule_type get_schedule_type_from_name(const char *schedule_name)
 	} else if (strcmp(schedule_name, STN_RUNTIME) == 0){
 		return SCHEDULING_RUNTIME;
 	}
-	fprintf(stderr, "Unknown schedule name: %s\n", schedule_name);
+	fprintf(stderr, "Unknown schedule name: \"%s\"\n", schedule_name);
 	return SCHEDULING_UNKNOWN;
 }
 
@@ -181,7 +181,7 @@ variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
 	} else if (strcmp(rt_type_name, VTN_DOUBLE_COMPLEX) == 0) {
 		return RT_DOUBLE_COMPLEX;
 	}
-	fprintf(stderr, "Unknown rt type name: %s\n", rt_type_name);
+	fprintf(stderr, "Unknown rt type name: \"%s\"\n", rt_type_name);
 	return RT_UNKNOWN;
 }
 
