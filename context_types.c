@@ -28,7 +28,7 @@ context_type get_context_type_from_name(const char *context_name)
 		return CONTEXT_FUNC_CALL;
 	} else if (strcmp(context_name, CTN_MASTER) == 0){
 		return CONTEXT_MASTER;
-	} else if (strcmp(context_name, CTN_MASTER) == 0){
+	} else if (strcmp(context_name, CTN_OMPLOOP) == 0){
 		return CONTEXT_OMPLOOP;
 	} else if (strcmp(context_name, CTN_ORDERED) == 0){
 		return CONTEXT_ORDERED;
