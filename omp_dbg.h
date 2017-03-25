@@ -118,6 +118,7 @@
 #define DBG_Get_Handle dbg_get_handle_
 #define DBG_BeforeParallel dbg_before_parallel_
 #define DBG_ParallelEvent dbg_parallel_event_
+#define DBG_ParallelEventEnd dbg_parallel_event_end_
 #define DBG_AfterParallel dbg_after_parallel_
 #define DBG_BeforeOMPLoop dbg_before_omp_loop_
 #define DBG_OMPIter dbg_omp_loop_event_
@@ -134,6 +135,7 @@
 #define DBG_MasterEnd dbg_master_end_
 #define DBG_BeforeCritical dbg_before_critical_
 #define DBG_CriticalEvent dbg_critical_event_
+#define DBG_CriticalEventEnd dbg_critical_event_end_
 #define DBG_AfterCritical dbg_after_critical_
 #define DBG_BeforeBarrier dbg_before_barrier_
 #define DBG_AfterBarrier dbg_after_barrier_
@@ -167,6 +169,8 @@
 #define DBG_OMPIfIter dbg_omp_if_loop_event_
 #define DBG_BeforeIO dbg_before_io_
 #define DBG_AfterIO dbg_after_io_
+#define DBG_BeforeInterval dbg_interval_begin_
+#define DBG_AfterInterval dbg_interval_end_
 #endif
 
 
@@ -176,6 +180,7 @@ void DBG_Finalize();
 void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength);
 void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult);
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID);
+void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID);
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID);
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize);
 void DBG_OMPIter(long *StaticContextHandle, long *ThreadID, long *Index);
@@ -192,6 +197,7 @@ void DBG_MasterBegin(long *StaticContextHandle, long *ThreadID);
 void DBG_MasterEnd(long *StaticContextHandle, long *ThreadID);
 void DBG_BeforeCritical (long *StaticContextHandle, long *ThreadID);
 void DBG_CriticalEvent(long *StaticContextHandle, long *ThreadID);
+void DBG_CriticalEventEnd(long *StaticContextHandle, long *ThreadID);
 void DBG_AfterCritical(long *StaticContextHandle, long *ThreadID);
 void DBG_BeforeBarrier(long *StaticContextHandle, long *ThreadID);
 void DBG_AfterBarrier(long *StaticContextHandle, long *ThreadID);
@@ -223,3 +229,5 @@ void DBG_SIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *I
 void DBG_OMPIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *IfVar);
 void DBG_BeforeIO(long *StaticContextHandle, long *ThreadID);
 void DBG_AfterIO(long *StaticContextHandle, long *ThreadID);
+void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *InvervalIndex);
+void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex);

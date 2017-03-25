@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "omp_dbg.h"
-//#include "context_types.h"
 #include "register_context.h"
+#include "omp_dbg.h"
+
+dvmh_omp_event *global_omp_event;
 
 long DBG_Get_Addr(void  *VarPtr) {
   return (long)VarPtr;
@@ -31,8 +32,17 @@ void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThre
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID) {
  	fprintf (stderr, "DBG_ParallelEvent\n");
 }
+void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID) {
+        fprintf (stderr, "DBG_ParallelEventEnd\n");
+}
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID) {
- 	fprintf (stderr, "DBG_AfterParallel\n");
+        fprintf (stderr, "DBG_AfterParallel\n");
+}
+void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *InvervalIndex) {
+        fprintf (stderr, "DBG_BeforeInterval\n"); 
+}
+void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex) {
+        fprintf (stderr, "DBG_AfterInterval\n");
 }
 
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize) {
@@ -80,6 +90,9 @@ void DBG_BeforeCritical (long *StaticContextHandle, long *ThreadID) {
 }
 void DBG_CriticalEvent(long *StaticContextHandle, long *ThreadID) {
  	fprintf (stderr, "DBG_CriticalEvent\n");
+}
+void DBG_CriticalEventEnd(long *StaticContextHandle, long *ThreadID) {
+ 	fprintf (stderr, "DBG_CriticalEventEnd\n");
 }
 void DBG_AfterCritical(long *StaticContextHandle, long *ThreadID) {
  	fprintf (stderr, "DBG_AfterCritical\n");
@@ -169,13 +182,16 @@ void DBG_WriteArrEnd(long *StaticContextHandle, long *ThreadID, void*pAddr, long
 }
 
 void DBG_BegSL(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step) {
- 	fprintf (stderr, "DBG_BegSL\n");
+ 	//TODO uncomment
+ 	//fprintf (stderr, "DBG_BegSL\n");
 }
 void DBG_SIter(long *StaticContextHandle, long *ThreadID, long *Index) {
- 	fprintf (stderr, "DBG_SIter\n");
+ 	//TODO uncomment
+ 	//fprintf (stderr, "DBG_SIter\n");
 }
 void DBG_EndSL(long *StaticContextHandle, long *ThreadID) {
- 	fprintf (stderr, "DBG_EndSL\n");
+ 	//TODO uncomment
+ 	//fprintf (stderr, "DBG_EndSL\n");
 }
 void DBG_BeforeFuncCall(long *StaticContextHandle, long *ThreadID) {
  	fprintf (stderr, "DBG_BeforeFuncCall\n");
