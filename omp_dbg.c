@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "register_context.h"
+#include "dvmh_omp_event.h"
 #include "omp_dbg.h"
 
 dvmh_omp_event *global_omp_event;

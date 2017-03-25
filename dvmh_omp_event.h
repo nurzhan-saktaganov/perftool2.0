@@ -1,5 +1,5 @@
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef DVMH_EVENT_H
+#define DVMH_EVENT_H
 
 #include <omp.h>
 #include "list.h"
