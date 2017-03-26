@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "stack.h"
 #include "dvmh_omp_event.h"
-#include "dvmh_omp_thread_state.h"
+#include "dvmh_omp_thread_info.h"
 
 dvmh_omp_thread_info *dvmh_omp_thread_info_create()
 {

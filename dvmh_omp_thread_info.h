@@ -1,5 +1,5 @@
-#ifndef DVMH_OMP_THREAD_STATE_H
-#define DVMH_OMP_THREAD_STATE_H
+#ifndef DVMH_OMP_THREAD_INFO_H
+#define DVMH_OMP_THREAD_INFO_H
 
 #include "stack.h"
 
