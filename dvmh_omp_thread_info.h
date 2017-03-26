@@ -15,9 +15,9 @@ void dvmh_omp_thread_info_event_occured(
 		dvmh_omp_thread_info *info,
 		dvmh_omp_event *event);
 
-void dvmh_omp_thread_info_event_finished(
-		dvmh_omp_thread_info *info,
-		dvmh_omp_event *event);
+dvmh_omp_event *dvmh_omp_thread_info_event_finished(dvmh_omp_thread_info *info);
+
+dvmh_omp_event *dvmh_omp_thread_info_active_event(dvmh_omp_thread_info *info);
 
 int dvmh_omp_thread_info_is_alive(dvmh_omp_thread_info *info);
 
