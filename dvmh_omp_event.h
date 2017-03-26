@@ -1,11 +1,12 @@
-#ifndef DVMH_EVENT_H
-#define DVMH_EVENT_H
+#ifndef DVMH_OMP_EVENT_H
+#define DVMH_OMP_EVENT_H
 
 #include <omp.h>
 #include "list.h"
 
 typedef enum {
 	DVMH_OMP_EVENT_PARALLEL_REGION,
+	DVMH_OMP_EVENT_THREAD,
 } dvmh_omp_event_type;
 
 typedef struct _dvmh_omp_event {
