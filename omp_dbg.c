@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "context_types.h"
 #include "register_context.h"
 #include "dvmh_omp_event.h"
 #include "dvmh_omp_thread_info.h"
@@ -8,9 +9,35 @@
 // Тут определены вспомогательные макросы для удобства
 #define TO_THREAD_INFO(long_value) ((dvmh_omp_thread_info *) (long_value))
 #define TO_LONG(ptr) ((long) (ptr))
-#define IS_INITIALIZED(thread_id_ptr) ((int) (*(thread_id_ptr)) != -1 ? 1 : 0 )
+#define IS_INITIALIZED(thread_id_ptr) (((int) (*(thread_id_ptr))) != -1 ? 1 : 0 )
 
 dvmh_omp_event *global_omp_event;
+
+dvmh_omp_event *get_parent_event(long *StaticContextHandle)
+{
+	context_descriptor *cd = (context_descriptor *) *StaticContextHandle;
+	if (cd->type != CONTEXT_PARALLEL){
+		fprintf(stderr, "Context Type is not parallel");
+		return NULL;
+	}
+	parallel_context_descriptor *pcd =
+			(parallel_context_descriptor *) cd->context_ptr;
+
+	return (dvmh_omp_event *) pcd->parent_event;
+}
+
+void set_parent_event(long *StaticContextHandle, dvmh_omp_event *pe)
+{
+	context_descriptor *cd = (context_descriptor *) *StaticContextHandle;
+	if (cd->type != CONTEXT_PARALLEL){
+		fprintf(stderr, "Context Type is not parallel");
+		return;
+	}
+	parallel_context_descriptor *pcd =
+			(parallel_context_descriptor *) cd->context_ptr;
+
+	pcd->parent_event = (void *) pe;
+}
 
 long DBG_Get_Addr(void  *VarPtr)
 {
@@ -28,12 +55,12 @@ void DBG_Init(long *ThreadID)
 		*ThreadID = TO_LONG(dvmh_omp_thread_info_create());
 	}
 	global_omp_event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD);
-	dvmh_omp_thread_info_event_occured(
-			TO_THREAD_INFO(*ThreadID),
-			global_omp_event);
-			
+	
 	dvmh_omp_event_set_thread_id(global_omp_event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(global_omp_event, omp_get_wtime());
+	
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), global_omp_event);
+	
 	fprintf (stderr, "DBG_Init\n");
 }
 
@@ -47,6 +74,10 @@ void DBG_Finalize()
 	if (!is_master){
 		return;
 	}
+	// Здесь никак не сможем сделать dvmh_omp_thread_info_destroy :(
+	// может через глобальную переменную...хммм
+	// для красоты еще и dvmh_omp_thread_info_event_finished,
+	// это уже детали
 	dvmh_omp_event_set_end_time(global_omp_event, omp_get_wtime());
 	dvmh_omp_event_analyzer(global_omp_event);
 	dvmh_omp_event_destroy(global_omp_event);
@@ -60,33 +91,67 @@ void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringL
 
 void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult)
 {
-	fprintf(stderr, "Before parallel thread id = %ld\n", ThreadID);
+	//fprintf(stderr, "Before parallel thread id = %ld\n", ThreadID);
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_PARALLEL_REGION);
+	dvmh_omp_event_add_subevent(parent_event, event);
+	
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
+	
+	set_parent_event(StaticContextHandle, event);
  	fprintf (stderr, "DBG_BeforeParallel\n"); 
 }
 
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 {
+	if (!IS_INITIALIZED(ThreadID)) {
+		fprintf(stderr, "DBG_ThreadCreated\n");
+		*ThreadID = TO_LONG(dvmh_omp_thread_info_create());
+	}
+	dvmh_omp_event *parent_event = get_parent_event(StaticContextHandle);
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD);
+	dvmh_omp_event_add_subevent(parent_event, event);
+	
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
  	fprintf (stderr, "DBG_ParallelEvent\n");
 }
 
 void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 {
-        fprintf (stderr, "DBG_ParallelEventEnd\n");
+	dvmh_omp_event *event = dvmh_omp_thread_info_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event_set_end_time(event, omp_get_wtime());
+	
+	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+	
+	if (!dvmh_omp_thread_info_is_alive(TO_THREAD_INFO(*ThreadID))) {
+		dvmh_omp_thread_info_destroy(TO_THREAD_INFO(*ThreadID));
+		*ThreadID = -1; // если параллельная область крутится во внешнем цикле
+	}
+	fprintf (stderr, "DBG_ParallelEventEnd\n");
 }
 
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 {
-        fprintf (stderr, "DBG_AfterParallel\n");
+	dvmh_omp_event *event = dvmh_omp_thread_info_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event_set_end_time(event, omp_get_wtime());
+	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+	fprintf (stderr, "DBG_AfterParallel\n");
 }
 
 void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *InvervalIndex)
 {
-        fprintf (stderr, "DBG_BeforeInterval\n"); 
+	fprintf (stderr, "DBG_BeforeInterval\n"); 
 }
 
 void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
 {
-        fprintf (stderr, "DBG_AfterInterval\n");
+	fprintf (stderr, "DBG_AfterInterval\n");
 }
 
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize)

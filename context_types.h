@@ -1,6 +1,8 @@
 #ifndef CONTEXT_TYPES_H
 #define CONTEXT_TYPES_H
 
+#include "list.h"
+
 // CTN - CONTEXT_TYPE_NAME
 #define CTN_ARRAY_NAME 		"arr_name"
 #define CTN_BARRIER 		"barrier"
@@ -134,6 +136,7 @@ typedef struct {
 	behavior_type default_behavior;
 	char *if_text;
 	char *num_threads;
+	void *parent_event; // для передачи parent_event ptr
 } parallel_context_descriptor;
 
 typedef struct {
