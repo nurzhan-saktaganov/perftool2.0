@@ -18,6 +18,9 @@ typedef struct _dvmh_omp_event {
 	list *subevents;
 } dvmh_omp_event;
 
+typedef struct _dvmh_omp_subevent_iterator {
+	list_iterator *li;
+} dvmh_omp_subevent_iterator;
 
 dvmh_omp_event *dvmh_omp_event_create(dvmh_omp_event_type event_type);
 void dvmh_omp_event_destroy(dvmh_omp_event *event_p);
@@ -28,5 +31,10 @@ void dvmh_omp_event_set_end_time(dvmh_omp_event *event_p, double end_time);
 double dvmh_omp_event_get_end_time(dvmh_omp_event *event_p);
 void dvmh_omp_event_set_thread_id(dvmh_omp_event *event_p, long thread_id);
 long dvmh_omp_event_get_thread_id(dvmh_omp_event *event_p);
+
+dvmh_omp_subevent_iterator * dvmh_omp_subevent_iterator_new(dvmh_omp_event *e);
+int dvmh_omp_subevent_iterator_has_next(dvmh_omp_subevent_iterator *it);
+dvmh_omp_event *dvmh_omp_subevent_iterator_next(dvmh_omp_subevent_iterator *it);
+void dvmh_omp_subevent_iterator_destroy(dvmh_omp_subevent_iterator *it);
 
 #endif

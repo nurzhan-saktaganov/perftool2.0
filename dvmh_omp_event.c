@@ -88,3 +88,33 @@ long dvmh_omp_event_get_thread_id(dvmh_omp_event *event_p)
 {
 	return event_p != NULL ? event_p->thread_id : 0;
 }
+
+dvmh_omp_subevent_iterator * dvmh_omp_subevent_iterator_new(dvmh_omp_event *e)
+{
+	if (e == NULL || e->subevents == NULL){
+		return NULL;
+	}
+	dvmh_omp_subevent_iterator *it =
+			(dvmh_omp_subevent_iterator *) malloc(sizeof(dvmh_omp_subevent_iterator));
+	it->li = list_iterator_new(e->subevents);
+	return it;
+}
+
+int dvmh_omp_subevent_iterator_has_next(dvmh_omp_subevent_iterator *it)
+{
+	return it != NULL ? list_iterator_has_next(it->li) : 0;
+}
+
+dvmh_omp_event *dvmh_omp_subevent_iterator_next(dvmh_omp_subevent_iterator *it)
+{
+	return (dvmh_omp_event *) list_iterator_next(it->li);
+}
+
+void dvmh_omp_subevent_iterator_destroy(dvmh_omp_subevent_iterator *it)
+{
+	if (it == NULL){
+		return;
+	}
+	list_iterator_destroy(it->li);
+	free(it);
+}
