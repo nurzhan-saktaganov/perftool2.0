@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <omp.h>
 #include "context_types.h"
 #include "register_context.h"
 #include "dvmh_omp_event.h"
@@ -11,7 +12,7 @@
 #define TO_LONG(ptr) ((long) (ptr))
 #define IS_INITIALIZED(thread_id_ptr) (((int) (*(thread_id_ptr))) != -1 ? 1 : 0 )
 
-dvmh_omp_event *global_omp_event;
+dvmh_omp_thread_info *initial_thread_info = NULL;
 
 dvmh_omp_event *get_parent_event(long *StaticContextHandle)
 {
@@ -51,36 +52,38 @@ void DBG_Type_Control()
 
 void DBG_Init(long *ThreadID)
 {
-	if (!IS_INITIALIZED(ThreadID)) {
-		*ThreadID = TO_LONG(dvmh_omp_thread_info_create());
-	}
-	global_omp_event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD);
+	initial_thread_info = dvmh_omp_thread_info_create();
+	*ThreadID = TO_LONG(initial_thread_info);
 	
-	dvmh_omp_event_set_thread_id(global_omp_event, TO_LONG(ThreadID));
-	dvmh_omp_event_set_begin_time(global_omp_event, omp_get_wtime());
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD);
 	
-	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), global_omp_event);
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	
+	dvmh_omp_thread_info_event_occured(initial_thread_info, event);
 	
 	fprintf (stderr, "DBG_Init\n");
 }
 
 void DBG_Finalize()
 {
-	int is_master = 0;
-	#pragma omp master
+	dvmh_omp_thread_info *thread_info;
+	#pragma omp critical
 	{
-		is_master = 1;
+		thread_info = initial_thread_info;
+		initial_thread_info = NULL;
 	}
-	if (!is_master){
+	if (thread_info == NULL){
 		return;
 	}
-	// Здесь никак не сможем сделать dvmh_omp_thread_info_destroy :(
-	// может через глобальную переменную...хммм
-	// для красоты еще и dvmh_omp_thread_info_event_finished,
-	// это уже детали
-	dvmh_omp_event_set_end_time(global_omp_event, omp_get_wtime());
-	dvmh_omp_event_analyzer(global_omp_event);
-	dvmh_omp_event_destroy(global_omp_event);
+	
+	dvmh_omp_event *event = dvmh_omp_thread_info_active_event(thread_info);
+	
+	dvmh_omp_event_set_end_time(event, omp_get_wtime());
+	dvmh_omp_event_analyzer(event);
+	
+	dvmh_omp_event_destroy(event);
+	dvmh_omp_thread_info_event_finished(thread_info);
 }
 
 void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength)
@@ -91,7 +94,7 @@ void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringL
 
 void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult)
 {
-	//fprintf(stderr, "Before parallel thread id = %ld\n", ThreadID);
+	fprintf(stderr, "Before parallel thread id = %ld\n", ThreadID);
 	dvmh_omp_event *parent_event = dvmh_omp_thread_info_active_event(TO_THREAD_INFO(*ThreadID));
 	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_PARALLEL_REGION);
 	dvmh_omp_event_add_subevent(parent_event, event);
@@ -108,7 +111,7 @@ void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThre
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 {
 	if (!IS_INITIALIZED(ThreadID)) {
-		fprintf(stderr, "DBG_ThreadCreated\n");
+		fprintf(stderr, "DBG_ThreadCreated: %ld\n", ThreadID);
 		*ThreadID = TO_LONG(dvmh_omp_thread_info_create());
 	}
 	dvmh_omp_event *parent_event = get_parent_event(StaticContextHandle);
@@ -132,6 +135,7 @@ void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 	if (!dvmh_omp_thread_info_is_alive(TO_THREAD_INFO(*ThreadID))) {
 		dvmh_omp_thread_info_destroy(TO_THREAD_INFO(*ThreadID));
 		*ThreadID = -1; // если параллельная область крутится во внешнем цикле
+		fprintf(stderr, "DBG_ThreadDestroyed: %ld\n", ThreadID);
 	}
 	fprintf (stderr, "DBG_ParallelEventEnd\n");
 }
