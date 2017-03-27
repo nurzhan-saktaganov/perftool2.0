@@ -84,6 +84,7 @@ void DBG_Finalize()
 	
 	dvmh_omp_event_destroy(event);
 	dvmh_omp_thread_info_event_finished(thread_info);
+	dvmh_omp_thread_info_destroy(thread_info);
 }
 
 void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength)
