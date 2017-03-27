@@ -79,6 +79,11 @@ double dvmh_omp_event_get_end_time(dvmh_omp_event *event_p)
 	return event_p != NULL ? event_p->end_time : 0.0;
 }
 
+double dvmh_omp_event_duration(dvmh_omp_event *e)
+{
+	return e != NULL ? e->end_time - e->begin_time : 0.0;
+}
+
 void dvmh_omp_event_set_thread_id(dvmh_omp_event *event_p, long thread_id)
 {
 	event_p != NULL ? event_p->thread_id = thread_id : 0;

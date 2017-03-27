@@ -29,6 +29,7 @@ void dvmh_omp_event_set_begin_time(dvmh_omp_event *event_p, double begin_time);
 double dvmh_omp_event_get_begin_time(dvmh_omp_event *event_p);
 void dvmh_omp_event_set_end_time(dvmh_omp_event *event_p, double end_time);
 double dvmh_omp_event_get_end_time(dvmh_omp_event *event_p);
+double dvmh_omp_event_duration(dvmh_omp_event *e);
 void dvmh_omp_event_set_thread_id(dvmh_omp_event *event_p, long thread_id);
 long dvmh_omp_event_get_thread_id(dvmh_omp_event *event_p);
 dvmh_omp_event_type dvmh_omp_event_get_type(dvmh_omp_event *e);
