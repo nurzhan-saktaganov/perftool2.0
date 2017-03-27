@@ -89,6 +89,16 @@ long dvmh_omp_event_get_thread_id(dvmh_omp_event *event_p)
 	return event_p != NULL ? event_p->thread_id : 0;
 }
 
+int dvmh_omp_event_has_subevent(dvmh_omp_event *e)
+{
+	return e->subevents != NULL;
+}
+
+dvmh_omp_event_type dvmh_omp_event_get_type(dvmh_omp_event *e)
+{
+	return e->type;
+}
+
 dvmh_omp_subevent_iterator * dvmh_omp_subevent_iterator_new(dvmh_omp_event *e)
 {
 	if (e == NULL || e->subevents == NULL){
