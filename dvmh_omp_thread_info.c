@@ -31,7 +31,7 @@ dvmh_omp_event *dvmh_omp_thread_info_event_finished(dvmh_omp_thread_info *info)
 	return (dvmh_omp_event *) stack_pop(info->active_events);
 }
 
-dvmh_omp_event *dvmh_omp_thread_info_active_event(dvmh_omp_thread_info *info)
+dvmh_omp_event *dvmh_omp_thread_info_get_active_event(dvmh_omp_thread_info *info)
 {
 	return (dvmh_omp_event *) stack_peek(info->active_events);
 }

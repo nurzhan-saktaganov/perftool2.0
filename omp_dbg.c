@@ -77,7 +77,7 @@ void DBG_Finalize()
 		return;
 	}
 	
-	dvmh_omp_event *event = dvmh_omp_thread_info_active_event(thread_info);
+	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(thread_info);
 	
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	dvmh_omp_event_analyzer(event);
@@ -96,7 +96,7 @@ void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringL
 void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult)
 {
 	fprintf(stderr, "Before parallel thread id = %ld\n", ThreadID);
-	dvmh_omp_event *parent_event = dvmh_omp_thread_info_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
 	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_PARALLEL_REGION);
 	dvmh_omp_event_add_subevent(parent_event, event);
 	
@@ -128,7 +128,7 @@ void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 
 void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 {
-	dvmh_omp_event *event = dvmh_omp_thread_info_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	
 	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
@@ -143,7 +143,7 @@ void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 {
-	dvmh_omp_event *event = dvmh_omp_thread_info_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
 	fprintf (stderr, "DBG_AfterParallel\n");
