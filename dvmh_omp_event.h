@@ -7,6 +7,7 @@
 typedef enum {
 	DVMH_OMP_EVENT_PARALLEL_REGION,
 	DVMH_OMP_EVENT_THREAD,
+	DVMH_OMP_EVENT_THREAD_UNPAIRED, //такие события нужно закрывать руками
 } dvmh_omp_event_type;
 
 typedef struct _dvmh_omp_event {

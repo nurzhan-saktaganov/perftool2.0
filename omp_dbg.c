@@ -182,13 +182,31 @@ void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, lo
 
 void DBG_OMPIter(long *StaticContextHandle, long *ThreadID, long *Index)
 {
-	//TODO
-	fprintf (stderr, "DBG_OMPIter\n");
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	if (dvmh_omp_event_get_type(parent_event) == DVMH_OMP_EVENT_THREAD_UNPAIRED){
+		// закрываем предыдущую итерацию цикла
+		dvmh_omp_event_set_end_time(parent_event, omp_get_wtime());
+		dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+		parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	}
+
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD_UNPAIRED);
+	dvmh_omp_event_add_subevent(parent_event, event);
+
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
 
 void DBG_AfterOMPLoop (long *StaticContextHandle, long *ThreadID)
 {
 	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	if (dvmh_omp_event_get_type(event) == DVMH_OMP_EVENT_THREAD_UNPAIRED){
+		dvmh_omp_event_set_end_time(event, omp_get_wtime());
+		dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+		event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	}
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
 }
@@ -453,13 +471,31 @@ void DBG_BegSL(long *StaticContextHandle, long *ThreadID, long *Init, long *Last
 
 void DBG_SIter(long *StaticContextHandle, long *ThreadID, long *Index)
 {
-	//TODO
-	//fprintf (stderr, "DBG_SIter\n");
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	if (dvmh_omp_event_get_type(parent_event) == DVMH_OMP_EVENT_THREAD_UNPAIRED){
+		// закрываем предыдущую итерацию цикла
+		dvmh_omp_event_set_end_time(parent_event, omp_get_wtime());
+		dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+		parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	}
+
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD_UNPAIRED);
+	dvmh_omp_event_add_subevent(parent_event, event);
+
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
 
 void DBG_EndSL(long *StaticContextHandle, long *ThreadID)
 {
 	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	if (dvmh_omp_event_get_type(event) == DVMH_OMP_EVENT_THREAD_UNPAIRED){
+		dvmh_omp_event_set_end_time(event, omp_get_wtime());
+		dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+		event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	}
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
 }
