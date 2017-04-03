@@ -89,7 +89,6 @@ void DBG_Finalize()
 
 void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength)
 {
-	// fprintf (stderr, "DBG_Get_Handle: %s\n",ContextString);
 	*StaticContextHandle = register_context(ContextString);
 }
 
@@ -183,6 +182,7 @@ void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, lo
 
 void DBG_OMPIter(long *StaticContextHandle, long *ThreadID, long *Index)
 {
+	//TODO
 	fprintf (stderr, "DBG_OMPIter\n");
 }
 
@@ -216,6 +216,7 @@ void DBG_AfterSections(long *StaticContextHandle, long *ThreadID)
 
 void DBG_SectionEvent(long *StaticContextHandle1, long *ThreadID)
 {
+	//TODO
 	fprintf (stderr, "DBG_SectionEvent\n");
 }
 
@@ -234,6 +235,7 @@ void DBG_BeforeSingle (long *StaticContextHandle, long *ThreadID)
 
 void DBG_SingleEvent(long *StaticContextHandle, long *ThreadID)
 {
+	//TODO
 	fprintf (stderr, "DBG_SingleEvent\n");
 }
 
@@ -346,6 +348,7 @@ void DBG_AfterBarrier(long *StaticContextHandle, long *ThreadID)
 
 void DBG_FlushEvent(long *StaticContextHandle, long *ThreadID)
 {
+	//TODO
 	fprintf (stderr, "DBG_FlushEvent\n");
 }
 
@@ -364,6 +367,7 @@ void DBG_BeforeOrdered (long *StaticContextHandle, long *ThreadID)
 
 void DBG_OrderedEvent(long *StaticContextHandle, long *ThreadID)
 {
+	//TODO
 	fprintf (stderr, "DBG_OrderedEvent\n");
 }
 
@@ -385,11 +389,6 @@ void DBG_RegVar(long *StaticContextHandle, long *ThreadID, void*pAddr)
 	//fprintf (stderr, "DBG_RegVar\n");
 	return;
 }
-
-//TODO void DBG_UnregVar
-//TODO void DBG_UnregArr
-//TODO void DBG_UnregParVar
-//TODO void DBG_UnregarArr
 
 void DBG_RegArr(long *StaticContextHandle, long *ThreadID, long *ArrSize, void* pAddr)
 {
@@ -441,20 +440,28 @@ void DBG_WriteArrEnd(long *StaticContextHandle, long *ThreadID, void*pAddr, long
 
 void DBG_BegSL(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step)
 {
-	//TODO uncomment
-	//fprintf (stderr, "DBG_BegSL\n");
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD);
+	dvmh_omp_event_add_subevent(parent_event, event);
+
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
 
 void DBG_SIter(long *StaticContextHandle, long *ThreadID, long *Index)
 {
-	//TODO uncomment
+	//TODO
 	//fprintf (stderr, "DBG_SIter\n");
 }
 
 void DBG_EndSL(long *StaticContextHandle, long *ThreadID)
 {
-	//TODO uncomment
-	//fprintf (stderr, "DBG_EndSL\n");
+	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event_set_end_time(event, omp_get_wtime());
+	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
 }
 
 void DBG_BeforeFuncCall(long *StaticContextHandle, long *ThreadID)
@@ -523,11 +530,13 @@ void DBG_RegParArr(long *StaticContextHandle, long *ThreadID, long *ArrSize, voi
 
 void DBG_SIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *IfVar)
 {
+	//TODO
 	fprintf (stderr, "DBG_SIfIter\n");
 }
 
 void DBG_OMPIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *IfVar)
 {
+	//TODO
 	fprintf (stderr, "DBG_OMPIfIter\n");
 }
 
