@@ -3,6 +3,7 @@
 
 #include <omp.h>
 #include "list.h"
+#include "context_types.h"
 
 typedef enum {
 	DVMH_OMP_EVENT_PARALLEL_REGION,
@@ -17,6 +18,7 @@ typedef struct _dvmh_omp_event {
 	double end_time;
 	long thread_id;
 	list *subevents;
+	context_descriptor *descriptor;
 } dvmh_omp_event;
 
 typedef struct _dvmh_omp_subevent_iterator {
@@ -35,6 +37,8 @@ void dvmh_omp_event_set_thread_id(dvmh_omp_event *event_p, long thread_id);
 long dvmh_omp_event_get_thread_id(dvmh_omp_event *event_p);
 dvmh_omp_event_type dvmh_omp_event_get_type(dvmh_omp_event *e);
 int dvmh_omp_event_has_subevent(dvmh_omp_event *e);
+void dvmh_omp_event_set_context_descriptor(dvmh_omp_event *e, context_descriptor *d);
+context_descriptor * dvmh_omp_event_get_context_descriptor(dvmh_omp_event *e);
 
 dvmh_omp_subevent_iterator * dvmh_omp_subevent_iterator_new(dvmh_omp_event *e);
 int dvmh_omp_subevent_iterator_has_next(dvmh_omp_subevent_iterator *it);

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <omp.h>
 #include "list.h"
+#include "context_types.h"
 #include "dvmh_omp_event.h"
 
 dvmh_omp_event *dvmh_omp_event_create(dvmh_omp_event_type event_type)
@@ -17,6 +18,7 @@ dvmh_omp_event *dvmh_omp_event_create(dvmh_omp_event_type event_type)
 	event_p->end_time = 0.0;
 	event_p->thread_id = 0L;
 	event_p->subevents = NULL;
+	event_p->descriptor = NULL;
 	return event_p;
 }
 
@@ -102,6 +104,16 @@ int dvmh_omp_event_has_subevent(dvmh_omp_event *e)
 dvmh_omp_event_type dvmh_omp_event_get_type(dvmh_omp_event *e)
 {
 	return e->type;
+}
+
+void dvmh_omp_event_set_context_descriptor(dvmh_omp_event *e, context_descriptor *d)
+{
+	e->descriptor = d;
+}
+
+context_descriptor *dvmh_omp_event_get_context_descriptor(dvmh_omp_event *e)
+{
+	return e->descriptor;
 }
 
 dvmh_omp_subevent_iterator * dvmh_omp_subevent_iterator_new(dvmh_omp_event *e)

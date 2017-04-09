@@ -10,6 +10,7 @@
 // Тут определены вспомогательные макросы для удобства
 #define TO_THREAD_INFO(long_value) ((dvmh_omp_thread_info *) (long_value))
 #define TO_LONG(ptr) ((long) (ptr))
+#define TO_DESC(long_value) ((context_descriptor *) (long_value))
 #define IS_INITIALIZED(thread_id_ptr) (((int) (*(thread_id_ptr))) != -1 ? 1 : 0 )
 
 dvmh_omp_thread_info *initial_thread_info = NULL;
@@ -100,6 +101,7 @@ void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThre
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 	
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 	
@@ -119,6 +121,7 @@ void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 	
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 	fprintf (stderr, "DBG_ParallelEvent\n");
@@ -156,6 +159,7 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Inverv
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -176,6 +180,7 @@ void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, lo
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -195,6 +200,7 @@ void DBG_OMPIter(long *StaticContextHandle, long *ThreadID, long *Index)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -220,6 +226,7 @@ void DBG_BeforeSections (long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -247,6 +254,7 @@ void DBG_BeforeSingle (long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -273,6 +281,7 @@ void DBG_BeforeWorkshare (long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -293,6 +302,7 @@ void DBG_MasterBegin(long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -313,6 +323,7 @@ void DBG_BeforeCritical (long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -326,6 +337,7 @@ void DBG_CriticalEvent(long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -353,6 +365,7 @@ void DBG_BeforeBarrier(long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -379,6 +392,7 @@ void DBG_BeforeOrdered (long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -465,6 +479,7 @@ void DBG_BegSL(long *StaticContextHandle, long *ThreadID, long *Init, long *Last
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -484,6 +499,7 @@ void DBG_SIter(long *StaticContextHandle, long *ThreadID, long *Index)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -509,6 +525,7 @@ void DBG_BeforeFuncCall(long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -541,6 +558,7 @@ void DBG_FuncBegin(long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
@@ -585,6 +603,7 @@ void DBG_BeforeIO(long *StaticContextHandle, long *ThreadID)
 
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
