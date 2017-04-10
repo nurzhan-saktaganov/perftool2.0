@@ -113,7 +113,8 @@ void *list_peek_tail(list *l_p)
 	return l_p->tail->data;
 }
 
-int list_size(list *l_p){
+int list_size(list *l_p)
+{
 	return l_p != NULL ? l_p->size : 0;
 }
 
@@ -135,13 +136,15 @@ int list_iterator_has_next(list_iterator *li_p)
 	return 1;
 }
 
-void *list_iterator_next(list_iterator *li_p){
+void *list_iterator_next(list_iterator *li_p)
+{
 	void *data = li_p->current->data;
 	li_p->current = li_p->current->next;
 	return data;
 }
 
-void list_iterator_destroy(list_iterator *li_p) {
+void list_iterator_destroy(list_iterator *li_p)
+{
 	if (li_p == NULL){
 		return;
 	}
