@@ -15,8 +15,10 @@
 #define DBG_BeforeSections DBG_BEFORE_SECTIONS
 #define DBG_AfterSections DBG_AFTER_SECTIONS
 #define DBG_SectionEvent DBG_SECTION_EVENT
+#define DBG_SectionEventEnd DBG_SECTION_EVENT_END
 #define DBG_BeforeSingle DBG_BEFORE_SINGLE
 #define DBG_SingleEvent DBG_SINGLE_EVENT
+#define DBG_SingleEventEnd DBG_SINGLE_EVENT_END
 #define DBG_AfterSingle DBG_AFTER_SINGLE
 #define DBG_BeforeWorkshare DBG_BEFORE_WORKSHARE
 #define DBG_AfterWorkshare DBG_AFTER_WORKSHARE
@@ -28,6 +30,7 @@
 #define DBG_BeforeBarrier DBG_BEFORE_BARRIER
 #define DBG_AfterBarrier DBG_AFTER_BARRIER
 #define DBG_FlushEvent DBG_FLUSH_EVENT
+#define DBG_FlushEventEnd DBG_FLUSH_EVENT_END
 #define DBG_BeforeOrdered DBG_BEFORE_ORDERED
 #define DBG_OrderedEvent DBG_ORDERED_EVENT
 #define DBG_AfterOrdered DBG_AFTER_ORDERED
@@ -70,8 +73,10 @@
 #define DBG_BeforeSections dbg_before_sections
 #define DBG_AfterSections dbg_after_sections
 #define DBG_SectionEvent dbg_section_event
+#define DBG_SectionEventEnd dbg_section_event_end
 #define DBG_BeforeSingle dbg_before_single
 #define DBG_SingleEvent dbg_single_event
+#define DBG_SingleEventEnd dbg_single_event_end
 #define DBG_AfterSingle dbg_after_single
 #define DBG_BeforeWorkshare dbg_before_workshare
 #define DBG_AfterWorkshare dbg_after_workshare
@@ -83,6 +88,7 @@
 #define DBG_BeforeBarrier dbg_before_barrier
 #define DBG_AfterBarrier dbg_after_barrier
 #define DBG_FlushEvent dbg_flush_event
+#define DBG_FlushEventEnd dbg_flush_event_end
 #define DBG_BeforeOrdered dbg_before_ordered
 #define DBG_OrderedEvent dbg_ordered_event
 #define DBG_AfterOrdered dbg_after_ordered
@@ -126,8 +132,10 @@
 #define DBG_BeforeSections dbg_before_sections_
 #define DBG_AfterSections dbg_after_sections_
 #define DBG_SectionEvent dbg_section_event_
+#define DBG_SectionEventEnd dbg_section_event_end_
 #define DBG_BeforeSingle dbg_before_single_
 #define DBG_SingleEvent dbg_single_event_
+#define DBG_SingleEventEnd dbg_single_event_end_
 #define DBG_AfterSingle dbg_after_single_
 #define DBG_BeforeWorkshare dbg_before_workshare_
 #define DBG_AfterWorkshare dbg_after_workshare_
@@ -140,6 +148,7 @@
 #define DBG_BeforeBarrier dbg_before_barrier_
 #define DBG_AfterBarrier dbg_after_barrier_
 #define DBG_FlushEvent dbg_flush_event_
+#define DBG_FlushEventEnd dbg_flush_event_end_
 #define DBG_BeforeOrdered dbg_before_ordered_
 #define DBG_OrderedEvent dbg_ordered_event_
 #define DBG_AfterOrdered dbg_after_ordered_
@@ -188,8 +197,10 @@ void DBG_AfterOMPLoop (long *StaticContextHandle, long *ThreadID);
 void DBG_BeforeSections (long *StaticContextHandle, long *ThreadID);
 void DBG_AfterSections(long *StaticContextHandle, long *ThreadID);
 void DBG_SectionEvent(long *StaticContextHandle1, long *ThreadID);
+void DBG_SectionEventEnd(long *StaticContextHandle1, long *ThreadID);
 void DBG_BeforeSingle (long *StaticContextHandle, long *ThreadID);
 void DBG_SingleEvent(long *StaticContextHandle, long *ThreadID);
+void DBG_SingleEventEnd(long *StaticContextHandle, long *ThreadID);
 void DBG_AfterSingle (long *StaticContextHandle, long *ThreadID);
 void DBG_BeforeWorkshare (long *StaticContextHandle, long *ThreadID);
 void DBG_AfterWorkshare(long *StaticContextHandle, long *ThreadID);
@@ -202,6 +213,7 @@ void DBG_AfterCritical(long *StaticContextHandle, long *ThreadID);
 void DBG_BeforeBarrier(long *StaticContextHandle, long *ThreadID);
 void DBG_AfterBarrier(long *StaticContextHandle, long *ThreadID);
 void DBG_FlushEvent(long *StaticContextHandle, long *ThreadID);
+void DBG_FlushEventEnd(long *StaticContextHandle, long *ThreadID);
 void DBG_BeforeOrdered (long *StaticContextHandle, long *ThreadID);
 void DBG_OrderedEvent(long *StaticContextHandle, long *ThreadID);
 void DBG_AfterOrdered(long *StaticContextHandle, long *ThreadID);

@@ -112,7 +112,6 @@ void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThre
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 {
 	if (!IS_INITIALIZED(ThreadID)) {
-		fprintf(stderr, "DBG_ThreadCreated: %ld\n", ThreadID);
 		*ThreadID = TO_LONG(dvmh_omp_thread_info_create());
 	}
 	dvmh_omp_event *parent_event = get_parent_event(StaticContextHandle);
@@ -124,7 +123,6 @@ void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
-	fprintf (stderr, "DBG_ParallelEvent\n");
 }
 
 void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
@@ -137,9 +135,7 @@ void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 	if (!dvmh_omp_thread_info_is_alive(TO_THREAD_INFO(*ThreadID))) {
 		dvmh_omp_thread_info_destroy(TO_THREAD_INFO(*ThreadID));
 		*ThreadID = -1; // если параллельная область крутится во внешнем цикле
-		fprintf(stderr, "DBG_ThreadDestroyed: %ld\n", ThreadID);
 	}
-	fprintf (stderr, "DBG_ParallelEventEnd\n");
 }
 
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
@@ -231,18 +227,32 @@ void DBG_BeforeSections (long *StaticContextHandle, long *ThreadID)
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
 
+void DBG_SectionEvent(long *StaticContextHandle, long *ThreadID)
+{
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD);
+	dvmh_omp_event_add_subevent(parent_event, event);
+	
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
+}
+
+void DBG_SectionEventEnd(long *StaticContextHandle, long *ThreadID)
+{
+	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event_set_end_time(event, omp_get_wtime());
+	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+}
+
 void DBG_AfterSections(long *StaticContextHandle, long *ThreadID)
 {
 	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
-	fprintf (stderr, "DBG_AfterSections\n");
-}
-
-void DBG_SectionEvent(long *StaticContextHandle1, long *ThreadID)
-{
-	//TODO
-	fprintf (stderr, "DBG_SectionEvent\n");
 }
 
 void DBG_BeforeSingle (long *StaticContextHandle, long *ThreadID)
@@ -261,8 +271,23 @@ void DBG_BeforeSingle (long *StaticContextHandle, long *ThreadID)
 
 void DBG_SingleEvent(long *StaticContextHandle, long *ThreadID)
 {
-	//TODO
-	fprintf (stderr, "DBG_SingleEvent\n");
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD);
+	dvmh_omp_event_add_subevent(parent_event, event);
+
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
+}
+
+void DBG_SingleEventEnd(long *StaticContextHandle, long *ThreadID)
+{
+	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event_set_end_time(event, omp_get_wtime());
+	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
 }
 
 void DBG_AfterSingle (long *StaticContextHandle, long *ThreadID)
@@ -379,8 +404,23 @@ void DBG_AfterBarrier(long *StaticContextHandle, long *ThreadID)
 
 void DBG_FlushEvent(long *StaticContextHandle, long *ThreadID)
 {
-	//TODO
-	fprintf (stderr, "DBG_FlushEvent\n");
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD);
+	dvmh_omp_event_add_subevent(parent_event, event);
+
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
+}
+
+void DBG_FlushEventEnd(long *StaticContextHandle, long *ThreadID)
+{
+	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	dvmh_omp_event_set_end_time(event, omp_get_wtime());
+	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
 }
 
 void DBG_BeforeOrdered (long *StaticContextHandle, long *ThreadID)
@@ -584,14 +624,42 @@ void DBG_RegParArr(long *StaticContextHandle, long *ThreadID, long *ArrSize, voi
 
 void DBG_SIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *IfVar)
 {
-	//TODO
-	fprintf (stderr, "DBG_SIfIter\n");
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	if (dvmh_omp_event_get_type(parent_event) == DVMH_OMP_EVENT_THREAD_UNPAIRED){
+		// закрываем предыдущую итерацию цикла
+		dvmh_omp_event_set_end_time(parent_event, omp_get_wtime());
+		dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+		parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	}
+
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD_UNPAIRED);
+	dvmh_omp_event_add_subevent(parent_event, event);
+
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
 
 void DBG_OMPIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *IfVar)
 {
-	//TODO
-	fprintf (stderr, "DBG_OMPIfIter\n");
+	dvmh_omp_event *parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	if (dvmh_omp_event_get_type(parent_event) == DVMH_OMP_EVENT_THREAD_UNPAIRED){
+		// закрываем предыдущую итерацию цикла
+		dvmh_omp_event_set_end_time(parent_event, omp_get_wtime());
+		dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
+		parent_event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
+	}
+
+	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_THREAD_UNPAIRED);
+	dvmh_omp_event_add_subevent(parent_event, event);
+
+	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
+	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
+
+	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 }
 
 void DBG_BeforeIO(long *StaticContextHandle, long *ThreadID)
