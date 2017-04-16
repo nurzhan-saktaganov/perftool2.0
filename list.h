@@ -26,6 +26,7 @@ void *list_remove_tail(list *l_p);
 void *list_peek_head(list *l_p);
 void *list_peek_tail(list *l_p);
 int list_size(list *l_p);
+int list_has_element(list *l, void *data);
 
 list_iterator *list_iterator_new(list *l_p);
 int list_iterator_has_next(list_iterator *li_p);

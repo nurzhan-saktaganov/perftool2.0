@@ -118,6 +118,18 @@ int list_size(list *l_p)
 	return l_p != NULL ? l_p->size : 0;
 }
 
+int list_has_element(list *l, void *data)
+{
+	node *n = l->head;
+	while (n != NULL){
+		if (n->data == data){
+			return 1;
+		}
+		n = n->next;
+	}
+	return 0;
+}
+
 list_iterator *list_iterator_new(list *l_p)
 {
 	if (l_p == NULL){
