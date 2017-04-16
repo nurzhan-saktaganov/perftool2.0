@@ -58,7 +58,7 @@
 #define VTN_FLOAT_COMPLEX		"5"
 #define VTN_DOUBLE_COMPLEX		"6"
 
-typedef enum {
+typedef enum _context_type {
 	CONTEXT_UNKNOWN,
 	CONTEXT_ARRAY_NAME,
 	CONTEXT_BARRIER,
@@ -81,7 +81,7 @@ typedef enum {
 	CONTEXT_WORKSHARE,
 } context_type;
 
-typedef enum {
+typedef enum _redop_type {
 	REDOP_UNKNOWN,
 	REDOP_AND,
 	REDOP_EQV,
@@ -97,14 +97,14 @@ typedef enum {
 	REDOP_PRODUCT,
 } redop_type;
 
-typedef enum {
+typedef enum  _behavior_type {
 	BEHAVIOR_UNKNOWN,
 	BEHAVIOR_NONE,
 	BEHAVIOR_PRIVATE,
 	BEHAVIOR_SHARED,
 } behavior_type;
 
-typedef enum {
+typedef enum _schedule_type {
 	SCHEDULING_UNKNOWN,
 	SCHEDULING_DYNAMIC,
 	SCHEDULING_GUIDED,
@@ -112,7 +112,7 @@ typedef enum {
 	SCHEDULING_STATIC,
 } schedule_type;
 
-typedef enum {
+typedef enum _variable_rt_type {
 	RT_UNKNOWN,
 	RT_CHAR,
 	RT_DOUBLE,
@@ -123,7 +123,7 @@ typedef enum {
 	RT_LONG,
 } variable_rt_type;
 
-typedef struct {
+typedef struct _parallel_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
@@ -139,7 +139,7 @@ typedef struct {
 	void *parent_event; // для передачи parent_event ptr
 } parallel_context_descriptor;
 
-typedef struct {
+typedef struct _omploop_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
@@ -154,7 +154,7 @@ typedef struct {
 	char *chunk_size;
 } omploop_context_descriptor;
 
-typedef struct {
+typedef struct _sections_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
@@ -166,13 +166,13 @@ typedef struct {
 	redop_type redop;
 } sections_context_descriptor;
 
-typedef struct {
+typedef struct _section_event_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
 } section_event_context_descriptor;
 
-typedef struct {
+typedef struct _single_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
@@ -182,50 +182,50 @@ typedef struct {
 	list *names_copyprivate;
 } single_context_descriptor;
 
-typedef struct {
+typedef struct _workshare_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
 	int is_nowait;
 } workshare_context_descriptor;
 
-typedef struct {
+typedef struct _master_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
 } master_context_descriptor;
 
-typedef struct {
+typedef struct _critical_context_descriptor {
 	char *file_name;
 	char *critical_name;
 	int begin_line;
 	int end_line;
 } critical_context_descriptor;
 
-typedef struct {
+typedef struct _barrier_context_descriptor {
 	char *file_name;
 	int line_number;
 } barrier_context_descriptor;
 
-typedef struct {
+typedef struct _flush_context_descriptor {
 	char *file_name;
 	int line_number;
 	list *names_flushed;
 } flush_context_descriptor;
 
-typedef struct {
+typedef struct _ordered_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
 } ordered_context_descriptor;
 
-typedef struct {
+typedef struct _threadprivate_context_descriptor {
 	char *file_name;
 	int line_number;
 	list *names_threadprivate;
 } threadprivate_context_descriptor;
 
-typedef struct {
+typedef struct _variable_name_context_descriptor {
 	char *file_name;
 	int line_number;
 	char *var_name;
@@ -235,7 +235,7 @@ typedef struct {
 	int is_insave;
 } variable_name_context_descriptor;
 
-typedef struct {
+typedef struct _array_name_context_descriptor {
 	char *file_name;
 	int line_number;
 	char *arr_name;
@@ -246,32 +246,32 @@ typedef struct {
 	int is_insave;
 } array_name_context_descriptor;
 
-typedef struct {
+typedef struct _common_name_context_descriptor {
 	char *file_name;
 	int line_number;
 	char *block_name;
 	list *names_components;
 } common_name_context_descriptor;
 
-typedef struct {
+typedef struct _file_name_context_descriptor {
 	char *file_name;
 	int line_number;
 } file_name_context_descriptor;
 
-typedef struct {
+typedef struct _seqloop_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
 } seqloop_context_descriptor;
 
-typedef struct {
+typedef struct _func_call_context_descriptor {
 	char *file_name;
 	int line_number;
 	char *func_name;
 	int args_count;
 } func_call_context_descriptor;
 
-typedef struct {
+typedef struct _function_context_descriptor {
 	char *file_name;
 	int begin_line;
 	int end_line;
@@ -279,7 +279,7 @@ typedef struct {
 	int args_count;
 } function_context_descriptor;
 
-typedef struct {
+typedef struct _context_descriptor {
 	context_type type;
 	void *context_ptr;
 } context_descriptor;
