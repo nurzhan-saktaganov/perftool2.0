@@ -241,5 +241,5 @@ void DBG_SIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *I
 void DBG_OMPIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *IfVar);
 void DBG_BeforeIO(long *StaticContextHandle, long *ThreadID);
 void DBG_AfterIO(long *StaticContextHandle, long *ThreadID);
-void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *InvervalIndex);
+void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex);
 void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex);
