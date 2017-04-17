@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "stack.h"
 #include "list.h"
 #include "context_descriptor.h"
@@ -80,6 +81,7 @@ dvmh_omp_interval *building_context_register_interval(building_context *bc, cont
     if (r == NULL){
         r = (registered_interval *) malloc(sizeof(registered_interval));
         r->interval = dvmh_omp_interval_create(d);
+        r->descriptor = d;
         HASH_ADD_PTR(bc->registered_intervals, descriptor, r);
     }
     return r->interval;
