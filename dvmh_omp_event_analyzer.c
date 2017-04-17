@@ -6,7 +6,7 @@
 
 void dvmh_omp_event_analyzer(dvmh_omp_event *global_omp_event)
 {
-	//dvmh_omp_interval *program = build_intervals(global_omp_event);
 	dvmh_omp_interval *program = dvmh_omp_interval_build(global_omp_event);
+	dvmh_omp_interval_destroy(program);
 }
 

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include "stack.h"
 #include "list.h"
 #include "context_descriptor.h"
@@ -54,7 +53,13 @@ building_context *building_context_create()
 
 void building_context_destroy(building_context *bc)
 {
-    //TODO destroy bc->registered_intervals
+    // destroy bc->registered_intervals
+    registered_interval *current, *tmp;
+    HASH_ITER(hh, bc->registered_intervals, current, tmp){
+        HASH_DEL(bc->registered_intervals, current);
+        free(current);
+    }
+
     stack_destroy(bc->active_intervals, NULL);
     free(bc);
 }
@@ -136,7 +141,13 @@ void dvmh_omp_interval_destroy(dvmh_omp_interval *i)
         dvmh_omp_interval_destroy(s);
     }
     list_destroy(i->subintervals, NULL);
-    // TODO destroy occurences hahtable
+    // destroy occurences hahtable
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        HASH_DEL(i->occurrences, o);
+        list_destroy(o->events, NULL);
+        free(o);
+    }
     free(i);
 }
 
