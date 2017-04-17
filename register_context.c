@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "context_string.h"
-#include "context_types.h"
+#include "context_descriptor.h"
 #include "register_context.h"
 
 
@@ -27,7 +27,7 @@ variable_name_context_descriptor *register_variable_name_context(const char *con
 workshare_context_descriptor *register_workshare_context(const char *context_string);
 
 
-long register_context(const char *context_string)
+context_descriptor * register_context(const char *context_string)
 {
 	context_type type;
 	void *context_ptr;
@@ -109,7 +109,7 @@ long register_context(const char *context_string)
 		context_desc->context_ptr = context_ptr;
 	}
 	
-	return (long) context_desc;
+	return context_desc;
 }
 
 

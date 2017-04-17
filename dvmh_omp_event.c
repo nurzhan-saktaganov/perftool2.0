@@ -1,8 +1,22 @@
 #include <stdlib.h>
 #include <omp.h>
 #include "list.h"
-#include "context_types.h"
+#include "context_descriptor.h"
 #include "dvmh_omp_event.h"
+
+struct _dvmh_omp_event {
+	dvmh_omp_event_type type;
+	omp_lock_t *mutex;
+	double begin_time;
+	double end_time;
+	long thread_id;
+	list *subevents;
+	context_descriptor *descriptor;
+};
+
+struct _dvmh_omp_subevent_iterator {
+	list_iterator *li;
+};
 
 dvmh_omp_event *dvmh_omp_event_create(dvmh_omp_event_type event_type)
 {

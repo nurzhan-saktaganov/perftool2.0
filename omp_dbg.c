@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <omp.h>
-#include "context_types.h"
+#include "context_descriptor.h"
 #include "register_context.h"
 #include "dvmh_omp_event.h"
 #include "dvmh_omp_thread_info.h"
@@ -90,7 +90,7 @@ void DBG_Finalize()
 
 void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength)
 {
-	*StaticContextHandle = register_context(ContextString);
+	*StaticContextHandle = (long) register_context(ContextString);
 }
 
 void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult)
@@ -159,7 +159,7 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 
-	fprintf(stderr, "BeforeInterval id=%d\tctx=%ld\n", *IntervalIndex, StaticContextHandle);
+	fprintf(stderr, "BeforeInterval id=%d\tctx=%ld\n", (int) *IntervalIndex, StaticContextHandle);
 }
 
 void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
@@ -167,7 +167,7 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
 	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
-	fprintf(stderr, "AfterInterval id=%d\tctx=%ld\n", *IntervalIndex, StaticContextHandle);
+	fprintf(stderr, "AfterInterval id=%d\tctx=%ld\n", (int) *IntervalIndex, StaticContextHandle);
 }
 
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize)

@@ -4,6 +4,10 @@
 #include "dvmh_omp_event.h"
 #include "dvmh_omp_thread_info.h"
 
+struct _dvmh_omp_thread_info {
+	stack *active_events;
+};
+
 dvmh_omp_thread_info *dvmh_omp_thread_info_create()
 {
 	dvmh_omp_thread_info *info =

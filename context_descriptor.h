@@ -1,5 +1,5 @@
-#ifndef CONTEXT_TYPES_H
-#define CONTEXT_TYPES_H
+#ifndef CONTEXT_DESCRIPTOR_H
+#define CONTEXT_DESCRIPTOR_H
 
 #include "list.h"
 
@@ -25,7 +25,7 @@
 #define CTN_WORKSHARE		"workshare"
 
 // RTN - REDOP_TYPE_NAME
-#define RTN_PLUS		"PLUS"
+#define RTN_PLUS		"+" /*"PLUS"*/
 #define RTN_MINUS		"MINUS"
 #define RTN_PRODUCT		"PRODUCT"
 #define RTN_AND			"AND"

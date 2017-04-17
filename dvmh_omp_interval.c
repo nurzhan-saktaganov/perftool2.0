@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "stack.h"
 #include "list.h"
-#include "context_types.h"
+#include "context_descriptor.h"
 #include "dvmh_omp_event.h"
 #include "uthash.h"
 #include "dvmh_omp_interval.h"

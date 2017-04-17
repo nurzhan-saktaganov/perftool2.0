@@ -1,6 +1,22 @@
 #include <stdlib.h>
 #include "list.h"
 
+typedef struct _node {
+	struct _node *prev;
+	struct _node *next;
+	void *data;
+} node;
+
+struct _list {
+	node *head;
+	node *tail;
+	int size;
+};
+
+struct _list_iterator {
+	node *current;
+};
+
 list *list_create()
 {
 	list *l_p = (list *) malloc(sizeof(list));

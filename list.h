@@ -1,21 +1,8 @@
 #ifndef LIST_H
 #define LIST_H
 
-typedef struct _node {
-	struct _node *prev;
-	struct _node *next;
-	void *data;
-} node;
-
-typedef struct _list{
-	node *head;
-	node *tail;
-	int size;
-} list;
-
-typedef struct _list_iterator {
-	node *current;
-} list_iterator;
+typedef struct _list list;
+typedef struct _list_iterator list_iterator;
 
 list *list_create();
 void list_destroy(list *l_p, void (*destroy_data)(void *));

@@ -86,7 +86,7 @@ char *get_param_str_value(const char *context_string, const char *param_name)
 		}
 	}
 	str_value[copied] = '\0';
-	/* Этот кусочек кода для случая, когда "*\" => "*": КОНЕЦ */
+	*//* Этот кусочек кода для случая, когда "*\" => "*": КОНЕЦ */
 	return str_value;
 }
 

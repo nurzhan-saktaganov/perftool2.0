@@ -1,9 +1,7 @@
 #ifndef DVMH_OMP_EVENT_H
 #define DVMH_OMP_EVENT_H
 
-#include <omp.h>
-#include "list.h"
-#include "context_types.h"
+#include "context_descriptor.h"
 
 typedef enum {
 	DVMH_OMP_EVENT_INIT,
@@ -32,19 +30,8 @@ typedef enum {
 	DVMH_OMP_EVENT_BEFORE_OI,
 } dvmh_omp_event_type;
 
-typedef struct _dvmh_omp_event {
-	dvmh_omp_event_type type;
-	omp_lock_t *mutex;
-	double begin_time;
-	double end_time;
-	long thread_id;
-	list *subevents;
-	context_descriptor *descriptor;
-} dvmh_omp_event;
-
-typedef struct _dvmh_omp_subevent_iterator {
-	list_iterator *li;
-} dvmh_omp_subevent_iterator;
+typedef struct _dvmh_omp_event dvmh_omp_event;
+typedef struct _dvmh_omp_subevent_iterator dvmh_omp_subevent_iterator;
 
 dvmh_omp_event *dvmh_omp_event_create(dvmh_omp_event_type event_type);
 void dvmh_omp_event_destroy(dvmh_omp_event *event_p);
