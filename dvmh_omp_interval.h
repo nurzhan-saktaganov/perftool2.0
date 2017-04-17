@@ -3,7 +3,6 @@
 
 #include "dvmh_omp_event.h"
 
-typedef struct _events_occurrences events_occurrences;
 typedef struct _dvmh_omp_interval dvmh_omp_interval;
 
 dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e);

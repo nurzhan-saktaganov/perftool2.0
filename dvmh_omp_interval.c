@@ -17,11 +17,11 @@ typedef struct _events_occurrences {
     UT_hash_handle hh;  /* makes this structure hashable */
 } events_occurrences;
 
-typedef struct _dvmh_omp_interval {
+struct _dvmh_omp_interval {
     context_descriptor *descriptor;
     list *subintervals;
     events_occurrences *occurrences; //hashtable := thread_id to list of events
-} dvmh_omp_interval;
+};
 
 typedef struct _registered_interval {
     context_descriptor *descriptor;  /* this is key*/
