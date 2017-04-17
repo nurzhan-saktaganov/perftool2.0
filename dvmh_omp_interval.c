@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "stack.h"
 #include "list.h"
 #include "context_descriptor.h"
@@ -21,6 +22,7 @@ struct _dvmh_omp_interval {
     context_descriptor *descriptor;
     list *subintervals;
     events_occurrences *occurrences; //hashtable := thread_id to list of events
+    int calls;
 };
 
 typedef struct _registered_interval {
@@ -42,6 +44,7 @@ typedef struct _building_context {
 dvmh_omp_interval *dvmh_omp_interval_create();
 void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_event *e);
 void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_interval *s);
+void interval_calls_count(dvmh_omp_interval *i);
 
 building_context *building_context_create()
 {
@@ -130,6 +133,7 @@ dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->descriptor = d;
     i->subintervals = list_create();
     i->occurrences = NULL;
+    i->calls = 0;
     return i;
 }
 
@@ -177,5 +181,22 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     building_context *bc = building_context_create();
     dvmh_omp_interval *i = build_intervals(bc, e);
     building_context_destroy(bc);
+    interval_calls_count(i);
     return i;
+}
+
+void interval_calls_count(dvmh_omp_interval *i)
+{
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        i->calls += list_size(o->events);
+    }
+    fprintf(stderr, "interval %d, calls %d\n", i->descriptor, i->calls);
+    
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_calls_count(subinterval);
+    }
+    list_iterator_destroy(it);
 }
