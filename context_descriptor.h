@@ -12,6 +12,7 @@
 #define CTN_FLUSH			"flush"
 #define CTN_FUNCTION		"function"
 #define CTN_FUNC_CALL		"func_call"
+#define CTN_INTERVAL		"interval"
 #define CTN_MASTER			"master"
 #define CTN_OMPLOOP			"omploop"
 #define CTN_ORDERED			"ordered"
@@ -68,6 +69,7 @@ typedef enum _context_type {
 	CONTEXT_FLUSH,
 	CONTEXT_FUNCTION,
 	CONTEXT_FUNC_CALL,
+	CONTEXT_INTERVAL,
 	CONTEXT_MASTER,
 	CONTEXT_OMPLOOP,
 	CONTEXT_ORDERED,
@@ -279,15 +281,21 @@ typedef struct _function_context_descriptor {
 	int args_count;
 } function_context_descriptor;
 
+typedef struct _interval_context_descriptor {
+	char *file_name;
+	int begin_line;
+	int end_line;
+} interval_context_descriptor;
+
 typedef struct _context_descriptor {
 	context_type type;
 	void *context_ptr;
 } context_descriptor;
 
 context_type get_context_string_type(const char *context_string);
-redop_type get_redop_type_from_name(const char *redop_name);
-behavior_type get_behavior_type_from_name(const char *behavior_name);
-schedule_type get_schedule_type_from_name(const char *schedule_name);
-variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name);
+redop_type get_redop_type(const char *context_string);
+behavior_type get_behavior_type(const char *context_string);
+schedule_type get_schedule_type(const char *context_string);
+variable_rt_type get_variable_rt_type(const char *context_string);
 
 #endif

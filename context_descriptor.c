@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "context_string.h"
 #include "context_descriptor.h"
 
@@ -26,6 +27,8 @@ context_type get_context_type_from_name(const char *context_name)
 		return CONTEXT_FUNCTION;
 	} else if (strcmp(context_name, CTN_FUNC_CALL) == 0){
 		return CONTEXT_FUNC_CALL;
+	} else if (strcmp(context_name, CTN_INTERVAL) == 0) {
+		return CONTEXT_INTERVAL;
 	} else if (strcmp(context_name, CTN_MASTER) == 0){
 		return CONTEXT_MASTER;
 	} else if (strcmp(context_name, CTN_OMPLOOP) == 0){

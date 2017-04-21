@@ -14,6 +14,7 @@ file_name_context_descriptor *register_filename_context(const char *context_stri
 flush_context_descriptor *register_flush_context(const char *context_string);
 function_context_descriptor *register_function_context(const char *context_string);
 func_call_context_descriptor *register_func_call_context(const char *context_string);
+interval_context_descriptor *register_interval_context(const char *context_string);
 master_context_descriptor *register_master_context(const char *context_string);
 omploop_context_descriptor *register_omploop_context(const char *context_string);
 ordered_context_descriptor *register_ordered_context(const char *context_string);
@@ -58,6 +59,9 @@ context_descriptor * register_context(const char *context_string)
 			break;
 		case CONTEXT_FUNC_CALL:
 			context_ptr = (void *) register_func_call_context(context_string);
+			break;
+		case CONTEXT_INTERVAL:
+			context_ptr = (void *) register_interval_context(context_string);
 			break;
 		case CONTEXT_MASTER:
 			context_ptr = (void *) register_master_context(context_string);
@@ -208,6 +212,15 @@ func_call_context_descriptor *register_func_call_context(const char *context_str
 	return context;
 }
 
+interval_context_descriptor *register_interval_context(const char *context_string)
+{
+	interval_context_descriptor * context;
+	context = (interval_context_descriptor *) malloc(sizeof(interval_context_descriptor));
+	context->file_name = get_param_str_value(context_string, "file");
+	context->begin_line = get_param_int_value(context_string, "line1");
+	context->end_line = get_param_int_value(context_string, "line2");
+	return context;
+}
 
 master_context_descriptor *register_master_context(const char *context_string)
 {
