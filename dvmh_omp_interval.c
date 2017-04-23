@@ -24,7 +24,7 @@ struct _dvmh_omp_interval {
     list *subintervals;
     events_occurrences *occurrences; //hashtable := thread_id to list of events
     int calls; // calls
-    int io_time; // 
+    double io_time; // 
 };
 
 typedef struct _registered_interval {
@@ -43,12 +43,13 @@ typedef struct _building_context {
 
 
 /* list of functions for interval */
-dvmh_omp_interval *dvmh_omp_interval_create();
-void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_event *e);
-void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_interval *s);
-void interval_calls_count(dvmh_omp_interval *i);
+static dvmh_omp_interval *dvmh_omp_interval_create();
+static void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_event *e);
+static void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_interval *s);
+static void interval_calls_count(dvmh_omp_interval *i);
+static void interval_io_time(dvmh_omp_interval *i);
 
-building_context *building_context_create()
+static building_context *building_context_create()
 {
     building_context *bc = (building_context *) malloc(sizeof(building_context));
     assert(bc);
@@ -57,7 +58,7 @@ building_context *building_context_create()
     return bc;
 }
 
-void building_context_destroy(building_context *bc)
+static void building_context_destroy(building_context *bc)
 {
     // destroy bc->registered_intervals
     registered_interval *current, *tmp;
@@ -70,22 +71,22 @@ void building_context_destroy(building_context *bc)
     free(bc);
 }
 
-void building_context_set_active_interval(building_context *bc, dvmh_omp_interval *i)
+static void building_context_set_active_interval(building_context *bc, dvmh_omp_interval *i)
 {
     stack_push(bc->active_intervals, i);
 }
 
-void building_context_finish_active_interval(building_context *bc)
+static void building_context_finish_active_interval(building_context *bc)
 {
     stack_pop(bc->active_intervals);
 }
 
-dvmh_omp_interval *building_context_get_active_interval(building_context *bc)
+static dvmh_omp_interval *building_context_get_active_interval(building_context *bc)
 {
     return (dvmh_omp_interval *) stack_peek(bc->active_intervals);
 }
 
-dvmh_omp_interval *building_context_register_interval(building_context *bc, context_descriptor *d)
+static dvmh_omp_interval *building_context_register_interval(building_context *bc, context_descriptor *d)
 {
     registered_interval *r;
     HASH_FIND_PTR(bc->registered_intervals, &d, r);
@@ -99,7 +100,7 @@ dvmh_omp_interval *building_context_register_interval(building_context *bc, cont
     return r->interval;
 }
 
-dvmh_omp_interval *build_intervals(building_context *bc, dvmh_omp_event *e)
+static dvmh_omp_interval *build_intervals(building_context *bc, dvmh_omp_event *e)
 {
     dvmh_omp_interval *i = NULL;
     dvmh_omp_event_type t = dvmh_omp_event_get_type(e);
@@ -131,7 +132,7 @@ dvmh_omp_interval *build_intervals(building_context *bc, dvmh_omp_event *e)
     return i;
 }
 
-dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
+static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
 {
     dvmh_omp_interval *i = (dvmh_omp_interval *) malloc(sizeof(dvmh_omp_interval));
     assert(i);
@@ -139,6 +140,7 @@ dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->subintervals = list_create();
     i->occurrences = NULL;
     i->calls = 0;
+    i->io_time = 0.0;
     return i;
 }
 
@@ -160,14 +162,14 @@ void dvmh_omp_interval_destroy(dvmh_omp_interval *i)
     free(i);
 }
 
-void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_interval *s)
+static void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_interval *s)
 {
     if (!list_has_element(i->subintervals, s)){
         list_append_tail(i->subintervals, s);
     }
 }
 
-void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_event *e)
+static void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_event *e)
 {
     events_occurrences *o;
     long thread_id = dvmh_omp_event_get_thread_id(e);
@@ -187,11 +189,13 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     building_context *bc = building_context_create();
     dvmh_omp_interval *i = build_intervals(bc, e);
     building_context_destroy(bc);
+    // characteristics
     interval_calls_count(i);
+    interval_io_time(i);
     return i;
 }
 
-void interval_calls_count(dvmh_omp_interval *i)
+static void interval_calls_count(dvmh_omp_interval *i)
 {
     events_occurrences *o, *tmp;
     HASH_ITER(hh, i->occurrences, o, tmp){
@@ -203,6 +207,45 @@ void interval_calls_count(dvmh_omp_interval *i)
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_calls_count(subinterval);
+    }
+    list_iterator_destroy(it);
+}
+
+/* IO time */
+static double event_io_time(dvmh_omp_event *e)
+{
+    double io_time = 0.0;
+    dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
+    while (dvmh_omp_subevent_iterator_has_next(it)){
+        dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        io_time += event_io_time(s);
+    }
+    dvmh_omp_subevent_iterator_destroy(it);
+
+    if (dvmh_omp_event_get_type(e) == DVMH_OMP_EVENT_IO){
+        io_time += dvmh_omp_event_duration(e);
+    }
+
+    return io_time;
+}
+
+static void interval_io_time(dvmh_omp_interval *i)
+{
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        list_iterator *it = list_iterator_new(o->events);
+        while(list_iterator_has_next(it)){
+            dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+            i->io_time += event_io_time(e);
+        }
+        list_iterator_destroy(it);
+    }
+    fprintf(stderr, "interval %d, io_time %lf\n", i->descriptor, i->io_time);
+    
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_io_time(subinterval);
     }
     list_iterator_destroy(it);
 }
