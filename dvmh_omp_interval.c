@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "stack.h"
@@ -50,6 +51,7 @@ void interval_calls_count(dvmh_omp_interval *i);
 building_context *building_context_create()
 {
     building_context *bc = (building_context *) malloc(sizeof(building_context));
+    assert(bc);
     bc->active_intervals = stack_create();
     bc->registered_intervals = NULL;
     return bc;
@@ -89,6 +91,7 @@ dvmh_omp_interval *building_context_register_interval(building_context *bc, cont
     HASH_FIND_PTR(bc->registered_intervals, &d, r);
     if (r == NULL){
         r = (registered_interval *) malloc(sizeof(registered_interval));
+        assert(r);
         r->interval = dvmh_omp_interval_create(d);
         r->descriptor = d;
         HASH_ADD_PTR(bc->registered_intervals, descriptor, r);
@@ -131,6 +134,7 @@ dvmh_omp_interval *build_intervals(building_context *bc, dvmh_omp_event *e)
 dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
 {
     dvmh_omp_interval *i = (dvmh_omp_interval *) malloc(sizeof(dvmh_omp_interval));
+    assert(i);
     i->descriptor = d;
     i->subintervals = list_create();
     i->occurrences = NULL;
@@ -170,6 +174,7 @@ void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_event *e)
     HASH_FIND_LONG(i->occurrences, &thread_id, o);
     if (o == NULL){
         o = (events_occurrences *) malloc(sizeof(events_occurrences));
+        assert(o);
         o->thread_id = thread_id;
         o->events = list_create();
         HASH_ADD_LONG(i->occurrences, thread_id, o);

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <omp.h>
 #include "list.h"
@@ -21,9 +22,11 @@ struct _dvmh_omp_subevent_iterator {
 dvmh_omp_event *dvmh_omp_event_create(dvmh_omp_event_type event_type)
 {
 	dvmh_omp_event *event_p = (dvmh_omp_event *) malloc(sizeof(dvmh_omp_event));
+	assert(event_p);
 	event_p->type = event_type;
 	if (event_p->type == DVMH_OMP_EVENT_PARALLEL_REGION) {
 		event_p->mutex = (omp_lock_t *) malloc(sizeof(omp_lock_t));
+		assert(event_p->mutex);
 		omp_init_lock(event_p->mutex);
 	} else {
 		event_p->mutex = NULL;
@@ -137,6 +140,7 @@ dvmh_omp_subevent_iterator * dvmh_omp_subevent_iterator_new(dvmh_omp_event *e)
 	}
 	dvmh_omp_subevent_iterator *it =
 			(dvmh_omp_subevent_iterator *) malloc(sizeof(dvmh_omp_subevent_iterator));
+	assert(it);
 	it->li = list_iterator_new(e->subevents);
 	return it;
 }

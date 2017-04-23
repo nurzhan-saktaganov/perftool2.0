@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include "list.h"
@@ -31,7 +32,8 @@ char *get_param_str_value(const char *context_string, const char *param_name)
 	
 	// проверяем есть ли параметр с таким именем
 	param_name_len = strlen(param_name);
-	_param_name = (char *) malloc((param_name_len + 3) * sizeof(char));//for '*','=','\0'
+	_param_name = (char *) malloc((param_name_len + 3) * sizeof(char)); //for '*','=','\0'
+	assert(_param_name);
 	sprintf(_param_name, "*%s=", param_name);
 	found_at = strstr(context_string, _param_name);
 	free(_param_name);
@@ -51,6 +53,7 @@ char *get_param_str_value(const char *context_string, const char *param_name)
 	}
 	
 	str_value = (char *) malloc((elements_to_copy + 1) * sizeof(char));
+	assert(str_value);
 	
 	// копируем с приведением "\*" -> "*"
 	copied = 0;
@@ -76,6 +79,7 @@ char *get_param_str_value(const char *context_string, const char *param_name)
 	}
 	
 	str_value = (char *) malloc((elements_to_copy + 1) * sizeof(char));
+	assert(str_value);
 	
 	// копируем с приведением "*\" -> "*"
 	copied = 0;

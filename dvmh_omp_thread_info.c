@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "stack.h"
@@ -12,6 +13,7 @@ dvmh_omp_thread_info *dvmh_omp_thread_info_create()
 {
 	dvmh_omp_thread_info *info =
 		(dvmh_omp_thread_info *) malloc(sizeof(dvmh_omp_thread_info));
+	assert(info);
 	info->active_events = stack_create();
 	return info;
 }

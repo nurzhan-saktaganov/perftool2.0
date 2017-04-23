@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include "list.h"
 
@@ -20,6 +21,7 @@ struct _list_iterator {
 list *list_create()
 {
 	list *l_p = (list *) malloc(sizeof(list));
+	assert(l_p);
 	l_p->head = NULL;
 	l_p->tail = NULL;
 	l_p->size = 0;
@@ -48,6 +50,7 @@ void list_destroy(list *l_p, void (*destroy_data)(void *))
 void list_append_head(list *l_p, void *data)
 {
 	node *new_node = (node *) malloc(sizeof(node));
+	assert(new_node);
 	new_node->data = data;
 	new_node->prev = NULL;
 	new_node->next = l_p->head;
@@ -82,6 +85,7 @@ void *list_remove_head(list *l_p)
 void list_append_tail(list *l_p, void *data)
 {
 	node *new_node = (node *) malloc(sizeof(node));
+	assert(new_node);
 	new_node->data = data;
 	new_node->prev = l_p->tail;
 	new_node->next = NULL;
@@ -152,6 +156,7 @@ list_iterator *list_iterator_new(list *l_p)
 		return NULL;
 	}
 	list_iterator *li_p = (list_iterator *) malloc(sizeof(list_iterator));
+	assert(li_p);
 	li_p->current = l_p->head;
 	return li_p;
 }
