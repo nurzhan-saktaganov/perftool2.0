@@ -22,7 +22,8 @@ struct _dvmh_omp_interval {
     context_descriptor *descriptor;
     list *subintervals;
     events_occurrences *occurrences; //hashtable := thread_id to list of events
-    int calls;
+    int calls; // calls
+    int io_time; // 
 };
 
 typedef struct _registered_interval {
@@ -104,7 +105,7 @@ dvmh_omp_interval *build_intervals(building_context *bc, dvmh_omp_event *e)
         dvmh_omp_interval_add_occurrence(i, e);
         building_context_set_active_interval(bc, i);
     }
-    if (t == DVMH_OMP_EVENT_BEFORE_INTERVAL){
+    if (t == DVMH_OMP_EVENT_INTERVAL){
         context_descriptor *d = dvmh_omp_event_get_context_descriptor(e);
         i = building_context_register_interval(bc, d);
         dvmh_omp_interval *parent = building_context_get_active_interval(bc);
@@ -120,7 +121,7 @@ dvmh_omp_interval *build_intervals(building_context *bc, dvmh_omp_event *e)
 	}
 	dvmh_omp_subevent_iterator_destroy(it);
 
-    if (t == DVMH_OMP_EVENT_INIT || t == DVMH_OMP_EVENT_BEFORE_INTERVAL){
+    if (t == DVMH_OMP_EVENT_INIT || t == DVMH_OMP_EVENT_INTERVAL){
         building_context_finish_active_interval(bc);
     }
 

@@ -22,7 +22,7 @@ dvmh_omp_event *dvmh_omp_event_create(dvmh_omp_event_type event_type)
 {
 	dvmh_omp_event *event_p = (dvmh_omp_event *) malloc(sizeof(dvmh_omp_event));
 	event_p->type = event_type;
-	if (event_p->type == DVMH_OMP_EVENT_BEFORE_PARALLEL) {
+	if (event_p->type == DVMH_OMP_EVENT_PARALLEL_REGION) {
 		event_p->mutex = (omp_lock_t *) malloc(sizeof(omp_lock_t));
 		omp_init_lock(event_p->mutex);
 	} else {
@@ -41,7 +41,7 @@ void dvmh_omp_event_destroy(dvmh_omp_event *event_p)
 	if (event_p == NULL){
 		return;
 	}
-	if (event_p->type == DVMH_OMP_EVENT_BEFORE_PARALLEL) {
+	if (event_p->type == DVMH_OMP_EVENT_PARALLEL_REGION) {
 		omp_destroy_lock(event_p->mutex);
 		free(event_p->mutex);
 	}
@@ -59,7 +59,7 @@ void dvmh_omp_event_destroy(dvmh_omp_event *event_p)
 
 void dvmh_omp_event_add_subevent(dvmh_omp_event *event_p, dvmh_omp_event *subevent_p)
 {
-	if (event_p->type == DVMH_OMP_EVENT_BEFORE_PARALLEL) {
+	if (event_p->type == DVMH_OMP_EVENT_PARALLEL_REGION) {
 		omp_set_lock(event_p->mutex);
 	}
 	
@@ -69,7 +69,7 @@ void dvmh_omp_event_add_subevent(dvmh_omp_event *event_p, dvmh_omp_event *subeve
 	
 	list_append_tail(event_p->subevents, subevent_p);
 	
-	if (event_p->type == DVMH_OMP_EVENT_BEFORE_PARALLEL) {
+	if (event_p->type == DVMH_OMP_EVENT_PARALLEL_REGION) {
 		omp_unset_lock(event_p->mutex);
 	}
 	return;
