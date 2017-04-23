@@ -26,6 +26,7 @@ struct _dvmh_omp_interval {
     int calls; // calls
     double io_time;
     double execution_time;
+    double barrier_time;
 };
 
 typedef struct _registered_interval {
@@ -52,6 +53,7 @@ static void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_int
 static void interval_calls_count(dvmh_omp_interval *i);
 static void interval_io_time(dvmh_omp_interval *i);
 static void interval_execution_time(dvmh_omp_interval *i);
+static void interval_barrier_time(dvmh_omp_interval *i);
 
 dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
 {
@@ -62,7 +64,40 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     interval_calls_count(i);
     interval_io_time(i);
     interval_execution_time(i);
+    interval_barrier_time(i);
     return i;
+}
+
+static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
+{
+    dvmh_omp_interval *i = (dvmh_omp_interval *) malloc(sizeof(dvmh_omp_interval));
+    assert(i);
+    i->descriptor = d;
+    i->subintervals = list_create();
+    i->occurrences = NULL;
+    i->calls = 0;
+    i->io_time = 0.0;
+    i->execution_time = 0.0;
+    i->barrier_time = 0.0;
+    return i;
+}
+
+void dvmh_omp_interval_destroy(dvmh_omp_interval *i)
+{
+    dvmh_omp_interval *s;
+    while(list_size(i->subintervals) > 0){
+        s = (dvmh_omp_interval *) list_remove_tail(i->subintervals);
+        dvmh_omp_interval_destroy(s);
+    }
+    list_destroy(i->subintervals, NULL);
+    // destroy occurences hahtable
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        HASH_DEL(i->occurrences, o);
+        list_destroy(o->events, NULL);
+        free(o);
+    }
+    free(i);
 }
 
 
@@ -147,37 +182,6 @@ static dvmh_omp_interval *build_intervals(building_context *bc, dvmh_omp_event *
     }
 
     return i;
-}
-
-static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
-{
-    dvmh_omp_interval *i = (dvmh_omp_interval *) malloc(sizeof(dvmh_omp_interval));
-    assert(i);
-    i->descriptor = d;
-    i->subintervals = list_create();
-    i->occurrences = NULL;
-    i->calls = 0;
-    i->io_time = 0.0;
-    i->execution_time = 0.0;
-    return i;
-}
-
-void dvmh_omp_interval_destroy(dvmh_omp_interval *i)
-{
-    dvmh_omp_interval *s;
-    while(list_size(i->subintervals) > 0){
-        s = (dvmh_omp_interval *) list_remove_tail(i->subintervals);
-        dvmh_omp_interval_destroy(s);
-    }
-    list_destroy(i->subintervals, NULL);
-    // destroy occurences hahtable
-    events_occurrences *o, *tmp;
-    HASH_ITER(hh, i->occurrences, o, tmp){
-        HASH_DEL(i->occurrences, o);
-        list_destroy(o->events, NULL);
-        free(o);
-    }
-    free(i);
 }
 
 static void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_interval *s)
@@ -270,6 +274,8 @@ static void interval_execution_time(dvmh_omp_interval *i)
             }
             list_iterator_destroy(it);
         }
+    } else {
+        // TODO
     }
     fprintf(stderr, "interval %d, execution_time %lf\n", i->descriptor, i->execution_time);
     
@@ -277,6 +283,45 @@ static void interval_execution_time(dvmh_omp_interval *i)
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_execution_time(subinterval);
+    }
+    list_iterator_destroy(it);
+}
+
+/* Barrier time */
+static double event_barrier_time(dvmh_omp_event *e)
+{
+    double barrier_time = 0.0;
+    dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
+    while (dvmh_omp_subevent_iterator_has_next(it)){
+        dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        barrier_time += event_barrier_time(s);
+    }
+    dvmh_omp_subevent_iterator_destroy(it);
+
+    if (dvmh_omp_event_get_type(e) == DVMH_OMP_EVENT_BARRIER){
+        barrier_time += dvmh_omp_event_duration(e);
+    }
+
+    return barrier_time;
+}
+
+static void interval_barrier_time(dvmh_omp_interval *i)
+{
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        list_iterator *it = list_iterator_new(o->events);
+        while(list_iterator_has_next(it)){
+            dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+            i->barrier_time += event_barrier_time(e);
+        }
+        list_iterator_destroy(it);
+    }
+    fprintf(stderr, "interval %d, barrier_time %lf\n", i->descriptor, i->barrier_time);
+    
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_barrier_time(subinterval);
     }
     list_iterator_destroy(it);
 }
