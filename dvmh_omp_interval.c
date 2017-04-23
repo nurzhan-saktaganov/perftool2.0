@@ -24,7 +24,8 @@ struct _dvmh_omp_interval {
     list *subintervals;
     events_occurrences *occurrences; //hashtable := thread_id to list of events
     int calls; // calls
-    double io_time; // 
+    double io_time;
+    double execution_time;
 };
 
 typedef struct _registered_interval {
@@ -40,7 +41,9 @@ typedef struct _building_context {
 
 
 /* list of functions for building context */
-
+static building_context *building_context_create();
+static dvmh_omp_interval *build_intervals(building_context *bc, dvmh_omp_event *e);
+static void building_context_destroy(building_context *bc);
 
 /* list of functions for interval */
 static dvmh_omp_interval *dvmh_omp_interval_create();
@@ -48,6 +51,20 @@ static void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_even
 static void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_interval *s);
 static void interval_calls_count(dvmh_omp_interval *i);
 static void interval_io_time(dvmh_omp_interval *i);
+static void interval_execution_time(dvmh_omp_interval *i);
+
+dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
+{
+    building_context *bc = building_context_create();
+    dvmh_omp_interval *i = build_intervals(bc, e);
+    building_context_destroy(bc);
+    // characteristics
+    interval_calls_count(i);
+    interval_io_time(i);
+    interval_execution_time(i);
+    return i;
+}
+
 
 static building_context *building_context_create()
 {
@@ -141,6 +158,7 @@ static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->occurrences = NULL;
     i->calls = 0;
     i->io_time = 0.0;
+    i->execution_time = 0.0;
     return i;
 }
 
@@ -182,17 +200,6 @@ static void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_even
         HASH_ADD_LONG(i->occurrences, thread_id, o);
     }
     list_append_tail(o->events, e);
-}
-
-dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
-{
-    building_context *bc = building_context_create();
-    dvmh_omp_interval *i = build_intervals(bc, e);
-    building_context_destroy(bc);
-    // characteristics
-    interval_calls_count(i);
-    interval_io_time(i);
-    return i;
 }
 
 static void interval_calls_count(dvmh_omp_interval *i)
@@ -246,6 +253,30 @@ static void interval_io_time(dvmh_omp_interval *i)
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_io_time(subinterval);
+    }
+    list_iterator_destroy(it);
+}
+
+/* Execution time */
+static void interval_execution_time(dvmh_omp_interval *i)
+{
+    if (HASH_COUNT(i->occurrences) < 2){
+        events_occurrences *o, *tmp;
+        HASH_ITER(hh, i->occurrences, o, tmp){
+            list_iterator *it = list_iterator_new(o->events);
+            while(list_iterator_has_next(it)){
+                dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+                i->execution_time += dvmh_omp_event_duration(e);
+            }
+            list_iterator_destroy(it);
+        }
+    }
+    fprintf(stderr, "interval %d, execution_time %lf\n", i->descriptor, i->execution_time);
+    
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_execution_time(subinterval);
     }
     list_iterator_destroy(it);
 }
