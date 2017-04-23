@@ -21,6 +21,7 @@ typedef enum _dvmh_omp_event_type {
 	DVMH_OMP_EVENT_BARRIER,
 	DVMH_OMP_EVENT_FLUSH,
 	DVMH_OMP_EVENT_ORDERED_OUTER,
+	DVMH_OMP_EVENT_ORDERED_INNER, // событие нужно закрыть руками
 	DVMH_OMP_EVENT_SERIAL_LOOP,
 	DVMH_OMP_EVENT_SERIAL_ITER, // событие нужно закрыть руками
 	DVMH_OMP_EVENT_FUNCTION_CAL,
