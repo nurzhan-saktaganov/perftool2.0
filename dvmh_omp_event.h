@@ -48,6 +48,7 @@ dvmh_omp_event_type dvmh_omp_event_get_type(dvmh_omp_event *e);
 int dvmh_omp_event_has_subevent(dvmh_omp_event *e);
 void dvmh_omp_event_set_context_descriptor(dvmh_omp_event *e, context_descriptor *d);
 context_descriptor * dvmh_omp_event_get_context_descriptor(dvmh_omp_event *e);
+int dvmh_omp_event_subevents_count(dvmh_omp_event *e);
 
 dvmh_omp_subevent_iterator * dvmh_omp_subevent_iterator_new(dvmh_omp_event *e);
 int dvmh_omp_subevent_iterator_has_next(dvmh_omp_subevent_iterator *it);

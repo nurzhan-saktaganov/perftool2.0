@@ -133,6 +133,11 @@ context_descriptor *dvmh_omp_event_get_context_descriptor(dvmh_omp_event *e)
 	return e->descriptor;
 }
 
+int dvmh_omp_event_subevents_count(dvmh_omp_event *e)
+{
+	return list_size(e->subevents);
+}
+
 dvmh_omp_subevent_iterator * dvmh_omp_subevent_iterator_new(dvmh_omp_event *e)
 {
 	if (e == NULL || e->subevents == NULL){
