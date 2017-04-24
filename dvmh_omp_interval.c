@@ -26,7 +26,7 @@ struct _dvmh_omp_interval {
     int calls; // calls
     double io_time;
     double execution_time;
-    double barrier_time;
+    double sync_barrier;
     double user_time;
     int used_threads_number;
     double idle_critical;
@@ -57,7 +57,7 @@ static void dvmh_omp_interval_add_subinterval(dvmh_omp_interval *i, dvmh_omp_int
 static void interval_calls_count(dvmh_omp_interval *i);
 static void interval_io_time(dvmh_omp_interval *i);
 static void interval_execution_time(dvmh_omp_interval *i);
-static void interval_barrier_time(dvmh_omp_interval *i);
+static void interval_sync_barrier(dvmh_omp_interval *i);
 static void interval_user_time(dvmh_omp_interval *i);
 static void interval_used_threads_number(dvmh_omp_interval *i);
 static void interval_idle_critical(dvmh_omp_interval *i);
@@ -72,7 +72,7 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     interval_calls_count(i);
     interval_io_time(i);
     interval_execution_time(i);
-    interval_barrier_time(i);
+    interval_sync_barrier(i);
     interval_user_time(i);
     interval_used_threads_number(i);
     interval_idle_critical(i);
@@ -90,7 +90,7 @@ static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->calls = 0;
     i->io_time = 0.0;
     i->execution_time = 0.0;
-    i->barrier_time = 0.0;
+    i->sync_barrier = 0.0;
     i->user_time = 0.0;
     i->used_threads_number = 0;
     i->idle_critical = 0.0;
@@ -304,30 +304,30 @@ static void interval_execution_time(dvmh_omp_interval *i)
     fprintf(stderr, "interval %ld, execution_time %lf\n", (long) i->descriptor, i->execution_time);
 }
 
-/* Barrier time */
-static double event_barrier_time(dvmh_omp_event *e)
+/* Sync barrier time */
+static double event_sync_barrier(dvmh_omp_event *e)
 {
-    double barrier_time = 0.0;
+    double sync_time = 0.0;
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
-        barrier_time += event_barrier_time(s);
+        sync_time += event_sync_barrier(s);
     }
     dvmh_omp_subevent_iterator_destroy(it);
 
     if (dvmh_omp_event_get_type(e) == DVMH_OMP_EVENT_BARRIER){
-        barrier_time += dvmh_omp_event_duration(e);
+        sync_time += dvmh_omp_event_duration(e);
     }
 
-    return barrier_time;
+    return sync_time;
 }
 
-static void interval_barrier_time(dvmh_omp_interval *i)
+static void interval_sync_barrier(dvmh_omp_interval *i)
 {
     list_iterator *it = list_iterator_new(i->subintervals);
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
-        interval_barrier_time(subinterval);
+        interval_sync_barrier(subinterval);
     }
     list_iterator_destroy(it);
 
@@ -336,11 +336,11 @@ static void interval_barrier_time(dvmh_omp_interval *i)
         list_iterator *it = list_iterator_new(o->events);
         while(list_iterator_has_next(it)){
             dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
-            i->barrier_time += event_barrier_time(e);
+            i->sync_barrier += event_sync_barrier(e);
         }
         list_iterator_destroy(it);
     }
-    fprintf(stderr, "interval %ld, barrier_time %lf\n", (long) i->descriptor, i->barrier_time);
+    fprintf(stderr, "interval %ld, sync_barrier %lf\n", (long) i->descriptor, i->sync_barrier);
 }
 
 /* User time - считаем, что вложенного параллелизма нет */
