@@ -28,6 +28,7 @@ struct _dvmh_omp_interval {
     double execution_time;
     double barrier_time;
     double user_time;
+    int used_threads_number;
 };
 
 typedef struct _registered_interval {
@@ -56,6 +57,7 @@ static void interval_io_time(dvmh_omp_interval *i);
 static void interval_execution_time(dvmh_omp_interval *i);
 static void interval_barrier_time(dvmh_omp_interval *i);
 static void interval_user_time(dvmh_omp_interval *i);
+static void interval_used_threads_number(dvmh_omp_interval *i);
 
 dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
 {
@@ -68,6 +70,7 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     interval_execution_time(i);
     interval_barrier_time(i);
     interval_user_time(i);
+    interval_used_threads_number(i);
     return i;
 }
 
@@ -83,6 +86,7 @@ static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->execution_time = 0.0;
     i->barrier_time = 0.0;
     i->user_time = 0.0;
+    i->used_threads_number = 0;
     return i;
 }
 
@@ -379,4 +383,54 @@ static void interval_user_time(dvmh_omp_interval *i)
         interval_user_time(subinterval);
     }
     list_iterator_destroy(it);
+}
+
+/* Threads count - вложенного параллелизма нет */
+static int event_used_threads_number(dvmh_omp_event *e)
+{
+    if (dvmh_omp_event_get_type(e) == DVMH_OMP_EVENT_PARALLEL_REGION){
+        return dvmh_omp_event_subevents_count(e);
+    }
+
+    int threads_number = 1;
+
+    dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
+    while (dvmh_omp_subevent_iterator_has_next(it)){
+        dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        int tmp = event_used_threads_number(s);
+        if (tmp > threads_number){
+            threads_number = tmp;
+        }
+    }
+    dvmh_omp_subevent_iterator_destroy(it);
+
+    return threads_number;
+}
+
+static void interval_used_threads_number(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_used_threads_number(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    i->used_threads_number = HASH_COUNT(i->occurrences);
+    if (i->used_threads_number > 1){
+        return;
+    }
+
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        list_iterator *it = list_iterator_new(o->events);
+        while(list_iterator_has_next(it)){
+            dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+            int tmp = event_used_threads_number(e);
+            if (tmp > i->used_threads_number){
+                i->used_threads_number = tmp;
+            }
+        }
+        list_iterator_destroy(it);
+    }
 }
