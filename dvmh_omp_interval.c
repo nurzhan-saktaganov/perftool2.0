@@ -31,6 +31,7 @@ struct _dvmh_omp_interval {
     int used_threads_number;
     double idle_critical;
     double sync_flush;
+    double idle_parallel;
 };
 
 typedef struct _registered_interval {
@@ -62,6 +63,7 @@ static void interval_user_time(dvmh_omp_interval *i);
 static void interval_used_threads_number(dvmh_omp_interval *i);
 static void interval_idle_critical(dvmh_omp_interval *i);
 static void interval_sync_flush(dvmh_omp_interval *i);
+static void interval_idle_parallel(dvmh_omp_interval *i);
 
 dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
 {
@@ -77,6 +79,7 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     interval_used_threads_number(i);
     interval_idle_critical(i);
     interval_sync_flush(i);
+    interval_idle_parallel(i);
     return i;
 }
 
@@ -95,6 +98,7 @@ static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->used_threads_number = 0;
     i->idle_critical = 0.0;
     i->sync_flush = 0.0;
+    i->idle_parallel = 0.0;
     return i;
 }
 
@@ -523,4 +527,46 @@ static void interval_sync_flush(dvmh_omp_interval *i)
         list_iterator_destroy(it);
     }
     fprintf(stderr, "interval %ld, sync_flush %lf\n", (long) i->descriptor, i->sync_flush);
+}
+
+/* Idle time in parallel end */
+static double event_idle_parallel(dvmh_omp_event *e)
+{
+    double idle_time = 0.0;
+
+    dvmh_omp_event_type event_type = dvmh_omp_event_get_type(e);
+
+    dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
+    while (dvmh_omp_subevent_iterator_has_next(it)){
+        dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        idle_time += event_idle_parallel(s);
+        if (event_type != DVMH_OMP_EVENT_PARALLEL_REGION){
+            continue;
+        }
+        idle_time += dvmh_omp_event_get_end_time(e) - dvmh_omp_event_get_end_time(s);
+    }
+    dvmh_omp_subevent_iterator_destroy(it);
+
+    return idle_time;
+}
+
+static void interval_idle_parallel(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_idle_parallel(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        list_iterator *it = list_iterator_new(o->events);
+        while(list_iterator_has_next(it)){
+            dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+            i->idle_parallel += event_idle_parallel(e);
+        }
+        list_iterator_destroy(it);
+    }
+    fprintf(stderr, "interval %ld, idle_parallel %lf\n", (long) i->descriptor, i->idle_parallel);
 }
