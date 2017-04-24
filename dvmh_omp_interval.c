@@ -23,7 +23,7 @@ struct _dvmh_omp_interval {
     context_descriptor *descriptor;
     list *subintervals;
     events_occurrences *occurrences; //hashtable := thread_id to list of events
-    int calls; // calls
+    int calls;
     double io_time;
     double execution_time;
     double sync_barrier;
@@ -250,6 +250,9 @@ static double event_io_time(dvmh_omp_event *e)
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        if (dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
+            continue;
+        }
         io_time += event_io_time(s);
     }
     dvmh_omp_subevent_iterator_destroy(it);
@@ -267,6 +270,7 @@ static void interval_io_time(dvmh_omp_interval *i)
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_io_time(subinterval);
+        i->io_time += subinterval->io_time;
     }
     list_iterator_destroy(it);
 
@@ -283,6 +287,15 @@ static void interval_io_time(dvmh_omp_interval *i)
 }
 
 /* Execution time */
+//TODO optimization
+static int events_compare(const void *a, const void *b)
+{
+    double t1 = dvmh_omp_event_get_begin_time((dvmh_omp_event *) a);
+    double t2 = dvmh_omp_event_get_begin_time((dvmh_omp_event *) b);
+    return t1 == t2 ? 0 : (t1 > t2 ? 1 : -1);
+}
+
+
 static void interval_execution_time(dvmh_omp_interval *i)
 {
     list_iterator *it = list_iterator_new(i->subintervals);
@@ -292,19 +305,48 @@ static void interval_execution_time(dvmh_omp_interval *i)
     }
     list_iterator_destroy(it);
 
-    if (HASH_COUNT(i->occurrences) < 2){
-        events_occurrences *o, *tmp;
-        HASH_ITER(hh, i->occurrences, o, tmp){
-            list_iterator *it = list_iterator_new(o->events);
-            while(list_iterator_has_next(it)){
-                dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
-                i->execution_time += dvmh_omp_event_duration(e);
-            }
-            list_iterator_destroy(it);
-        }
-    } else {
-        // TODO
+    if (i->calls == 0){
+        return;
     }
+
+    dvmh_omp_event **ordered_events =
+            (dvmh_omp_event **) malloc(i->calls * sizeof(dvmh_omp_event *));
+    assert(ordered_events);
+
+    int index = 0;
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        list_iterator *it = list_iterator_new(o->events);
+        while(list_iterator_has_next(it)){
+            dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+            ordered_events[index++] = e;
+        }
+        list_iterator_destroy(it);
+    }
+
+    /* sorting events */
+    qsort(ordered_events, i->calls, sizeof(dvmh_omp_event *), events_compare);
+
+    /* calculate execution time */
+    double begin_time = dvmh_omp_event_get_begin_time(ordered_events[0]);
+    double end_time = dvmh_omp_event_get_end_time(ordered_events[0]);
+    for (index = 1; index < i->calls; ++index){
+        double current_begin_time = dvmh_omp_event_get_begin_time(ordered_events[index]);
+        double current_end_time = dvmh_omp_event_get_end_time(ordered_events[index]);
+
+        if (end_time < current_begin_time){
+            i->execution_time += end_time - begin_time;
+            begin_time = current_begin_time;
+            end_time = current_end_time;
+            continue;
+        }
+        if (current_end_time > end_time){
+            end_time = current_end_time;
+        }
+    }
+    i->execution_time += end_time - begin_time;
+
+    free(ordered_events);
     fprintf(stderr, "interval %ld, execution_time %lf\n", (long) i->descriptor, i->execution_time);
 }
 
@@ -315,6 +357,9 @@ static double event_sync_barrier(dvmh_omp_event *e)
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        if (dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
+            continue;
+        }
         sync_time += event_sync_barrier(s);
     }
     dvmh_omp_subevent_iterator_destroy(it);
@@ -332,6 +377,7 @@ static void interval_sync_barrier(dvmh_omp_interval *i)
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_sync_barrier(subinterval);
+        i->sync_barrier += subinterval->sync_barrier;
     }
     list_iterator_destroy(it);
 
@@ -348,6 +394,7 @@ static void interval_sync_barrier(dvmh_omp_interval *i)
 }
 
 /* User time - считаем, что вложенного параллелизма нет */
+//TODO optimization
 static double event_user_time(dvmh_omp_event *e, int level)
 {
     double user_time = 0.0;
@@ -399,6 +446,7 @@ static void interval_user_time(dvmh_omp_interval *i)
 }
 
 /* Threads count - вложенного параллелизма нет */
+//TODO optimization
 static int event_used_threads_number(dvmh_omp_event *e)
 {
     if (dvmh_omp_event_get_type(e) == DVMH_OMP_EVENT_PARALLEL_REGION){
@@ -458,6 +506,9 @@ static double event_idle_critical(dvmh_omp_event *e)
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        if (dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
+            continue;
+        }
         idle_time += event_idle_critical(s);
         if (event_type != DVMH_OMP_EVENT_CRITICAL_OUTER){
             continue;
@@ -475,6 +526,7 @@ static void interval_idle_critical(dvmh_omp_interval *i)
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_idle_critical(subinterval);
+        i->idle_critical += subinterval->idle_critical;
     }
     list_iterator_destroy(it);
 
@@ -497,6 +549,9 @@ static double event_sync_flush(dvmh_omp_event *e)
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        if (dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
+            continue;
+        }
         sync_time += event_sync_flush(s);
     }
     dvmh_omp_subevent_iterator_destroy(it);
@@ -514,6 +569,7 @@ static void interval_sync_flush(dvmh_omp_interval *i)
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_sync_flush(subinterval);
+        i->sync_flush += subinterval->sync_flush;
     }
     list_iterator_destroy(it);
 
@@ -539,6 +595,9 @@ static double event_idle_parallel(dvmh_omp_event *e)
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
+        if (dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
+            continue;
+        }
         idle_time += event_idle_parallel(s);
         if (event_type != DVMH_OMP_EVENT_PARALLEL_REGION){
             continue;
@@ -556,6 +615,7 @@ static void interval_idle_parallel(dvmh_omp_interval *i)
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_idle_parallel(subinterval);
+        i->idle_parallel += subinterval->idle_parallel;
     }
     list_iterator_destroy(it);
 
