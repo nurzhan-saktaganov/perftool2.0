@@ -106,7 +106,6 @@ void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThre
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
 	
 	set_parent_event(StaticContextHandle, event);
-	fprintf (stderr, "DBG_BeforeParallel\n"); 
 }
 
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
@@ -143,7 +142,6 @@ void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
-	fprintf (stderr, "DBG_AfterParallel\n");
 }
 
 void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
@@ -158,7 +156,6 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
 	dvmh_omp_event_set_context_descriptor(event, TO_DESC(*StaticContextHandle));
 
 	dvmh_omp_thread_info_event_occured(TO_THREAD_INFO(*ThreadID), event);
-	//fprintf(stderr, "BeforeInterval ctx=%ld\n", StaticContextHandle);
 }
 
 void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
@@ -166,7 +163,6 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
 	dvmh_omp_event *event = dvmh_omp_thread_info_get_active_event(TO_THREAD_INFO(*ThreadID));
 	dvmh_omp_event_set_end_time(event, omp_get_wtime());
 	dvmh_omp_thread_info_event_finished(TO_THREAD_INFO(*ThreadID));
-	//fprintf(stderr, "AfterInterval ctx=%ld\n", StaticContextHandle);
 }
 
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize)
