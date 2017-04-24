@@ -214,20 +214,21 @@ static void dvmh_omp_interval_add_occurrence(dvmh_omp_interval *i, dvmh_omp_even
     list_append_tail(o->events, e);
 }
 
+/* calls count, с учетом параллелизма */
 static void interval_calls_count(dvmh_omp_interval *i)
 {
-    events_occurrences *o, *tmp;
-    HASH_ITER(hh, i->occurrences, o, tmp){
-        i->calls += list_size(o->events);
-    }
-    fprintf(stderr, "interval %ld, calls %d\n", (long) i->descriptor, i->calls);
-    
     list_iterator *it = list_iterator_new(i->subintervals);
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
         interval_calls_count(subinterval);
     }
     list_iterator_destroy(it);
+
+    events_occurrences *o, *tmp;
+    HASH_ITER(hh, i->occurrences, o, tmp){
+        i->calls += list_size(o->events);
+    }
+    fprintf(stderr, "interval %ld, calls %d\n", (long) i->descriptor, i->calls);
 }
 
 /* IO time */
@@ -250,6 +251,13 @@ static double event_io_time(dvmh_omp_event *e)
 
 static void interval_io_time(dvmh_omp_interval *i)
 {
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_io_time(subinterval);
+    }
+    list_iterator_destroy(it);
+
     events_occurrences *o, *tmp;
     HASH_ITER(hh, i->occurrences, o, tmp){
         list_iterator *it = list_iterator_new(o->events);
@@ -260,18 +268,18 @@ static void interval_io_time(dvmh_omp_interval *i)
         list_iterator_destroy(it);
     }
     fprintf(stderr, "interval %ld, io_time %lf\n", (long) i->descriptor, i->io_time);
-    
-    list_iterator *it = list_iterator_new(i->subintervals);
-    while (list_iterator_has_next(it)){
-        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
-        interval_io_time(subinterval);
-    }
-    list_iterator_destroy(it);
 }
 
 /* Execution time */
 static void interval_execution_time(dvmh_omp_interval *i)
 {
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_execution_time(subinterval);
+    }
+    list_iterator_destroy(it);
+
     if (HASH_COUNT(i->occurrences) < 2){
         events_occurrences *o, *tmp;
         HASH_ITER(hh, i->occurrences, o, tmp){
@@ -286,13 +294,6 @@ static void interval_execution_time(dvmh_omp_interval *i)
         // TODO
     }
     fprintf(stderr, "interval %ld, execution_time %lf\n", (long) i->descriptor, i->execution_time);
-    
-    list_iterator *it = list_iterator_new(i->subintervals);
-    while (list_iterator_has_next(it)){
-        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
-        interval_execution_time(subinterval);
-    }
-    list_iterator_destroy(it);
 }
 
 /* Barrier time */
@@ -315,6 +316,13 @@ static double event_barrier_time(dvmh_omp_event *e)
 
 static void interval_barrier_time(dvmh_omp_interval *i)
 {
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_barrier_time(subinterval);
+    }
+    list_iterator_destroy(it);
+
     events_occurrences *o, *tmp;
     HASH_ITER(hh, i->occurrences, o, tmp){
         list_iterator *it = list_iterator_new(o->events);
@@ -325,13 +333,6 @@ static void interval_barrier_time(dvmh_omp_interval *i)
         list_iterator_destroy(it);
     }
     fprintf(stderr, "interval %ld, barrier_time %lf\n", (long) i->descriptor, i->barrier_time);
-    
-    list_iterator *it = list_iterator_new(i->subintervals);
-    while (list_iterator_has_next(it)){
-        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
-        interval_barrier_time(subinterval);
-    }
-    list_iterator_destroy(it);
 }
 
 /* User time - считаем, что вложенного параллелизма нет */
@@ -366,6 +367,13 @@ static double event_user_time(dvmh_omp_event *e, int level)
 
 static void interval_user_time(dvmh_omp_interval *i)
 {
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_user_time(subinterval);
+    }
+    list_iterator_destroy(it);
+
     events_occurrences *o, *tmp;
     HASH_ITER(hh, i->occurrences, o, tmp){
         list_iterator *it = list_iterator_new(o->events);
@@ -376,13 +384,6 @@ static void interval_user_time(dvmh_omp_interval *i)
         list_iterator_destroy(it);
     }
     fprintf(stderr, "interval %ld, user_time %lf\n", (long) i->descriptor, i->user_time);
-    
-    list_iterator *it = list_iterator_new(i->subintervals);
-    while (list_iterator_has_next(it)){
-        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
-        interval_user_time(subinterval);
-    }
-    list_iterator_destroy(it);
 }
 
 /* Threads count - вложенного параллелизма нет */
