@@ -37,6 +37,10 @@ struct _dvmh_omp_interval {
     double thread_load_max;
     double thread_load_min;
     double thread_load_avg;
+    double total_time;
+    double lost_time;
+    double productive_time;
+    double efficiency;
 };
 
 typedef struct _registered_interval {
@@ -70,6 +74,10 @@ static void interval_idle_critical(dvmh_omp_interval *i);
 static void interval_sync_flush(dvmh_omp_interval *i);
 static void interval_idle_parallel(dvmh_omp_interval *i);
 static void interval_load_imbalance(dvmh_omp_interval *i);
+static void interval_total_time(dvmh_omp_interval *i);
+static void interval_productive_time(dvmh_omp_interval *i);
+static void interval_lost_time(dvmh_omp_interval *i);
+static void interval_efficiency(dvmh_omp_interval *i);
 
 dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
 {
@@ -87,6 +95,10 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     interval_sync_flush(i);
     interval_idle_parallel(i);
     interval_load_imbalance(i);
+    interval_total_time(i);
+    interval_lost_time(i);
+    interval_productive_time(i);
+    interval_efficiency(i);
     return i;
 }
 
@@ -110,6 +122,10 @@ static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->thread_load_max = 0.0;
     i->thread_load_min = DBL_MAX;
     i->thread_load_avg = 0.0;
+    i->total_time = 0.0;
+    i->lost_time = 0.0;
+    i->productive_time = 0.0;
+    i->efficiency = 0.0;
     return i;
 }
 
@@ -770,4 +786,65 @@ static void interval_load_imbalance(dvmh_omp_interval *i)
     fprintf(stderr, "interval %ld, thread_load_max %lf\n", (long) i->descriptor, i->thread_load_max);
     fprintf(stderr, "interval %ld, thread_load_min %lf\n", (long) i->descriptor, i->thread_load_min);
     fprintf(stderr, "interval %ld, thread_load_avg %lf\n", (long) i->descriptor, i->thread_load_avg);
+}
+
+/* Total time */
+static void interval_total_time(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_total_time(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    i->total_time = i->execution_time * i->used_threads_number;
+    fprintf(stderr, "interval %ld, total_time %lf\n", (long) i->descriptor, i->total_time);
+}
+
+/* Lost time */
+static void interval_lost_time(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_lost_time(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    i->lost_time += i->sync_barrier;
+    i->lost_time += i->idle_critical;
+    i->lost_time += i->sync_flush;
+    // i->lost_time += i->idle_parallel; /* считаем, что idle_parallel - часть load_imbalance */
+    i->lost_time += i->load_imbalance;
+
+    fprintf(stderr, "interval %ld, lost_time %lf\n", (long) i->descriptor, i->lost_time);
+}
+
+/* Productive time */
+static void interval_productive_time(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_productive_time(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    i->productive_time = i->user_time - i->lost_time;
+    fprintf(stderr, "interval %ld, productive_time %lf\n", (long) i->descriptor, i->productive_time);
+}
+
+/* Efficiency */
+static void interval_efficiency(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_efficiency(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    i->efficiency = i->productive_time / i->total_time;
+    fprintf(stderr, "interval %ld, efficiency %lf\n", (long) i->descriptor, i->efficiency);
 }
