@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <float.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "stack.h"
@@ -32,6 +33,10 @@ struct _dvmh_omp_interval {
     double idle_critical;
     double sync_flush;
     double idle_parallel;
+    double load_imbalance;
+    double thread_load_max;
+    double thread_load_min;
+    double thread_load_avg;
 };
 
 typedef struct _registered_interval {
@@ -64,6 +69,7 @@ static void interval_used_threads_number(dvmh_omp_interval *i);
 static void interval_idle_critical(dvmh_omp_interval *i);
 static void interval_sync_flush(dvmh_omp_interval *i);
 static void interval_idle_parallel(dvmh_omp_interval *i);
+static void interval_load_imbalance(dvmh_omp_interval *i);
 
 dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
 {
@@ -80,6 +86,7 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     interval_idle_critical(i);
     interval_sync_flush(i);
     interval_idle_parallel(i);
+    interval_load_imbalance(i);
     return i;
 }
 
@@ -99,6 +106,10 @@ static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->idle_critical = 0.0;
     i->sync_flush = 0.0;
     i->idle_parallel = 0.0;
+    i->load_imbalance = 0.0;
+    i->thread_load_max = 0.0;
+    i->thread_load_min = DBL_MAX;
+    i->thread_load_avg = 0.0;
     return i;
 }
 
@@ -390,6 +401,13 @@ static void interval_sync_barrier(dvmh_omp_interval *i)
         }
         list_iterator_destroy(it);
     }
+    context_descriptor *cd = (context_descriptor *) i->descriptor;
+
+    if (cd && cd->type == CONTEXT_PARALLEL){
+        fprintf(stderr, "p line %d\n", ((parallel_context_descriptor*) cd->context_ptr)->begin_line);
+    } else if (cd && cd->type == CONTEXT_INTERVAL){
+        fprintf(stderr, "i line %d\n", ((interval_context_descriptor*) cd->context_ptr)->begin_line);
+    }
     fprintf(stderr, "interval %ld, sync_barrier %lf\n", (long) i->descriptor, i->sync_barrier);
 }
 
@@ -629,4 +647,127 @@ static void interval_idle_parallel(dvmh_omp_interval *i)
         list_iterator_destroy(it);
     }
     fprintf(stderr, "interval %ld, idle_parallel %lf\n", (long) i->descriptor, i->idle_parallel);
+}
+
+/* Load imbalance, без вложенного параллелизма */
+typedef struct _thread_load {
+    long thread_id; /* this is key */
+    double load_time; /* this is value */
+    UT_hash_handle hh; /* makes this structure hashable */
+} thread_load;
+
+static void event_thread_load(dvmh_omp_event *e, thread_load **tl)
+{
+    if (dvmh_omp_event_get_type(e) != DVMH_OMP_EVENT_PARALLEL_REGION){
+        dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
+        while (dvmh_omp_subevent_iterator_has_next(it)){
+            dvmh_omp_event *se = dvmh_omp_subevent_iterator_next(it);
+            event_thread_load(se, tl);
+        }
+        dvmh_omp_subevent_iterator_destroy(it);
+        return;
+    }
+
+    dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
+    while (dvmh_omp_subevent_iterator_has_next(it)){
+        dvmh_omp_event *se = dvmh_omp_subevent_iterator_next(it);
+        thread_load *current_tl;
+        long thread_id = dvmh_omp_event_get_thread_id(se);
+        HASH_FIND_LONG(*tl, &thread_id, current_tl);
+        if (current_tl == NULL){
+            current_tl = (thread_load *) malloc(sizeof(thread_load));
+            assert(current_tl);
+            current_tl->thread_id = thread_id;
+            current_tl->load_time = 0.0;
+            HASH_ADD_LONG(*tl, thread_id, current_tl);
+        }
+        current_tl->load_time += dvmh_omp_event_duration(se);
+    }
+    dvmh_omp_subevent_iterator_destroy(it);
+    return;
+}
+
+static void interval_load_imbalance(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_load_imbalance(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    if (i->used_threads_number < 2){
+        return;
+    }
+
+    thread_load *tl = NULL;
+
+    /* prepare thread_load *tl */
+    if (HASH_COUNT(i->occurrences) > 1){ /* if called from parallel region */
+        events_occurrences *o, *tmp;
+        HASH_ITER(hh, i->occurrences, o, tmp){
+            thread_load *new_tl = (thread_load *) malloc(sizeof(thread_load));
+            assert(new_tl);
+            new_tl->thread_id = o->thread_id;
+            new_tl->load_time = 0.0;
+            list_iterator *it = list_iterator_new(o->events);
+            while(list_iterator_has_next(it)){
+                dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+                new_tl->load_time += dvmh_omp_event_duration(e);
+            }
+            list_iterator_destroy(it);
+            HASH_ADD_LONG(tl, thread_id, new_tl);
+        }
+    } else { /* if called from non-parallel region */
+        events_occurrences *o, *tmp;
+        HASH_ITER(hh, i->occurrences, o, tmp){
+            list_iterator *it = list_iterator_new(o->events);
+            while(list_iterator_has_next(it)){
+                dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+                event_thread_load(e, &tl);
+            }
+            list_iterator_destroy(it);
+            
+            /* for current thread rewrite thread load time */
+            thread_load *current_tl;
+            HASH_FIND_LONG(tl, &o->thread_id, current_tl);
+            assert(current_tl);
+            current_tl->load_time = 0.0;
+
+            it = list_iterator_new(o->events);
+            while(list_iterator_has_next(it)){
+                dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
+                current_tl->load_time += dvmh_omp_event_duration(e);
+            }
+            list_iterator_destroy(it);
+        }
+    }
+
+    /* analyze thread_load *tl */
+    thread_load *current_tl, *tmp;
+    HASH_ITER(hh, tl, current_tl, tmp){
+        if (current_tl->load_time > i->thread_load_max){
+            i->thread_load_max = current_tl->load_time;
+        }
+        if (current_tl->load_time < i->thread_load_min){
+            i->thread_load_min = current_tl->load_time;
+        }
+        i->thread_load_avg += current_tl->load_time;
+    }
+    i->thread_load_avg /= HASH_COUNT(tl);
+
+    HASH_ITER(hh, tl, current_tl, tmp){
+        i->load_imbalance += i->thread_load_max - current_tl->load_time;
+    }
+
+    /* clear memory */
+    HASH_ITER(hh, tl, current_tl, tmp){
+        HASH_DEL(tl, current_tl);
+        free(current_tl);
+    }
+
+    fprintf(stderr, "interval %ld, load_imbalance %lf\n", (long) i->descriptor, i->load_imbalance);
+    fprintf(stderr, "interval %ld, thread_load_max %lf\n", (long) i->descriptor, i->thread_load_max);
+    fprintf(stderr, "interval %ld, thread_load_min %lf\n", (long) i->descriptor, i->thread_load_min);
+    fprintf(stderr, "interval %ld, thread_load_avg %lf\n", (long) i->descriptor, i->thread_load_avg);
 }
