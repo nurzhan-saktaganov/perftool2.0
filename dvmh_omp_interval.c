@@ -41,6 +41,7 @@ struct _dvmh_omp_interval {
     double lost_time;
     double productive_time;
     double efficiency;
+    int is_in_parallel;
 };
 
 typedef struct _registered_interval {
@@ -78,6 +79,7 @@ static void interval_total_time(dvmh_omp_interval *i);
 static void interval_productive_time(dvmh_omp_interval *i);
 static void interval_lost_time(dvmh_omp_interval *i);
 static void interval_efficiency(dvmh_omp_interval *i);
+static void interval_is_in_parallel(dvmh_omp_interval *i);
 
 dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
 {
@@ -99,6 +101,7 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     interval_lost_time(i);
     interval_productive_time(i);
     interval_efficiency(i);
+    interval_is_in_parallel(i);
     return i;
 }
 
@@ -847,4 +850,18 @@ static void interval_efficiency(dvmh_omp_interval *i)
 
     i->efficiency = i->productive_time / i->total_time;
     fprintf(stderr, "interval %ld, efficiency %lf\n", (long) i->descriptor, i->efficiency);
+}
+
+/* Is in parallel */
+static void interval_is_in_parallel(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_is_in_parallel(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    i->is_in_parallel = HASH_COUNT(i->occurrences) > 1 ? 1 : 0;
+    fprintf(stderr, "interval %ld, is_in_parallel %d\n", (long) i->descriptor, i->is_in_parallel);
 }
