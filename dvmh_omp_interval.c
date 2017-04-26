@@ -162,7 +162,7 @@ static building_context *building_context_create()
 
 static void building_context_destroy(building_context *bc)
 {
-    // destroy bc->registered_intervals
+    /* destroy bc->registered_intervals */
     registered_interval *current, *tmp;
     HASH_ITER(hh, bc->registered_intervals, current, tmp){
         HASH_DEL(bc->registered_intervals, current);
@@ -864,4 +864,95 @@ static void interval_is_in_parallel(dvmh_omp_interval *i)
 
     i->is_in_parallel = HASH_COUNT(i->occurrences) > 1 ? 1 : 0;
     fprintf(stderr, "interval %ld, is_in_parallel %d\n", (long) i->descriptor, i->is_in_parallel);
+}
+
+/* getters */
+int dvmh_omp_interval_get_calls_count(dvmh_omp_interval *i)
+{
+    return i->calls_count;
+}
+
+double dvmh_omp_interval_get_io_time(dvmh_omp_interval *i)
+{
+    return i->io_time;
+}
+
+double dvmh_omp_interval_get_execution_time(dvmh_omp_interval *i)
+{
+    return i->execution_time;
+}
+
+double dvmh_omp_interval_get_sync_barrier_time(dvmh_omp_interval *i)
+{
+    return i->sync_barrier;
+}
+
+double dvmh_omp_interval_get_user_time(dvmh_omp_interval *i)
+{
+    return i->user_time;
+}
+
+int dvmh_omp_interval_get_used_threads_number(dvmh_omp_interval *i)
+{
+    return i->used_threads_number;
+}
+
+double dvmh_omp_interval_get_idle_critical_time(dvmh_omp_interval *i)
+{
+    return i->idle_critical;
+}
+
+double dvmh_omp_interval_get_sync_flush_time(dvmh_omp_interval *i)
+{
+    return i->sync_flush;
+}
+
+double dvmh_omp_interval_get_idle_parallel_time(dvmh_omp_interval *i)
+{
+    return i->idle_parallel;
+}
+
+double dvmh_omp_interval_get_load_imbalance_time(dvmh_omp_interval *i)
+{
+    return i->load_imbalance;
+}
+
+double dvmh_omp_interval_get_thread_load_max(dvmh_omp_interval *i)
+{
+    return i->thread_load_max;
+}
+
+double dvmh_omp_interval_get_thread_load_min(dvmh_omp_interval *i)
+{
+    return i->thread_load_min;
+}
+
+double dvmh_omp_interval_get_thread_load_avg(dvmh_omp_interval *i)
+{
+    return i->thread_load_avg;
+}
+
+double dvmh_omp_interval_get_total_time(dvmh_omp_interval *i)
+{
+    return i->total_time;
+}
+
+double dvmh_omp_interval_get_lost_time(dvmh_omp_interval *i)
+{
+    return i->lost_time;
+}
+
+double dvmh_omp_interval_get_productive_time(dvmh_omp_interval *i)
+{
+    return i->productive_time;
+}
+
+double dvmh_omp_interval_get_efficiency(dvmh_omp_interval *i)
+{
+    return i->efficiency;
+}
+
+int dvmh_omp_interval_is_in_parallel(dvmh_omp_interval *i)
+{
+    return i->is_in_parallel;
 }
