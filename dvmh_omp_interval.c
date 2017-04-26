@@ -24,7 +24,7 @@ struct _dvmh_omp_interval {
     context_descriptor *descriptor;
     list *subintervals;
     events_occurrences *occurrences; //hashtable := thread_id to list of events
-    int calls;
+    int calls_count;
     double io_time;
     double execution_time;
     double sync_barrier;
@@ -112,7 +112,7 @@ static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->descriptor = d;
     i->subintervals = list_create();
     i->occurrences = NULL;
-    i->calls = 0;
+    i->calls_count = 0;
     i->io_time = 0.0;
     i->execution_time = 0.0;
     i->sync_barrier = 0.0;
@@ -268,9 +268,9 @@ static void interval_calls_count(dvmh_omp_interval *i)
 
     events_occurrences *o, *tmp;
     HASH_ITER(hh, i->occurrences, o, tmp){
-        i->calls += list_size(o->events);
+        i->calls_count += list_size(o->events);
     }
-    fprintf(stderr, "interval %ld, calls %d\n", (long) i->descriptor, i->calls);
+    fprintf(stderr, "interval %ld, calls_count %d\n", (long) i->descriptor, i->calls_count);
 }
 
 /* IO time */
@@ -335,12 +335,12 @@ static void interval_execution_time(dvmh_omp_interval *i)
     }
     list_iterator_destroy(it);
 
-    if (i->calls == 0){
+    if (i->calls_count == 0){
         return;
     }
 
     dvmh_omp_event **ordered_events =
-            (dvmh_omp_event **) malloc(i->calls * sizeof(dvmh_omp_event *));
+            (dvmh_omp_event **) malloc(i->calls_count * sizeof(dvmh_omp_event *));
     assert(ordered_events);
 
     int index = 0;
@@ -355,12 +355,12 @@ static void interval_execution_time(dvmh_omp_interval *i)
     }
 
     /* sorting events */
-    qsort(ordered_events, i->calls, sizeof(dvmh_omp_event *), events_compare);
+    qsort(ordered_events, i->calls_count, sizeof(dvmh_omp_event *), events_compare);
 
     /* calculate execution time */
     double begin_time = dvmh_omp_event_get_begin_time(ordered_events[0]);
     double end_time = dvmh_omp_event_get_end_time(ordered_events[0]);
-    for (index = 1; index < i->calls; ++index){
+    for (index = 1; index < i->calls_count; ++index){
         double current_begin_time = dvmh_omp_event_get_begin_time(ordered_events[index]);
         double current_end_time = dvmh_omp_event_get_end_time(ordered_events[index]);
 
