@@ -18,27 +18,21 @@ dvmh_omp_thread_info *initial_thread_info = NULL;
 dvmh_omp_event *get_parent_event(long *StaticContextHandle)
 {
 	context_descriptor *cd = (context_descriptor *) *StaticContextHandle;
-	if (cd->type != CONTEXT_PARALLEL){
+	if (cd->info.type != CONTEXT_PARALLEL){
 		fprintf(stderr, "Context Type is not parallel");
 		return NULL;
 	}
-	parallel_context_descriptor *pcd =
-			(parallel_context_descriptor *) cd->context_ptr;
-
-	return (dvmh_omp_event *) pcd->parent_event;
+	return (dvmh_omp_event *) cd->parallel.parent_event;
 }
 
 void set_parent_event(long *StaticContextHandle, dvmh_omp_event *pe)
 {
 	context_descriptor *cd = (context_descriptor *) *StaticContextHandle;
-	if (cd->type != CONTEXT_PARALLEL){
+	if (cd->info.type != CONTEXT_PARALLEL){
 		fprintf(stderr, "Context Type is not parallel");
 		return;
 	}
-	parallel_context_descriptor *pcd =
-			(parallel_context_descriptor *) cd->context_ptr;
-
-	pcd->parent_event = (void *) pe;
+	cd->parallel.parent_event = (void *) pe;
 }
 
 long DBG_Get_Addr(void  *VarPtr)
@@ -55,11 +49,12 @@ void DBG_Init(long *ThreadID)
 {
 	initial_thread_info = dvmh_omp_thread_info_create();
 	*ThreadID = TO_LONG(initial_thread_info);
-	
+
 	dvmh_omp_event *event = dvmh_omp_event_create(DVMH_OMP_EVENT_INIT);
 	
 	dvmh_omp_event_set_thread_id(event, TO_LONG(ThreadID));
 	dvmh_omp_event_set_begin_time(event, omp_get_wtime());
+	dvmh_omp_event_set_context_descriptor(event, NULL);
 	
 	dvmh_omp_thread_info_event_occured(initial_thread_info, event);
 	

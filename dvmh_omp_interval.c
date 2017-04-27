@@ -420,12 +420,8 @@ static void interval_sync_barrier(dvmh_omp_interval *i)
         }
         list_iterator_destroy(it);
     }
-    context_descriptor *cd = (context_descriptor *) i->descriptor;
-
-    if (cd && cd->type == CONTEXT_PARALLEL){
-        fprintf(stderr, "p line %d\n", ((parallel_context_descriptor*) cd->context_ptr)->begin_line);
-    } else if (cd && cd->type == CONTEXT_INTERVAL){
-        fprintf(stderr, "i line %d\n", ((interval_context_descriptor*) cd->context_ptr)->begin_line);
+    if (i->descriptor != NULL){
+        fprintf(stderr, "line %d\n", i->descriptor->info.begin_line);
     }
     fprintf(stderr, "interval %ld, sync_barrier %lf\n", (long) i->descriptor, i->sync_barrier);
 }

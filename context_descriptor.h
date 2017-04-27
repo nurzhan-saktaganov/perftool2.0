@@ -125,10 +125,15 @@ typedef enum _variable_rt_type {
 	RT_LONG,
 } variable_rt_type;
 
-typedef struct _parallel_context_descriptor {
+typedef struct _basic_info {
+	context_type type;
 	char *file_name;
 	int begin_line;
 	int end_line;
+} basic_info;
+
+typedef struct _parallel_context_descriptor {
+	basic_info bi;
 	list *names_private;
 	list *names_shared;
 	list *names_firstprivate;
@@ -142,9 +147,7 @@ typedef struct _parallel_context_descriptor {
 } parallel_context_descriptor;
 
 typedef struct _omploop_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 	int is_ordered;
 	int is_nowait;
 	list *names_private;
@@ -157,9 +160,7 @@ typedef struct _omploop_context_descriptor {
 } omploop_context_descriptor;
 
 typedef struct _sections_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 	int is_nowait;
 	list *names_private;
 	list *names_firstprivate;
@@ -169,15 +170,11 @@ typedef struct _sections_context_descriptor {
 } sections_context_descriptor;
 
 typedef struct _section_event_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 } section_event_context_descriptor;
 
 typedef struct _single_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 	int is_nowait;
 	list *names_private;
 	list *names_firstprivate;
@@ -185,51 +182,39 @@ typedef struct _single_context_descriptor {
 } single_context_descriptor;
 
 typedef struct _workshare_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 	int is_nowait;
 } workshare_context_descriptor;
 
 typedef struct _master_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 } master_context_descriptor;
 
 typedef struct _critical_context_descriptor {
-	char *file_name;
+	basic_info bi;
 	char *critical_name;
-	int begin_line;
-	int end_line;
 } critical_context_descriptor;
 
 typedef struct _barrier_context_descriptor {
-	char *file_name;
-	int line_number;
+	basic_info bi;
 } barrier_context_descriptor;
 
 typedef struct _flush_context_descriptor {
-	char *file_name;
-	int line_number;
+	basic_info bi;
 	list *names_flushed;
 } flush_context_descriptor;
 
 typedef struct _ordered_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 } ordered_context_descriptor;
 
 typedef struct _threadprivate_context_descriptor {
-	char *file_name;
-	int line_number;
+	basic_info bi;
 	list *names_threadprivate;
 } threadprivate_context_descriptor;
 
 typedef struct _variable_name_context_descriptor {
-	char *file_name;
-	int line_number;
+	basic_info bi;
 	char *var_name;
 	variable_rt_type variable_type;
 	int is_indata;
@@ -238,8 +223,7 @@ typedef struct _variable_name_context_descriptor {
 } variable_name_context_descriptor;
 
 typedef struct _array_name_context_descriptor {
-	char *file_name;
-	int line_number;
+	basic_info bi;
 	char *arr_name;
 	variable_rt_type variable_type;
 	int rank;
@@ -249,47 +233,57 @@ typedef struct _array_name_context_descriptor {
 } array_name_context_descriptor;
 
 typedef struct _common_name_context_descriptor {
-	char *file_name;
-	int line_number;
+	basic_info bi;
 	char *block_name;
 	list *names_components;
 } common_name_context_descriptor;
 
 typedef struct _file_name_context_descriptor {
-	char *file_name;
-	int line_number;
+	basic_info bi;
 } file_name_context_descriptor;
 
 typedef struct _seqloop_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 } seqloop_context_descriptor;
 
 typedef struct _func_call_context_descriptor {
-	char *file_name;
-	int line_number;
+	basic_info bi;
 	char *func_name;
 	int args_count;
 } func_call_context_descriptor;
 
 typedef struct _function_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 	char *func_name;
 	int args_count;
 } function_context_descriptor;
 
 typedef struct _interval_context_descriptor {
-	char *file_name;
-	int begin_line;
-	int end_line;
+	basic_info bi;
 } interval_context_descriptor;
 
-typedef struct _context_descriptor {
-	context_type type;
-	void *context_ptr;
+typedef union _context_descriptor {
+	basic_info info;
+	parallel_context_descriptor parallel;
+	omploop_context_descriptor omploop;
+	sections_context_descriptor sections;
+	section_event_context_descriptor section;
+	single_context_descriptor single;
+	workshare_context_descriptor workshare;
+	master_context_descriptor master;
+	critical_context_descriptor critical;
+	barrier_context_descriptor barrier;
+	flush_context_descriptor flush;
+	ordered_context_descriptor ordered;
+	threadprivate_context_descriptor threadprivate;
+	variable_name_context_descriptor var_name;
+	array_name_context_descriptor arr_name;
+	common_name_context_descriptor common;
+	file_name_context_descriptor file_name;
+	seqloop_context_descriptor seqloop;
+	func_call_context_descriptor func_call;
+	function_context_descriptor function;
+	interval_context_descriptor interval;
 } context_descriptor;
 
 context_type get_context_string_type(const char *context_string);
