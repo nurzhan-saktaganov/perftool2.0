@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "list.h"
 #include "context_string.h"
 #include "context_descriptor.h"
 #include "register_context.h"
@@ -26,58 +27,95 @@ context_descriptor *register_single_context(const char *context_string);
 context_descriptor *register_threadprivate_context(const char *context_string);
 context_descriptor *register_variable_name_context(const char *context_string);
 context_descriptor *register_workshare_context(const char *context_string);
+void unregister_context(context_descriptor *cd);
+
+list *registered_descriptors = NULL;
 
 context_descriptor * register_context(const char *context_string)
 {
+	context_descriptor *cd;
+
 	context_type type = get_context_string_type(context_string);
 	switch (type){
 		case CONTEXT_ARRAY_NAME:
-		    return register_array_name_context(context_string);
+		    cd = register_array_name_context(context_string);
+			break;
 		case CONTEXT_BARRIER:
-		    return register_barrier_context(context_string);
+		    cd = register_barrier_context(context_string);
+			break;
 		case CONTEXT_COMMON_NAME:
-			return register_common_name_context(context_string);
+			cd = register_common_name_context(context_string);
+			break;
 		case CONTEXT_CRITICAL:
-			return register_critical_context(context_string);
+			cd = register_critical_context(context_string);
+			break;
 		case CONTEXT_FILE_NAME:
-			return register_filename_context(context_string);
+			cd = register_filename_context(context_string);
+			break;
 		case CONTEXT_FLUSH:
-			return register_flush_context(context_string);
+			cd = register_flush_context(context_string);
+			break;
 		case CONTEXT_FUNCTION:
-			return register_function_context(context_string);
+			cd = register_function_context(context_string);
+			break;
 		case CONTEXT_FUNC_CALL:
-			return register_func_call_context(context_string);
+			cd = register_func_call_context(context_string);
+			break;
 		case CONTEXT_INTERVAL:
-			return register_interval_context(context_string);
+			cd = register_interval_context(context_string);
+			break;
 		case CONTEXT_MASTER:
-			return register_master_context(context_string);
+			cd = register_master_context(context_string);
+			break;
 		case CONTEXT_OMPLOOP:
-			return register_omploop_context(context_string);
+			cd = register_omploop_context(context_string);
+			break;
 		case CONTEXT_ORDERED:
-			return register_ordered_context(context_string);
+			cd = register_ordered_context(context_string);
+			break;
 		case CONTEXT_PARALLEL:
-			return register_parallel_context(context_string);
+			cd = register_parallel_context(context_string);
+			break;
 		case CONTEXT_SECTIONS:
-			return register_sections_context(context_string);
+			cd = register_sections_context(context_string);
+			break;
 		case CONTEXT_SECTION_EVENT:
-			return register_section_event_context(context_string);
+			cd = register_section_event_context(context_string);
+			break;
 		case CONTEXT_SEQLOOP:
-			return register_seqloop_context(context_string);
+			cd = register_seqloop_context(context_string);
+			break;
 		case CONTEXT_SINGLE:
-			return register_single_context(context_string);
+			cd = register_single_context(context_string);
+			break;
 		case CONTEXT_THREADPRIVATE:
-			return register_threadprivate_context(context_string);
+			cd = register_threadprivate_context(context_string);
+			break;
 		case CONTEXT_UNKNOWN:
+			cd = NULL;
 			break;
 		case CONTEXT_VARIABLE_NAME:
-			return register_variable_name_context(context_string);
+			cd = register_variable_name_context(context_string);
+			break;
 		case CONTEXT_WORKSHARE:
-			return register_workshare_context(context_string);
+			cd = register_workshare_context(context_string);
+			break;
 		default:
+			cd = NULL;
             break;
 	}
-	fprintf(stderr, "Unknown context string format: %s\n", context_string);	
-	return NULL;
+
+	if (registered_descriptors == NULL){
+		registered_descriptors = list_create();
+		assert(registered_descriptors);
+	}
+
+	if (cd == NULL){
+		fprintf(stderr, "Unknown context string format: %s\n", context_string);	
+	} else {
+		list_append_tail(registered_descriptors, cd);
+	}
+	return cd;
 }
 
 context_descriptor *register_array_name_context(const char *context_string)
@@ -97,6 +135,17 @@ context_descriptor *register_array_name_context(const char *context_string)
 	return cd;
 }
 
+void unregister_array_name_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->arr_name.arr_name != NULL){
+		free(cd->arr_name.arr_name);
+	}
+	free(cd);
+}
+
 context_descriptor *register_barrier_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -106,6 +155,14 @@ context_descriptor *register_barrier_context(const char *context_string)
 	cd->info.begin_line = get_param_int_value(context_string, "line1");
 	cd->info.end_line = cd->info.begin_line;
 	return cd;
+}
+
+void unregister_barrier_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
 }
 
 context_descriptor *register_common_name_context(const char *context_string)
@@ -121,6 +178,20 @@ context_descriptor *register_common_name_context(const char *context_string)
 	return cd;
 }
 
+void unregister_common_name_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->common.block_name != NULL){
+		free(cd->common.block_name);
+	}
+	if (cd->common.names_components != NULL){
+		list_destroy(cd->common.names_components, free);
+	}
+	free(cd);
+}
+
 context_descriptor *register_critical_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -131,6 +202,17 @@ context_descriptor *register_critical_context(const char *context_string)
 	cd->info.end_line = get_param_int_value(context_string, "line2");
     cd->critical.critical_name = get_param_str_value(context_string, "name1");
 	return cd;
+}
+
+void unregister_critical_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->critical.critical_name != NULL){
+		free(cd->critical.critical_name);
+	}
+	free(cd);
 }
 
 context_descriptor *register_filename_context(const char *context_string)
@@ -144,6 +226,14 @@ context_descriptor *register_filename_context(const char *context_string)
 	return cd;
 }
 
+void unregister_filename_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
+}
+
 context_descriptor *register_flush_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -154,6 +244,17 @@ context_descriptor *register_flush_context(const char *context_string)
 	cd->info.end_line = cd->info.begin_line;
 	cd->flush.names_flushed = get_param_names_list(context_string, "name1");
 	return cd;
+}
+
+void unregister_flush_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->flush.names_flushed != NULL){
+		list_destroy(cd->flush.names_flushed, free);
+	}
+	free(cd);
 }
 
 context_descriptor *register_function_context(const char *context_string)
@@ -169,6 +270,17 @@ context_descriptor *register_function_context(const char *context_string)
 	return cd;
 }
 
+void unregister_function_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->function.func_name != NULL){
+		free(cd->function.func_name);
+	}
+	free(cd);
+}
+
 context_descriptor *register_func_call_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -182,6 +294,17 @@ context_descriptor *register_func_call_context(const char *context_string)
 	return cd;
 }
 
+void unregister_func_call_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->func_call.func_name != NULL){
+		free(cd->func_call.func_name);
+	}
+	free(cd);
+}
+
 context_descriptor *register_interval_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -193,6 +316,14 @@ context_descriptor *register_interval_context(const char *context_string)
 	return cd;
 }
 
+void unregister_interval_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
+}
+
 context_descriptor *register_master_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -202,6 +333,14 @@ context_descriptor *register_master_context(const char *context_string)
 	cd->info.begin_line = get_param_int_value(context_string, "line1");
 	cd->info.end_line = get_param_int_value(context_string, "line2");
 	return cd;
+}
+
+void unregister_master_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
 }
 
 context_descriptor *register_omploop_context(const char *context_string)
@@ -224,6 +363,29 @@ context_descriptor *register_omploop_context(const char *context_string)
 	return cd;
 }
 
+void unregister_omploop_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->omploop.chunk_size != NULL){
+		free(cd->omploop.chunk_size);
+	}
+	if (cd->omploop.names_private != NULL){
+		list_destroy(cd->omploop.names_private, free);
+	}
+	if (cd->omploop.names_firstprivate != NULL){
+		list_destroy(cd->omploop.names_firstprivate, free);
+	}
+	if (cd->omploop.names_lastprivate != NULL){
+		list_destroy(cd->omploop.names_lastprivate, free);
+	}
+	if (cd->omploop.names_reduction != NULL){
+		list_destroy(cd->omploop.names_reduction, free);
+	}
+	free(cd);
+}
+
 context_descriptor *register_ordered_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -233,6 +395,14 @@ context_descriptor *register_ordered_context(const char *context_string)
 	cd->info.begin_line = get_param_int_value(context_string, "line1");
 	cd->info.end_line = get_param_int_value(context_string, "line2");
 	return cd;
+}
+
+void unregister_ordered_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
 }
 
 context_descriptor *register_parallel_context(const char *context_string)
@@ -255,6 +425,35 @@ context_descriptor *register_parallel_context(const char *context_string)
 	return cd;
 }
 
+void unregister_parallel_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->parallel.if_text != NULL){
+		free(cd->parallel.if_text);
+	}
+	if (cd->parallel.num_threads != NULL){
+		free(cd->parallel.num_threads);
+	}
+	if (cd->parallel.names_private != NULL){
+		list_destroy(cd->parallel.names_private, free);
+	}
+	if (cd->parallel.names_shared != NULL){
+		list_destroy(cd->parallel.names_shared, free);
+	}
+	if (cd->parallel.names_firstprivate != NULL){
+		list_destroy(cd->parallel.names_firstprivate, free);
+	}
+	if (cd->parallel.names_copyin != NULL){
+		list_destroy(cd->parallel.names_copyin, free);
+	}
+	if (cd->parallel.names_reduction != NULL){
+		list_destroy(cd->parallel.names_reduction, free);
+	}
+	free(cd);
+}
+
 context_descriptor *register_sections_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -272,6 +471,26 @@ context_descriptor *register_sections_context(const char *context_string)
 	return cd;
 }
 
+void unregister_sections_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->sections.names_private != NULL){
+		list_destroy(cd->sections.names_private, free);
+	}
+	if (cd->sections.names_firstprivate != NULL){
+		list_destroy(cd->sections.names_firstprivate, free);
+	}
+	if (cd->sections.names_lastprivate != NULL){
+		list_destroy(cd->sections.names_lastprivate, free);
+	}
+	if (cd->sections.names_reduction != NULL){
+		list_destroy(cd->sections.names_reduction, free);
+	}
+	free(cd);
+}
+
 context_descriptor *register_section_event_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -283,6 +502,14 @@ context_descriptor *register_section_event_context(const char *context_string)
 	return cd;
 }
 
+void unregister_section_event_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
+}
+
 context_descriptor *register_seqloop_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -292,6 +519,14 @@ context_descriptor *register_seqloop_context(const char *context_string)
 	cd->info.begin_line = get_param_int_value(context_string, "line1");
 	cd->info.end_line = get_param_int_value(context_string, "line2");
 	return cd;
+}
+
+void unregister_seqloop_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
 }
 
 context_descriptor *register_single_context(const char *context_string)
@@ -309,6 +544,23 @@ context_descriptor *register_single_context(const char *context_string)
 	return cd;
 }
 
+void unregister_single_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->single.names_private != NULL){
+		list_destroy(cd->single.names_private, free);
+	}
+	if (cd->single.names_firstprivate != NULL){
+		list_destroy(cd->single.names_firstprivate, free);
+	}
+	if (cd->single.names_copyprivate != NULL){
+		list_destroy(cd->single.names_copyprivate, free);
+	}
+	free(cd);
+}
+
 context_descriptor *register_threadprivate_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -319,6 +571,17 @@ context_descriptor *register_threadprivate_context(const char *context_string)
 	cd->info.end_line = cd->info.begin_line;
 	cd->threadprivate.names_threadprivate = get_param_names_list(context_string, "name1");
 	return cd;
+}
+
+void unregister_threadprivate_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->threadprivate.names_threadprivate != NULL){
+		list_destroy(cd->threadprivate.names_threadprivate, free);
+	}
+	free(cd);
 }
 
 context_descriptor *register_variable_name_context(const char *context_string)
@@ -337,6 +600,17 @@ context_descriptor *register_variable_name_context(const char *context_string)
 	return cd;
 }
 
+void unregister_variable_name_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	if (cd->var_name.var_name != NULL){
+		free(cd->var_name.var_name);
+	}
+	free(cd);
+}
+
 context_descriptor *register_workshare_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
@@ -347,4 +621,98 @@ context_descriptor *register_workshare_context(const char *context_string)
 	cd->info.end_line = get_param_int_value(context_string, "line2");
 	cd->workshare.is_nowait = get_param_int_value(context_string, "nowait");
 	return cd;
+}
+
+void unregister_workshare_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
+}
+
+void unregister_contexts()
+{
+	list_iterator *it = list_iterator_new(registered_descriptors);
+	fprintf(stderr, "to unreg: %d\n", list_size(registered_descriptors));
+	while (list_iterator_has_next(it)){
+		context_descriptor *cd = (context_descriptor *) list_iterator_next(it);
+		unregister_context(cd);
+	}
+	list_iterator_destroy(it);
+	list_destroy(registered_descriptors, NULL);
+}
+
+void unregister_context(context_descriptor *cd)
+{
+	if (cd == NULL){
+		return;
+	}
+
+	switch(cd->info.type){
+		case CONTEXT_ARRAY_NAME:
+		    unregister_array_name_context(cd);
+			break;
+		case CONTEXT_BARRIER:
+		    unregister_barrier_context(cd);
+			break;
+		case CONTEXT_COMMON_NAME:
+			unregister_common_name_context(cd);
+			break;
+		case CONTEXT_CRITICAL:
+			unregister_critical_context(cd);
+			break;
+		case CONTEXT_FILE_NAME:
+			unregister_filename_context(cd);
+			break;
+		case CONTEXT_FLUSH:
+			unregister_flush_context(cd);
+			break;
+		case CONTEXT_FUNCTION:
+			unregister_function_context(cd);
+			break;
+		case CONTEXT_FUNC_CALL:
+			unregister_func_call_context(cd);
+			break;
+		case CONTEXT_INTERVAL:
+			unregister_interval_context(cd);
+			break;
+		case CONTEXT_MASTER:
+			unregister_master_context(cd);
+			break;
+		case CONTEXT_OMPLOOP:
+			unregister_omploop_context(cd);
+			break;
+		case CONTEXT_ORDERED:
+			unregister_ordered_context(cd);
+			break;
+		case CONTEXT_PARALLEL:
+			unregister_parallel_context(cd);
+			break;
+		case CONTEXT_SECTIONS:
+			unregister_sections_context(cd);
+			break;
+		case CONTEXT_SECTION_EVENT:
+			unregister_section_event_context(cd);
+			break;
+		case CONTEXT_SEQLOOP:
+			unregister_seqloop_context(cd);
+			break;
+		case CONTEXT_SINGLE:
+			unregister_single_context(cd);
+			break;
+		case CONTEXT_THREADPRIVATE:
+			unregister_threadprivate_context(cd);
+			break;
+		case CONTEXT_UNKNOWN:
+			break;
+		case CONTEXT_VARIABLE_NAME:
+			unregister_variable_name_context(cd);
+			break;
+		case CONTEXT_WORKSHARE:
+			unregister_workshare_context(cd);
+			break;
+		default:
+            break;
+	}
 }
