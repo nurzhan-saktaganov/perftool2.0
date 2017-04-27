@@ -7,29 +7,29 @@
 #include "context_descriptor.h"
 #include "register_context.h"
 
-context_descriptor *register_array_name_context(const char *context_string);
-context_descriptor *register_barrier_context(const char *context_string);
-context_descriptor *register_common_name_context(const char *context_string);
-context_descriptor *register_critical_context(const char *context_string);
-context_descriptor *register_filename_context(const char *context_string);
-context_descriptor *register_flush_context(const char *context_string);
-context_descriptor *register_function_context(const char *context_string);
-context_descriptor *register_func_call_context(const char *context_string);
-context_descriptor *register_interval_context(const char *context_string);
-context_descriptor *register_master_context(const char *context_string);
-context_descriptor *register_omploop_context(const char *context_string);
-context_descriptor *register_ordered_context(const char *context_string);
-context_descriptor *register_parallel_context(const char *context_string);
-context_descriptor *register_sections_context(const char *context_string);
-context_descriptor *register_section_event_context(const char *context_string);
-context_descriptor *register_seqloop_context(const char *context_string);
-context_descriptor *register_single_context(const char *context_string);
-context_descriptor *register_threadprivate_context(const char *context_string);
-context_descriptor *register_variable_name_context(const char *context_string);
-context_descriptor *register_workshare_context(const char *context_string);
-void unregister_context(context_descriptor *cd);
+static context_descriptor *register_array_name_context(const char *context_string);
+static context_descriptor *register_barrier_context(const char *context_string);
+static context_descriptor *register_common_name_context(const char *context_string);
+static context_descriptor *register_critical_context(const char *context_string);
+static context_descriptor *register_filename_context(const char *context_string);
+static context_descriptor *register_flush_context(const char *context_string);
+static context_descriptor *register_function_context(const char *context_string);
+static context_descriptor *register_func_call_context(const char *context_string);
+static context_descriptor *register_interval_context(const char *context_string);
+static context_descriptor *register_master_context(const char *context_string);
+static context_descriptor *register_omploop_context(const char *context_string);
+static context_descriptor *register_ordered_context(const char *context_string);
+static context_descriptor *register_parallel_context(const char *context_string);
+static context_descriptor *register_sections_context(const char *context_string);
+static context_descriptor *register_section_event_context(const char *context_string);
+static context_descriptor *register_seqloop_context(const char *context_string);
+static context_descriptor *register_single_context(const char *context_string);
+static context_descriptor *register_threadprivate_context(const char *context_string);
+static context_descriptor *register_variable_name_context(const char *context_string);
+static context_descriptor *register_workshare_context(const char *context_string);
+static void unregister_context(context_descriptor *cd);
 
-list *registered_descriptors = NULL;
+static list *registered_descriptors = NULL;
 
 context_descriptor * register_context(const char *context_string)
 {
@@ -118,7 +118,7 @@ context_descriptor * register_context(const char *context_string)
 	return cd;
 }
 
-context_descriptor *register_array_name_context(const char *context_string)
+static context_descriptor *register_array_name_context(const char *context_string)
 {
 	context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -135,7 +135,7 @@ context_descriptor *register_array_name_context(const char *context_string)
 	return cd;
 }
 
-void unregister_array_name_context(context_descriptor *cd)
+static void unregister_array_name_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -146,7 +146,7 @@ void unregister_array_name_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_barrier_context(const char *context_string)
+static context_descriptor *register_barrier_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -157,7 +157,7 @@ context_descriptor *register_barrier_context(const char *context_string)
 	return cd;
 }
 
-void unregister_barrier_context(context_descriptor *cd)
+static void unregister_barrier_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -165,7 +165,7 @@ void unregister_barrier_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_common_name_context(const char *context_string)
+static context_descriptor *register_common_name_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -178,7 +178,7 @@ context_descriptor *register_common_name_context(const char *context_string)
 	return cd;
 }
 
-void unregister_common_name_context(context_descriptor *cd)
+static void unregister_common_name_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -192,7 +192,7 @@ void unregister_common_name_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_critical_context(const char *context_string)
+static context_descriptor *register_critical_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -204,7 +204,7 @@ context_descriptor *register_critical_context(const char *context_string)
 	return cd;
 }
 
-void unregister_critical_context(context_descriptor *cd)
+static void unregister_critical_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -215,7 +215,7 @@ void unregister_critical_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_filename_context(const char *context_string)
+static context_descriptor *register_filename_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -226,7 +226,7 @@ context_descriptor *register_filename_context(const char *context_string)
 	return cd;
 }
 
-void unregister_filename_context(context_descriptor *cd)
+static void unregister_filename_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -234,7 +234,7 @@ void unregister_filename_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_flush_context(const char *context_string)
+static context_descriptor *register_flush_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -246,7 +246,7 @@ context_descriptor *register_flush_context(const char *context_string)
 	return cd;
 }
 
-void unregister_flush_context(context_descriptor *cd)
+static void unregister_flush_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -257,7 +257,7 @@ void unregister_flush_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_function_context(const char *context_string)
+static context_descriptor *register_function_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -270,7 +270,7 @@ context_descriptor *register_function_context(const char *context_string)
 	return cd;
 }
 
-void unregister_function_context(context_descriptor *cd)
+static void unregister_function_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -281,7 +281,7 @@ void unregister_function_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_func_call_context(const char *context_string)
+static context_descriptor *register_func_call_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -294,7 +294,7 @@ context_descriptor *register_func_call_context(const char *context_string)
 	return cd;
 }
 
-void unregister_func_call_context(context_descriptor *cd)
+static void unregister_func_call_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -305,7 +305,7 @@ void unregister_func_call_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_interval_context(const char *context_string)
+static context_descriptor *register_interval_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -316,7 +316,7 @@ context_descriptor *register_interval_context(const char *context_string)
 	return cd;
 }
 
-void unregister_interval_context(context_descriptor *cd)
+static void unregister_interval_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -324,7 +324,7 @@ void unregister_interval_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_master_context(const char *context_string)
+static context_descriptor *register_master_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -335,7 +335,7 @@ context_descriptor *register_master_context(const char *context_string)
 	return cd;
 }
 
-void unregister_master_context(context_descriptor *cd)
+static void unregister_master_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -343,7 +343,7 @@ void unregister_master_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_omploop_context(const char *context_string)
+static context_descriptor *register_omploop_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -363,7 +363,7 @@ context_descriptor *register_omploop_context(const char *context_string)
 	return cd;
 }
 
-void unregister_omploop_context(context_descriptor *cd)
+static void unregister_omploop_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -386,7 +386,7 @@ void unregister_omploop_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_ordered_context(const char *context_string)
+static context_descriptor *register_ordered_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -397,7 +397,7 @@ context_descriptor *register_ordered_context(const char *context_string)
 	return cd;
 }
 
-void unregister_ordered_context(context_descriptor *cd)
+static void unregister_ordered_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -405,7 +405,7 @@ void unregister_ordered_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_parallel_context(const char *context_string)
+static context_descriptor *register_parallel_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -425,7 +425,7 @@ context_descriptor *register_parallel_context(const char *context_string)
 	return cd;
 }
 
-void unregister_parallel_context(context_descriptor *cd)
+static void unregister_parallel_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -454,7 +454,7 @@ void unregister_parallel_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_sections_context(const char *context_string)
+static context_descriptor *register_sections_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -471,7 +471,7 @@ context_descriptor *register_sections_context(const char *context_string)
 	return cd;
 }
 
-void unregister_sections_context(context_descriptor *cd)
+static void unregister_sections_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -491,7 +491,7 @@ void unregister_sections_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_section_event_context(const char *context_string)
+static context_descriptor *register_section_event_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -502,7 +502,7 @@ context_descriptor *register_section_event_context(const char *context_string)
 	return cd;
 }
 
-void unregister_section_event_context(context_descriptor *cd)
+static void unregister_section_event_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -510,7 +510,7 @@ void unregister_section_event_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_seqloop_context(const char *context_string)
+static context_descriptor *register_seqloop_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -521,7 +521,7 @@ context_descriptor *register_seqloop_context(const char *context_string)
 	return cd;
 }
 
-void unregister_seqloop_context(context_descriptor *cd)
+static void unregister_seqloop_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -529,7 +529,7 @@ void unregister_seqloop_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_single_context(const char *context_string)
+static context_descriptor *register_single_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -544,7 +544,7 @@ context_descriptor *register_single_context(const char *context_string)
 	return cd;
 }
 
-void unregister_single_context(context_descriptor *cd)
+static void unregister_single_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -561,7 +561,7 @@ void unregister_single_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_threadprivate_context(const char *context_string)
+static context_descriptor *register_threadprivate_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -573,7 +573,7 @@ context_descriptor *register_threadprivate_context(const char *context_string)
 	return cd;
 }
 
-void unregister_threadprivate_context(context_descriptor *cd)
+static void unregister_threadprivate_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -584,7 +584,7 @@ void unregister_threadprivate_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_variable_name_context(const char *context_string)
+static context_descriptor *register_variable_name_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -600,7 +600,7 @@ context_descriptor *register_variable_name_context(const char *context_string)
 	return cd;
 }
 
-void unregister_variable_name_context(context_descriptor *cd)
+static void unregister_variable_name_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -611,7 +611,7 @@ void unregister_variable_name_context(context_descriptor *cd)
 	free(cd);
 }
 
-context_descriptor *register_workshare_context(const char *context_string)
+static context_descriptor *register_workshare_context(const char *context_string)
 {
     context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
@@ -623,7 +623,7 @@ context_descriptor *register_workshare_context(const char *context_string)
 	return cd;
 }
 
-void unregister_workshare_context(context_descriptor *cd)
+static void unregister_workshare_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -634,7 +634,6 @@ void unregister_workshare_context(context_descriptor *cd)
 void unregister_contexts()
 {
 	list_iterator *it = list_iterator_new(registered_descriptors);
-	fprintf(stderr, "to unreg: %d\n", list_size(registered_descriptors));
 	while (list_iterator_has_next(it)){
 		context_descriptor *cd = (context_descriptor *) list_iterator_next(it);
 		unregister_context(cd);
@@ -643,7 +642,7 @@ void unregister_contexts()
 	list_destroy(registered_descriptors, NULL);
 }
 
-void unregister_context(context_descriptor *cd)
+static void unregister_context(context_descriptor *cd)
 {
 	if (cd == NULL){
 		return;
