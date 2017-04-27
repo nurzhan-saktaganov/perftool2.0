@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <float.h>
 #include <stdlib.h>
-#include <stdio.h>
+// #include <stdio.h>
 #include "stack.h"
 #include "list.h"
 #include "context_descriptor.h"
@@ -270,7 +270,7 @@ static void interval_calls_count(dvmh_omp_interval *i)
     HASH_ITER(hh, i->occurrences, o, tmp){
         i->calls_count += list_size(o->events);
     }
-    fprintf(stderr, "interval %ld, calls_count %d\n", (long) i->descriptor, i->calls_count);
+    // fprintf(stderr, "interval %ld, calls_count %d\n", (long) i->descriptor, i->calls_count);
 }
 
 /* IO time */
@@ -313,7 +313,7 @@ static void interval_io_time(dvmh_omp_interval *i)
         }
         list_iterator_destroy(it);
     }
-    fprintf(stderr, "interval %ld, io_time %lf\n", (long) i->descriptor, i->io_time);
+    // fprintf(stderr, "interval %ld, io_time %lf\n", (long) i->descriptor, i->io_time);
 }
 
 /* Execution time */
@@ -377,7 +377,7 @@ static void interval_execution_time(dvmh_omp_interval *i)
     i->execution_time += end_time - begin_time;
 
     free(ordered_events);
-    fprintf(stderr, "interval %ld, execution_time %lf\n", (long) i->descriptor, i->execution_time);
+    // fprintf(stderr, "interval %ld, execution_time %lf\n", (long) i->descriptor, i->execution_time);
 }
 
 /* Sync barrier time */
@@ -420,10 +420,10 @@ static void interval_sync_barrier(dvmh_omp_interval *i)
         }
         list_iterator_destroy(it);
     }
-    if (i->descriptor != NULL){
-        fprintf(stderr, "line %d\n", i->descriptor->info.begin_line);
-    }
-    fprintf(stderr, "interval %ld, sync_barrier %lf\n", (long) i->descriptor, i->sync_barrier);
+    // if (i->descriptor != NULL){
+    //    fprintf(stderr, "line %d\n", i->descriptor->info.begin_line);
+    // }
+    // fprintf(stderr, "interval %ld, sync_barrier %lf\n", (long) i->descriptor, i->sync_barrier);
 }
 
 /* User time - считаем, что вложенного параллелизма нет */
@@ -475,7 +475,7 @@ static void interval_user_time(dvmh_omp_interval *i)
         }
         list_iterator_destroy(it);
     }
-    fprintf(stderr, "interval %ld, user_time %lf\n", (long) i->descriptor, i->user_time);
+    // fprintf(stderr, "interval %ld, user_time %lf\n", (long) i->descriptor, i->user_time);
 }
 
 /* Threads count - вложенного параллелизма нет */
@@ -572,7 +572,7 @@ static void interval_idle_critical(dvmh_omp_interval *i)
         }
         list_iterator_destroy(it);
     }
-    fprintf(stderr, "interval %ld, idle_critical %lf\n", (long) i->descriptor, i->idle_critical);
+    // fprintf(stderr, "interval %ld, idle_critical %lf\n", (long) i->descriptor, i->idle_critical);
 }
 
 /* Sync flush time */
@@ -615,7 +615,7 @@ static void interval_sync_flush(dvmh_omp_interval *i)
         }
         list_iterator_destroy(it);
     }
-    fprintf(stderr, "interval %ld, sync_flush %lf\n", (long) i->descriptor, i->sync_flush);
+    // fprintf(stderr, "interval %ld, sync_flush %lf\n", (long) i->descriptor, i->sync_flush);
 }
 
 /* Idle time in parallel end */
@@ -661,7 +661,7 @@ static void interval_idle_parallel(dvmh_omp_interval *i)
         }
         list_iterator_destroy(it);
     }
-    fprintf(stderr, "interval %ld, idle_parallel %lf\n", (long) i->descriptor, i->idle_parallel);
+    // fprintf(stderr, "interval %ld, idle_parallel %lf\n", (long) i->descriptor, i->idle_parallel);
 }
 
 /* Load imbalance, без вложенного параллелизма */
@@ -781,10 +781,10 @@ static void interval_load_imbalance(dvmh_omp_interval *i)
         free(current_tl);
     }
 
-    fprintf(stderr, "interval %ld, load_imbalance %lf\n", (long) i->descriptor, i->load_imbalance);
-    fprintf(stderr, "interval %ld, thread_load_max %lf\n", (long) i->descriptor, i->thread_load_max);
-    fprintf(stderr, "interval %ld, thread_load_min %lf\n", (long) i->descriptor, i->thread_load_min);
-    fprintf(stderr, "interval %ld, thread_load_avg %lf\n", (long) i->descriptor, i->thread_load_avg);
+    // fprintf(stderr, "interval %ld, load_imbalance %lf\n", (long) i->descriptor, i->load_imbalance);
+    // fprintf(stderr, "interval %ld, thread_load_max %lf\n", (long) i->descriptor, i->thread_load_max);
+    // fprintf(stderr, "interval %ld, thread_load_min %lf\n", (long) i->descriptor, i->thread_load_min);
+    // fprintf(stderr, "interval %ld, thread_load_avg %lf\n", (long) i->descriptor, i->thread_load_avg);
 }
 
 /* Total time */
@@ -798,7 +798,7 @@ static void interval_total_time(dvmh_omp_interval *i)
     list_iterator_destroy(it);
 
     i->total_time = i->execution_time * i->used_threads_number;
-    fprintf(stderr, "interval %ld, total_time %lf\n", (long) i->descriptor, i->total_time);
+    // fprintf(stderr, "interval %ld, total_time %lf\n", (long) i->descriptor, i->total_time);
 }
 
 /* Lost time */
@@ -814,10 +814,11 @@ static void interval_lost_time(dvmh_omp_interval *i)
     i->lost_time += i->sync_barrier;
     i->lost_time += i->idle_critical;
     i->lost_time += i->sync_flush;
+    // TODO
     // i->lost_time += i->idle_parallel; /* считаем, что idle_parallel - часть load_imbalance */
     i->lost_time += i->load_imbalance;
 
-    fprintf(stderr, "interval %ld, lost_time %lf\n", (long) i->descriptor, i->lost_time);
+    // fprintf(stderr, "interval %ld, lost_time %lf\n", (long) i->descriptor, i->lost_time);
 }
 
 /* Productive time */
@@ -831,7 +832,7 @@ static void interval_productive_time(dvmh_omp_interval *i)
     list_iterator_destroy(it);
 
     i->productive_time = i->user_time - i->lost_time;
-    fprintf(stderr, "interval %ld, productive_time %lf\n", (long) i->descriptor, i->productive_time);
+    // fprintf(stderr, "interval %ld, productive_time %lf\n", (long) i->descriptor, i->productive_time);
 }
 
 /* Efficiency */
@@ -845,7 +846,7 @@ static void interval_efficiency(dvmh_omp_interval *i)
     list_iterator_destroy(it);
 
     i->efficiency = i->productive_time / i->total_time;
-    fprintf(stderr, "interval %ld, efficiency %lf\n", (long) i->descriptor, i->efficiency);
+    // fprintf(stderr, "interval %ld, efficiency %lf\n", (long) i->descriptor, i->efficiency);
 }
 
 /* Is in parallel */
@@ -859,7 +860,7 @@ static void interval_is_in_parallel(dvmh_omp_interval *i)
     list_iterator_destroy(it);
 
     i->is_in_parallel = HASH_COUNT(i->occurrences) > 1 ? 1 : 0;
-    fprintf(stderr, "interval %ld, is_in_parallel %d\n", (long) i->descriptor, i->is_in_parallel);
+    // fprintf(stderr, "interval %ld, is_in_parallel %d\n", (long) i->descriptor, i->is_in_parallel);
 }
 
 /* getters */
@@ -951,4 +952,53 @@ double dvmh_omp_interval_get_efficiency(dvmh_omp_interval *i)
 int dvmh_omp_interval_is_in_parallel(dvmh_omp_interval *i)
 {
     return i->is_in_parallel;
+}
+
+long dvmh_omp_interval_get_id(dvmh_omp_interval *i)
+{
+    return (long) i->descriptor;
+}
+
+int dvmh_omp_interval_begin_line(dvmh_omp_interval *i)
+{
+    if (i->descriptor == NULL){
+        return 1;
+    }
+    return i->descriptor->info.begin_line;
+}
+
+/* subinterval iterator */
+struct _dvmh_omp_subinterval_iterator {
+	list_iterator *li;
+};
+
+dvmh_omp_subinterval_iterator * dvmh_omp_subinterval_iterator_new(dvmh_omp_interval *i)
+{
+	if (i == NULL || i->subintervals == NULL){
+		return NULL;
+	}
+	dvmh_omp_subinterval_iterator *it =
+			(dvmh_omp_subinterval_iterator *) malloc(sizeof(dvmh_omp_subinterval_iterator));
+	assert(it);
+	it->li = list_iterator_new(i->subintervals);
+	return it;
+}
+
+int dvmh_omp_subinterval_iterator_has_next(dvmh_omp_subinterval_iterator *it)
+{
+	return it != NULL ? list_iterator_has_next(it->li) : 0;
+}
+
+dvmh_omp_interval *dvmh_omp_subinterval_iterator_next(dvmh_omp_subinterval_iterator *it)
+{
+	return (dvmh_omp_interval *) list_iterator_next(it->li);
+}
+
+void dvmh_omp_subinterval_iterator_destroy(dvmh_omp_subinterval_iterator *it)
+{
+	if (it == NULL){
+		return;
+	}
+	list_iterator_destroy(it->li);
+	free(it);
 }
