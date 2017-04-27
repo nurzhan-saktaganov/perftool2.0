@@ -38,7 +38,7 @@ static void _write_characteristics_to_csv(FILE *fd, dvmh_omp_interval *i, long p
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_thread_load_min(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_thread_load_avg(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_total_time(i));
-	fprintf(fd, "%lf", dvmh_omp_interval_get_lost_time(i));
+	fprintf(fd, "%lf,", dvmh_omp_interval_get_lost_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_productive_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_efficiency(i));
 	fprintf(fd, "%d,", dvmh_omp_interval_is_in_parallel(i));
