@@ -814,9 +814,6 @@ static void interval_lost_time(dvmh_omp_interval *i)
     i->lost_time += i->sync_barrier;
     i->lost_time += i->idle_critical;
     i->lost_time += i->sync_flush;
-    // TODO
-    // i->lost_time += i->idle_parallel; /* считаем, что idle_parallel - часть load_imbalance */
-    i->lost_time += i->load_imbalance;
 
     // fprintf(stderr, "interval %ld, lost_time %lf\n", (long) i->descriptor, i->lost_time);
 }
