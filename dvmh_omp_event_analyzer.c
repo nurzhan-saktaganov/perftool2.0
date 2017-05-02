@@ -28,21 +28,23 @@ static void _write_characteristics_to_csv(FILE *fd, dvmh_omp_interval *i, long p
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_io_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_execution_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_sync_barrier_time(i));
-	fprintf(fd, "%lf,", dvmh_omp_interval_get_user_time(i));
+	fprintf(fd, "%lf,", dvmh_omp_interval_get_used_time(i));
 	fprintf(fd, "%d,", dvmh_omp_interval_get_used_threads_number(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_idle_critical_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_sync_flush_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_idle_parallel_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_load_imbalance_time(i));
-	fprintf(fd, "%lf,", dvmh_omp_interval_get_thread_load_max(i));
-	fprintf(fd, "%lf,", dvmh_omp_interval_get_thread_load_min(i));
-	fprintf(fd, "%lf,", dvmh_omp_interval_get_thread_load_avg(i));
+	fprintf(fd, "%lf,", dvmh_omp_interval_get_thread_prod_max(i));
+	fprintf(fd, "%lf,", dvmh_omp_interval_get_thread_prod_min(i));
+	fprintf(fd, "%lf,", dvmh_omp_interval_get_thread_prod_avg(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_total_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_lost_time(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_productive_time(i));
+	fprintf(fd, "%lf,", dvmh_omp_interval_get_insufficient_parallelism(i));
 	fprintf(fd, "%lf,", dvmh_omp_interval_get_efficiency(i));
 	fprintf(fd, "%d,", dvmh_omp_interval_is_in_parallel(i));
 	fprintf(fd, "%d,", dvmh_omp_interval_begin_line(i));
+	fprintf(fd, "%s,", dvmh_omp_interval_get_file_name(i));
 	if (parent_id == -1){
 		fprintf(fd, "%ld", parent_id);
 	} else {
@@ -61,21 +63,23 @@ static void write_characteristics_to_csv(const char *filename, dvmh_omp_interval
 	fprintf(fd, "io time,");
 	fprintf(fd, "execution time,");
 	fprintf(fd, "idle barrier time,");
-	fprintf(fd, "user time,");
+	fprintf(fd, "used time,");
 	fprintf(fd, "used threads,");
 	fprintf(fd, "idle critical time,");
 	fprintf(fd, "flush time,");
 	fprintf(fd, "idle parallel,");
 	fprintf(fd, "load imbalance time,");
-	fprintf(fd, "thread load max,");
-	fprintf(fd, "thread load min,");
-	fprintf(fd, "thread load avg,");
+	fprintf(fd, "thread prod max,");
+	fprintf(fd, "thread prod min,");
+	fprintf(fd, "thread prod avg,");
 	fprintf(fd, "total time,");
 	fprintf(fd, "lost time,");
 	fprintf(fd, "productive time,");
+	fprintf(fd, "insufficient parallelism,");
 	fprintf(fd, "efficiency,");
 	fprintf(fd, "in parallel,");
 	fprintf(fd, "begin line,");
+	fprintf(fd, "file name,");
 	fprintf(fd, "parent id\r\n");
 	/* write corresponding charactertistics */
 	_write_characteristics_to_csv(fd, i, -1);

@@ -28,18 +28,19 @@ struct _dvmh_omp_interval {
     double io_time;
     double execution_time;
     double sync_barrier;
-    double user_time;
+    double used_time;
     int used_threads_number;
     double idle_critical;
     double sync_flush;
     double idle_parallel;
     double load_imbalance;
-    double thread_load_max;
-    double thread_load_min;
-    double thread_load_avg;
+    double thread_prod_max;
+    double thread_prod_min;
+    double thread_prod_avg;
     double total_time;
     double lost_time;
     double productive_time;
+    double insufficient_parallelism;
     double efficiency;
     int is_in_parallel;
 };
@@ -69,7 +70,7 @@ static void interval_calls_count(dvmh_omp_interval *i);
 static void interval_io_time(dvmh_omp_interval *i);
 static void interval_execution_time(dvmh_omp_interval *i);
 static void interval_sync_barrier(dvmh_omp_interval *i);
-static void interval_user_time(dvmh_omp_interval *i);
+static void interval_used_time(dvmh_omp_interval *i);
 static void interval_used_threads_number(dvmh_omp_interval *i);
 static void interval_idle_critical(dvmh_omp_interval *i);
 static void interval_sync_flush(dvmh_omp_interval *i);
@@ -78,6 +79,7 @@ static void interval_load_imbalance(dvmh_omp_interval *i);
 static void interval_total_time(dvmh_omp_interval *i);
 static void interval_productive_time(dvmh_omp_interval *i);
 static void interval_lost_time(dvmh_omp_interval *i);
+static void interval_insufficient_parallelism(dvmh_omp_interval *i);
 static void interval_efficiency(dvmh_omp_interval *i);
 static void interval_is_in_parallel(dvmh_omp_interval *i);
 
@@ -91,13 +93,14 @@ dvmh_omp_interval *dvmh_omp_interval_build(dvmh_omp_event *e)
     interval_io_time(i);
     interval_execution_time(i);
     interval_sync_barrier(i);
-    interval_user_time(i);
+    interval_used_time(i);
     interval_used_threads_number(i);
     interval_idle_critical(i);
     interval_sync_flush(i);
     interval_idle_parallel(i);
     interval_load_imbalance(i);
     interval_total_time(i);
+    interval_insufficient_parallelism(i);
     interval_lost_time(i);
     interval_productive_time(i);
     interval_efficiency(i);
@@ -116,18 +119,19 @@ static dvmh_omp_interval *dvmh_omp_interval_create(context_descriptor *d)
     i->io_time = 0.0;
     i->execution_time = 0.0;
     i->sync_barrier = 0.0;
-    i->user_time = 0.0;
+    i->used_time = 0.0;
     i->used_threads_number = 0;
     i->idle_critical = 0.0;
     i->sync_flush = 0.0;
     i->idle_parallel = 0.0;
     i->load_imbalance = 0.0;
-    i->thread_load_max = 0.0;
-    i->thread_load_min = DBL_MAX;
-    i->thread_load_avg = 0.0;
+    i->thread_prod_max = 0.0;
+    i->thread_prod_min = DBL_MAX;
+    i->thread_prod_avg = 0.0;
     i->total_time = 0.0;
     i->lost_time = 0.0;
     i->productive_time = 0.0;
+    i->insufficient_parallelism = 0.0;
     i->efficiency = 0.0;
     return i;
 }
@@ -354,7 +358,7 @@ static void interval_execution_time(dvmh_omp_interval *i)
         list_iterator_destroy(it);
     }
 
-    /* sorting events */
+    /* sorting events by occurence time */
     qsort(ordered_events, i->calls_count, sizeof(dvmh_omp_event *), events_compare);
 
     /* calculate execution time */
@@ -381,16 +385,16 @@ static void interval_execution_time(dvmh_omp_interval *i)
 }
 
 /* Sync barrier time */
-static double event_sync_barrier(dvmh_omp_event *e)
+static double event_sync_barrier(dvmh_omp_event *e, int include_subintervals)
 {
     double sync_time = 0.0;
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
-        if (dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
+        if (!include_subintervals && dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
             continue;
         }
-        sync_time += event_sync_barrier(s);
+        sync_time += event_sync_barrier(s, include_subintervals);
     }
     dvmh_omp_subevent_iterator_destroy(it);
 
@@ -416,21 +420,18 @@ static void interval_sync_barrier(dvmh_omp_interval *i)
         list_iterator *it = list_iterator_new(o->events);
         while(list_iterator_has_next(it)){
             dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
-            i->sync_barrier += event_sync_barrier(e);
+            i->sync_barrier += event_sync_barrier(e, 0);
         }
         list_iterator_destroy(it);
     }
-    // if (i->descriptor != NULL){
-    //    fprintf(stderr, "line %d\n", i->descriptor->info.begin_line);
-    // }
     // fprintf(stderr, "interval %ld, sync_barrier %lf\n", (long) i->descriptor, i->sync_barrier);
 }
 
 /* User time - считаем, что вложенного параллелизма нет */
 //TODO optimization
-static double event_user_time(dvmh_omp_event *e, int level)
+static double event_used_time(dvmh_omp_event *e, int level)
 {
-    double user_time = 0.0;
+    double used_time = 0.0;
     if (dvmh_omp_event_get_type(e) == DVMH_OMP_EVENT_PARALLEL_REGION){
         dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
         while (dvmh_omp_subevent_iterator_has_next(it)){
@@ -438,31 +439,31 @@ static double event_user_time(dvmh_omp_event *e, int level)
             if (dvmh_omp_event_get_thread_id(s) == dvmh_omp_event_get_thread_id(e)){
                 continue;
             }
-            user_time += dvmh_omp_event_duration(s);
+            used_time += dvmh_omp_event_duration(s);
         }
         dvmh_omp_subevent_iterator_destroy(it);
     } else {
         dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
         while (dvmh_omp_subevent_iterator_has_next(it)){
             dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
-            user_time += event_user_time(s, level + 1);
+            used_time += event_used_time(s, level + 1);
         }
         dvmh_omp_subevent_iterator_destroy(it);
     }
 
     if (level == 0){
-        user_time += dvmh_omp_event_duration(e);
+        used_time += dvmh_omp_event_duration(e);
     }
 
-    return user_time;
+    return used_time;
 }
 
-static void interval_user_time(dvmh_omp_interval *i)
+static void interval_used_time(dvmh_omp_interval *i)
 {
     list_iterator *it = list_iterator_new(i->subintervals);
     while (list_iterator_has_next(it)){
         dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
-        interval_user_time(subinterval);
+        interval_used_time(subinterval);
     }
     list_iterator_destroy(it);
 
@@ -471,11 +472,11 @@ static void interval_user_time(dvmh_omp_interval *i)
         list_iterator *it = list_iterator_new(o->events);
         while(list_iterator_has_next(it)){
             dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
-            i->user_time += event_user_time(e, 0);
+            i->used_time += event_used_time(e, 0);
         }
         list_iterator_destroy(it);
     }
-    // fprintf(stderr, "interval %ld, user_time %lf\n", (long) i->descriptor, i->user_time);
+    // fprintf(stderr, "interval %ld, used_time %lf\n", (long) i->descriptor, i->used_time);
 }
 
 /* Threads count - вложенного параллелизма нет */
@@ -530,7 +531,7 @@ static void interval_used_threads_number(dvmh_omp_interval *i)
 }
 
 /* Idle time in critical */
-static double event_idle_critical(dvmh_omp_event *e)
+static double event_idle_critical(dvmh_omp_event *e, int include_subintervals)
 {
     double idle_time = 0.0;
 
@@ -539,10 +540,10 @@ static double event_idle_critical(dvmh_omp_event *e)
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
-        if (dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
+        if (!include_subintervals && dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
             continue;
         }
-        idle_time += event_idle_critical(s);
+        idle_time += event_idle_critical(s, include_subintervals);
         if (event_type != DVMH_OMP_EVENT_CRITICAL_OUTER){
             continue;
         }
@@ -568,7 +569,7 @@ static void interval_idle_critical(dvmh_omp_interval *i)
         list_iterator *it = list_iterator_new(o->events);
         while(list_iterator_has_next(it)){
             dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
-            i->idle_critical += event_idle_critical(e);
+            i->idle_critical += event_idle_critical(e, 0);
         }
         list_iterator_destroy(it);
     }
@@ -576,16 +577,16 @@ static void interval_idle_critical(dvmh_omp_interval *i)
 }
 
 /* Sync flush time */
-static double event_sync_flush(dvmh_omp_event *e)
+static double event_sync_flush(dvmh_omp_event *e, int include_subintervals)
 {
     double sync_time = 0.0;
     dvmh_omp_subevent_iterator *it = dvmh_omp_subevent_iterator_new(e);
     while (dvmh_omp_subevent_iterator_has_next(it)){
         dvmh_omp_event *s = dvmh_omp_subevent_iterator_next(it);
-        if (dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
+        if (!include_subintervals && dvmh_omp_event_get_type(s) == DVMH_OMP_EVENT_INTERVAL){
             continue;
         }
-        sync_time += event_sync_flush(s);
+        sync_time += event_sync_flush(s, include_subintervals);
     }
     dvmh_omp_subevent_iterator_destroy(it);
 
@@ -611,7 +612,7 @@ static void interval_sync_flush(dvmh_omp_interval *i)
         list_iterator *it = list_iterator_new(o->events);
         while(list_iterator_has_next(it)){
             dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
-            i->sync_flush += event_sync_flush(e);
+            i->sync_flush += event_sync_flush(e, 0);
         }
         list_iterator_destroy(it);
     }
@@ -668,6 +669,8 @@ static void interval_idle_parallel(dvmh_omp_interval *i)
 typedef struct _thread_load {
     long thread_id; /* this is key */
     double load_time; /* this is value */
+    double sync_time; /* this is a value too */
+    double prod_time; /* the third value */
     UT_hash_handle hh; /* makes this structure hashable */
 } thread_load;
 
@@ -694,9 +697,13 @@ static void event_thread_load(dvmh_omp_event *e, thread_load **tl)
             assert(current_tl);
             current_tl->thread_id = thread_id;
             current_tl->load_time = 0.0;
+            current_tl->sync_time = 0.0;
             HASH_ADD_LONG(*tl, thread_id, current_tl);
         }
         current_tl->load_time += dvmh_omp_event_duration(se);
+        current_tl->sync_time += event_sync_flush(se, 1);
+        current_tl->sync_time += event_idle_critical(se, 1);
+        current_tl->sync_time += event_sync_barrier(se, 1);
     }
     dvmh_omp_subevent_iterator_destroy(it);
     return;
@@ -725,10 +732,14 @@ static void interval_load_imbalance(dvmh_omp_interval *i)
             assert(new_tl);
             new_tl->thread_id = o->thread_id;
             new_tl->load_time = 0.0;
+            new_tl->sync_time = 0.0;
             list_iterator *it = list_iterator_new(o->events);
             while(list_iterator_has_next(it)){
                 dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
                 new_tl->load_time += dvmh_omp_event_duration(e);
+                new_tl->sync_time += event_sync_flush(e, 1);
+                new_tl->sync_time += event_idle_critical(e, 1);
+                new_tl->sync_time += event_sync_barrier(e, 1);
             }
             list_iterator_destroy(it);
             HASH_ADD_LONG(tl, thread_id, new_tl);
@@ -744,35 +755,47 @@ static void interval_load_imbalance(dvmh_omp_interval *i)
             list_iterator_destroy(it);
             
             /* for current thread rewrite thread load time */
-            thread_load *current_tl;
-            HASH_FIND_LONG(tl, &o->thread_id, current_tl);
-            assert(current_tl);
-            current_tl->load_time = 0.0;
+            thread_load *this_tl;
+            HASH_FIND_LONG(tl, &o->thread_id, this_tl);
+            assert(this_tl);
+            this_tl->load_time = 0.0;
+            this_tl->sync_time = 0.0;
 
             it = list_iterator_new(o->events);
             while(list_iterator_has_next(it)){
                 dvmh_omp_event *e = (dvmh_omp_event *) list_iterator_next(it);
-                current_tl->load_time += dvmh_omp_event_duration(e);
+                this_tl->load_time += dvmh_omp_event_duration(e);
+                this_tl->sync_time += event_sync_flush(e, 1);
+                this_tl->sync_time += event_idle_critical(e, 1);
+                this_tl->sync_time += event_sync_barrier(e, 1);
             }
             list_iterator_destroy(it);
+
+            thread_load *current_tl, *tmp_tl;
+            HASH_ITER(hh, tl, current_tl, tmp_tl){
+                if (current_tl->thread_id != o->thread_id){
+                    this_tl->sync_time -= current_tl->sync_time;
+                }
+            }
         }
     }
 
     /* analyze thread_load *tl */
     thread_load *current_tl, *tmp;
     HASH_ITER(hh, tl, current_tl, tmp){
-        if (current_tl->load_time > i->thread_load_max){
-            i->thread_load_max = current_tl->load_time;
+        current_tl->prod_time = current_tl->load_time - current_tl->sync_time;
+        if (current_tl->prod_time > i->thread_prod_max){
+            i->thread_prod_max = current_tl->prod_time;
         }
-        if (current_tl->load_time < i->thread_load_min){
-            i->thread_load_min = current_tl->load_time;
+        if (current_tl->prod_time < i->thread_prod_min){
+            i->thread_prod_min = current_tl->prod_time;
         }
-        i->thread_load_avg += current_tl->load_time;
+        i->thread_prod_avg += current_tl->prod_time;
     }
-    i->thread_load_avg /= HASH_COUNT(tl);
+    i->thread_prod_avg /= HASH_COUNT(tl);
 
     HASH_ITER(hh, tl, current_tl, tmp){
-        i->load_imbalance += i->thread_load_max - current_tl->load_time;
+        i->load_imbalance += i->thread_prod_max - current_tl->prod_time;
     }
 
     /* clear memory */
@@ -782,9 +805,9 @@ static void interval_load_imbalance(dvmh_omp_interval *i)
     }
 
     // fprintf(stderr, "interval %ld, load_imbalance %lf\n", (long) i->descriptor, i->load_imbalance);
-    // fprintf(stderr, "interval %ld, thread_load_max %lf\n", (long) i->descriptor, i->thread_load_max);
-    // fprintf(stderr, "interval %ld, thread_load_min %lf\n", (long) i->descriptor, i->thread_load_min);
-    // fprintf(stderr, "interval %ld, thread_load_avg %lf\n", (long) i->descriptor, i->thread_load_avg);
+    // fprintf(stderr, "interval %ld, thread_prod_max %lf\n", (long) i->descriptor, i->thread_prod_max);
+    // fprintf(stderr, "interval %ld, thread_prod_min %lf\n", (long) i->descriptor, i->thread_prod_min);
+    // fprintf(stderr, "interval %ld, thread_prod_avg %lf\n", (long) i->descriptor, i->thread_prod_avg);
 }
 
 /* Total time */
@@ -814,7 +837,7 @@ static void interval_lost_time(dvmh_omp_interval *i)
     i->lost_time += i->sync_barrier;
     i->lost_time += i->idle_critical;
     i->lost_time += i->sync_flush;
-
+    i->lost_time += i->insufficient_parallelism;
     // fprintf(stderr, "interval %ld, lost_time %lf\n", (long) i->descriptor, i->lost_time);
 }
 
@@ -828,8 +851,25 @@ static void interval_productive_time(dvmh_omp_interval *i)
     }
     list_iterator_destroy(it);
 
-    i->productive_time = i->user_time - i->lost_time;
+    i->productive_time = i->used_time;
+    i->productive_time -= i->sync_barrier;
+    i->productive_time -= i->idle_critical;
+    i->productive_time -= i->sync_flush;
     // fprintf(stderr, "interval %ld, productive_time %lf\n", (long) i->descriptor, i->productive_time);
+}
+
+/* Efficiency */
+static void interval_insufficient_parallelism(dvmh_omp_interval *i)
+{
+    list_iterator *it = list_iterator_new(i->subintervals);
+    while (list_iterator_has_next(it)){
+        dvmh_omp_interval *subinterval = (dvmh_omp_interval *) list_iterator_next(it);
+        interval_insufficient_parallelism(subinterval);
+    }
+    list_iterator_destroy(it);
+
+    i->insufficient_parallelism = i->total_time - i->used_time;
+    // fprintf(stderr, "interval %ld, efficiency %lf\n", (long) i->descriptor, i->efficiency);
 }
 
 /* Efficiency */
@@ -881,9 +921,9 @@ double dvmh_omp_interval_get_sync_barrier_time(dvmh_omp_interval *i)
     return i->sync_barrier;
 }
 
-double dvmh_omp_interval_get_user_time(dvmh_omp_interval *i)
+double dvmh_omp_interval_get_used_time(dvmh_omp_interval *i)
 {
-    return i->user_time;
+    return i->used_time;
 }
 
 int dvmh_omp_interval_get_used_threads_number(dvmh_omp_interval *i)
@@ -911,19 +951,19 @@ double dvmh_omp_interval_get_load_imbalance_time(dvmh_omp_interval *i)
     return i->load_imbalance;
 }
 
-double dvmh_omp_interval_get_thread_load_max(dvmh_omp_interval *i)
+double dvmh_omp_interval_get_thread_prod_max(dvmh_omp_interval *i)
 {
-    return i->thread_load_max;
+    return i->thread_prod_max;
 }
 
-double dvmh_omp_interval_get_thread_load_min(dvmh_omp_interval *i)
+double dvmh_omp_interval_get_thread_prod_min(dvmh_omp_interval *i)
 {
-    return i->thread_load_min;
+    return i->thread_prod_min;
 }
 
-double dvmh_omp_interval_get_thread_load_avg(dvmh_omp_interval *i)
+double dvmh_omp_interval_get_thread_prod_avg(dvmh_omp_interval *i)
 {
-    return i->thread_load_avg;
+    return i->thread_prod_avg;
 }
 
 double dvmh_omp_interval_get_total_time(dvmh_omp_interval *i)
@@ -939,6 +979,11 @@ double dvmh_omp_interval_get_lost_time(dvmh_omp_interval *i)
 double dvmh_omp_interval_get_productive_time(dvmh_omp_interval *i)
 {
     return i->productive_time;
+}
+
+double dvmh_omp_interval_get_insufficient_parallelism(dvmh_omp_interval *i)
+{
+    return i->insufficient_parallelism;
 }
 
 double dvmh_omp_interval_get_efficiency(dvmh_omp_interval *i)
@@ -962,6 +1007,14 @@ int dvmh_omp_interval_begin_line(dvmh_omp_interval *i)
         return 1;
     }
     return i->descriptor->info.begin_line;
+}
+
+char *dvmh_omp_interval_get_file_name(dvmh_omp_interval *i)
+{
+    if (i->descriptor == NULL){
+        return "MAIN";
+    }
+    return i->descriptor->info.file_name;
 }
 
 /* subinterval iterator */
