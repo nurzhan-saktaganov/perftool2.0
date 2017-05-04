@@ -43,7 +43,7 @@
           <li><input type="radio" name="mode" value="percentage" onclick="PercentageMode();">Percentage</li>
         </ul>
 
-        <h2>View Source:</h2>
+        <h2>Show columns:</h2>
         <ul id="fieldsList">
         </ul>
     </td>
@@ -114,6 +114,7 @@
 
   function InitFieldsList(){
     var fieldsList = document.getElementById("fieldsList");
+    fieldsList.innerHTML = "";
     for (var i in headers){
       var fieldName = headers[i];
       if (fieldName == 'begin line'){
@@ -344,6 +345,8 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
     ignoredColumns = {
       'subintervals': true, 'id': true, 'parent id': true,
     };
+
+
 
     InitHeaders();
     InitFieldsList();
