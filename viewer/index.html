@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>SlickGrid example 5: Collapsing</title>
+  <title>DVMH OpenMP analyze viewer</title>
   <link rel="stylesheet" href="css/slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
   <link rel="stylesheet" href="css/viewer.css" type="text/css"/>
@@ -71,18 +71,13 @@
     'subintervals': true, 'id': true, 'parent id': true,
   };
 
-  function IsIgnoredColumn(columnName){
-    if (columnName in ignoredColumns){
-      return ignoredColumns[columnName];
-    }
-    return false;
-  }
-
-  var notTimeFields = [
-    'begin line', 'calls count',
-    'efficiency', 'in parallel',
-    'used threads',
-    'parent', 'id', 'file name',
+  var timeFields = [
+    'execution time', 'flush time',
+    'idle barrier time', 'idle critical time',
+    'idle parallel', 'io time',
+    'lost time?', 'productive time',
+    'total time', 'used time', 'thread prod max',
+    'thread prod min', 'thread prod avg'
   ];
 
   var headers;
@@ -105,6 +100,13 @@
       headers.push(property);
     }
     headers.sort();
+  }
+
+  function IsIgnoredColumn(columnName){
+    if (columnName in ignoredColumns){
+      return ignoredColumns[columnName];
+    }
+    return false;
   }
 
   function IgnoreColumn(ignore, columnName){
@@ -134,14 +136,10 @@
     }
   }
 
-  /* list */
-  //InitHeaders();
-  //InitFieldsList();
-
   function TaskNameFormatter(row, cell, value, columnDef, dataContext) {
     value = value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    //var spacer = "<span style='display:inline-block;height:1px;width:" + (15 * dataContext["indent"]) + "px'></span>";
-    var spacer = "&gt".repeat(dataContext['indent']);
+    var spacer = "<span style='display:inline-block;height:1px;width:" + (15 * dataContext["indent"]) + "px'></span>";
+    //var spacer = "&gt".repeat(dataContext['indent']);
     var idx = dataView.getIdxById(dataContext.id);
     if (data[idx + 1] && data[idx + 1].indent > data[idx].indent) {
       if (dataContext._collapsed) {
@@ -166,14 +164,12 @@
       if (header == 'in parallel'){
         column['formatter'] = Slick.Formatters.YesNo;
       }
-      if (percentageMode && notTimeFields.indexOf(header) == -1){
+      if (percentageMode && timeFields.indexOf(header) != -1){
         column['formatter'] = Slick.Formatters.PercentCompleteBar;
       }
       columns.push(column);
     }
   }
-
-  //InitColumns();
 
   function InitData(){
     data = [];
@@ -201,10 +197,11 @@
     }
 
     var length = data.length;
+
     for (var i = length -1; i >= 0; i--){
       for (var j in headers){
         var header = headers[j];
-        if (notTimeFields.indexOf(header) != -1){
+        if (timeFields.indexOf(header) == -1){
           continue;
         }
         data[i][header] = parseFloat(data[i][header]);
@@ -218,11 +215,11 @@
     }
   }
 
-if (window.File && window.FileReader && window.FileList && window.Blob) {
-  // Great success! All the File APIs are supported.
-} else {
-  alert('The File APIs are not fully supported in this browser.');
-}
+  if (window.File && window.FileReader && window.FileList) {
+    // Great success! All the File APIs are supported.
+  } else {
+    alert('The File APIs are not fully supported in this browser.');
+  }
 
   var options = {
     enableCellNavigation: false,
@@ -247,7 +244,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
     InitColumns();
     InitData();
 
-      // initialize the model
+    // initialize the model
     dataView = new Slick.Data.DataView({ inlineFilters: true });
     dataView.beginUpdate();
     dataView.setItems(data);
@@ -257,12 +254,6 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 
     // initialize the grid
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
-
-    /*
-    grid.onCellChange.subscribe(function (e, args) {
-      dataView.updateItem(args.item.id, args.item);
-    });
-    */
 
     /* collapsing logic */
     grid.onClick.subscribe(function (e, args) {
@@ -284,18 +275,18 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
   }
 
   function PercentageMode(){
+    percentageMode = true;
     if (!interval){
       return;
     }
-    percentageMode = true;
     Render();
   }
 
   function TimeMode(){
+    percentageMode = false;
     if (!interval){
       return;
     }
-    percentageMode = false;
     Render();
   }
 
@@ -338,15 +329,10 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
     });
 
     interval = intervals[0];
-    //for (property in interval){
-    //  alert(property);
-    //}
 
     ignoredColumns = {
       'subintervals': true, 'id': true, 'parent id': true,
     };
-
-
 
     InitHeaders();
     InitFieldsList();
@@ -355,7 +341,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
   }
 
   function handleFileSelect(evt) {
-    var file = evt.target.files[0]; // FileList object
+    var file = evt.target.files[0];
     var filename = file.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     document.getElementById('filename').innerHTML = filename;
     var reader = new FileReader();
@@ -364,9 +350,6 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
   }
 
   document.getElementById('file').addEventListener('change', handleFileSelect);
-
-//$(Render);
-  //Render();
 </script>
 </body>
 </html>
