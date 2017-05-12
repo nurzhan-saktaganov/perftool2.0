@@ -58,7 +58,7 @@ void DBG_Init(long *ThreadID)
 	
 	dvmh_omp_thread_info_event_occured(initial_thread_info, event);
 	
-	fprintf(stdout, "Starting perfomance analyze\n");
+	fprintf(stdout, "Starting performance analyze\n");
 }
 
 void DBG_Finalize()
