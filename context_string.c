@@ -95,7 +95,6 @@ char *get_param_str_value(const char *context_string, const char *param_name)
 	return str_value;
 }
 
-
 int get_param_int_value(const char *context_string, const char *param_name)
 {
 	char *str_value;
@@ -109,7 +108,7 @@ int get_param_int_value(const char *context_string, const char *param_name)
 	return int_value;
 }
 
-list *get_names_list(const char *comma_separated_names)
+static list *get_names_list(const char *comma_separated_names)
 {
 	list *names;
 	char *token, *save_ptr;

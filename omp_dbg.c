@@ -13,9 +13,9 @@
 #define TO_DESC(long_value) ((context_descriptor *) (long_value))
 #define IS_INITIALIZED(thread_id_ptr) (((int) (*(thread_id_ptr))) != -1 ? 1 : 0 )
 
-dvmh_omp_thread_info *initial_thread_info = NULL;
+static dvmh_omp_thread_info *initial_thread_info = NULL;
 
-dvmh_omp_event *get_parent_event(long *StaticContextHandle)
+static dvmh_omp_event *get_parent_event(long *StaticContextHandle)
 {
 	context_descriptor *cd = (context_descriptor *) *StaticContextHandle;
 	if (cd->info.type != CONTEXT_PARALLEL){
@@ -25,7 +25,7 @@ dvmh_omp_event *get_parent_event(long *StaticContextHandle)
 	return (dvmh_omp_event *) cd->parallel.parent_event;
 }
 
-void set_parent_event(long *StaticContextHandle, dvmh_omp_event *pe)
+static void set_parent_event(long *StaticContextHandle, dvmh_omp_event *pe)
 {
 	context_descriptor *cd = (context_descriptor *) *StaticContextHandle;
 	if (cd->info.type != CONTEXT_PARALLEL){

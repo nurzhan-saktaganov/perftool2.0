@@ -7,7 +7,7 @@
 // case insensitive string comparison
 #define strcmp strcasecmp
 
-context_type get_context_type_from_name(const char *context_name)
+static context_type get_context_type_from_name(const char *context_name)
 {
 	if (context_name == NULL){
 		return CONTEXT_UNKNOWN;
@@ -67,7 +67,7 @@ context_type get_context_string_type(const char *context_string)
 	return type;
 }
 
-redop_type get_redop_type_from_name(const char *redop_name)
+static redop_type get_redop_type_from_name(const char *redop_name)
 {
 	if (redop_name == NULL){
 		return REDOP_UNKNOWN;
@@ -111,7 +111,7 @@ redop_type get_redop_type(const char *context_string)
 	return redop;
 }
 
-behavior_type get_behavior_type_from_name(const char *behavior_name)
+static behavior_type get_behavior_type_from_name(const char *behavior_name)
 {
 	if (behavior_name == NULL){
 		return BEHAVIOR_UNKNOWN;
@@ -137,7 +137,7 @@ behavior_type get_behavior_type(const char *context_string)
 	return behavior;
 }
 
-schedule_type get_schedule_type_from_name(const char *schedule_name)
+static schedule_type get_schedule_type_from_name(const char *schedule_name)
 {
 	if (schedule_name == NULL){
 		return SCHEDULING_UNKNOWN;
@@ -165,7 +165,7 @@ schedule_type get_schedule_type(const char *context_string)
 	return schedule;
 }
 
-variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
+static variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
 {
 	if (rt_type_name == NULL) {
 		return RT_UNKNOWN;
