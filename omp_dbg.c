@@ -35,14 +35,14 @@ static void set_parent_event(long *StaticContextHandle, dvmh_omp_event *pe)
 	cd->parallel.parent_event = (void *) pe;
 }
 
-long DBG_Get_Addr(void  *VarPtr)
+long DBG_Get_Addr(void *VarPtr)
 {
-  return (long) VarPtr;
+	return (long) VarPtr;
 }
 
 void DBG_Type_Control()
 {
-	fprintf (stderr, "DBG_Type_Control\n");
+	//fprintf (stderr, "DBG_Type_Control\n");
 }
 
 void DBG_Init(long *ThreadID)
@@ -58,7 +58,7 @@ void DBG_Init(long *ThreadID)
 	
 	dvmh_omp_thread_info_event_occured(initial_thread_info, event);
 	
-	fprintf (stderr, "DBG_Init\n");
+	fprintf(stdout, "Starting perfomance analyze\n");
 }
 
 void DBG_Finalize()
