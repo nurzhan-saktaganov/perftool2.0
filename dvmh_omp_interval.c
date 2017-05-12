@@ -719,6 +719,9 @@ static void interval_load_imbalance(dvmh_omp_interval *i)
     list_iterator_destroy(it);
 
     if (i->used_threads_number < 2){
+        i->thread_prod_max = i->used_time;
+        i->thread_prod_min = i->used_time;
+        i->thread_prod_avg = i->used_time;
         return;
     }
 
