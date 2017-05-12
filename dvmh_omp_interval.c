@@ -324,8 +324,8 @@ static void interval_io_time(dvmh_omp_interval *i)
 //TODO optimization
 static int events_compare(const void *a, const void *b)
 {
-    double t1 = dvmh_omp_event_get_begin_time((dvmh_omp_event *) a);
-    double t2 = dvmh_omp_event_get_begin_time((dvmh_omp_event *) b);
+    double t1 = dvmh_omp_event_get_begin_time(*((dvmh_omp_event **) a));
+    double t2 = dvmh_omp_event_get_begin_time(*((dvmh_omp_event **) b));
     return t1 == t2 ? 0 : (t1 > t2 ? 1 : -1);
 }
 
@@ -372,7 +372,6 @@ static void interval_execution_time(dvmh_omp_interval *i)
             i->execution_time += end_time - begin_time;
             begin_time = current_begin_time;
             end_time = current_end_time;
-            continue;
         }
         if (current_end_time > end_time){
             end_time = current_end_time;
