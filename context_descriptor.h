@@ -13,6 +13,7 @@
 #define CTN_FUNCTION		"function"
 #define CTN_FUNC_CALL		"func_call"
 #define CTN_INTERVAL		"interval"
+#define CTN_IO				"io"
 #define CTN_MASTER			"master"
 #define CTN_OMPLOOP			"omploop"
 #define CTN_ORDERED			"ordered"
@@ -70,6 +71,7 @@ typedef enum _context_type {
 	CONTEXT_FUNCTION,
 	CONTEXT_FUNC_CALL,
 	CONTEXT_INTERVAL,
+	CONTEXT_IO,
 	CONTEXT_MASTER,
 	CONTEXT_OMPLOOP,
 	CONTEXT_ORDERED,
@@ -262,6 +264,10 @@ typedef struct _interval_context_descriptor {
 	basic_info bi;
 } interval_context_descriptor;
 
+typedef struct _io_context_descriptor {
+	basic_info bi;
+} io_context_descriptor;
+
 typedef union _context_descriptor {
 	basic_info info;
 	parallel_context_descriptor parallel;
@@ -284,6 +290,7 @@ typedef union _context_descriptor {
 	func_call_context_descriptor func_call;
 	function_context_descriptor function;
 	interval_context_descriptor interval;
+	io_context_descriptor io;
 } context_descriptor;
 
 context_type get_context_string_type(const char *context_string);

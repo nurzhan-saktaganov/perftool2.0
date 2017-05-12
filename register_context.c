@@ -16,6 +16,7 @@ static context_descriptor *register_flush_context(const char *context_string);
 static context_descriptor *register_function_context(const char *context_string);
 static context_descriptor *register_func_call_context(const char *context_string);
 static context_descriptor *register_interval_context(const char *context_string);
+static context_descriptor *register_io_context(const char *context_string);
 static context_descriptor *register_master_context(const char *context_string);
 static context_descriptor *register_omploop_context(const char *context_string);
 static context_descriptor *register_ordered_context(const char *context_string);
@@ -63,6 +64,9 @@ context_descriptor * register_context(const char *context_string)
 			break;
 		case CONTEXT_INTERVAL:
 			cd = register_interval_context(context_string);
+			break;
+		case CONTEXT_IO:
+			cd = register_io_context(context_string);
 			break;
 		case CONTEXT_MASTER:
 			cd = register_master_context(context_string);
@@ -317,6 +321,24 @@ static context_descriptor *register_interval_context(const char *context_string)
 }
 
 static void unregister_interval_context(context_descriptor *cd)
+{
+	if (cd->info.file_name != NULL){
+		free(cd->info.file_name);
+	}
+	free(cd);
+}
+
+static context_descriptor *register_io_context(const char *context_string)
+{
+	context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
+	assert(cd);
+    cd->info.type = CONTEXT_IO;
+	cd->info.file_name = get_param_str_value(context_string, "file");
+	cd->info.begin_line = get_param_int_value(context_string, "line1");
+	return cd;
+}
+
+static void unregister_io_context(context_descriptor *cd)
 {
 	if (cd->info.file_name != NULL){
 		free(cd->info.file_name);
@@ -675,6 +697,9 @@ static void unregister_context(context_descriptor *cd)
 			break;
 		case CONTEXT_INTERVAL:
 			unregister_interval_context(cd);
+			break;
+		case CONTEXT_IO:
+			unregister_io_context(cd);
 			break;
 		case CONTEXT_MASTER:
 			unregister_master_context(cd);
