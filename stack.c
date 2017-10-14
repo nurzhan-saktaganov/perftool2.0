@@ -1,32 +1,32 @@
-#include "list.h"
 #include "stack.h"
+#include "list.h"
 
 stack *stack_create()
 {
 	return list_create();
 }
 
-void stack_destroy(stack *s_p, void (*delete_data)(void *))
+void stack_destroy(stack *s)
 {
-	list_destroy(s_p, delete_data);
+	list_destroy(s);
 }
 
-void stack_push(stack *s_p, void *data)
+void stack_push(stack *s, void *data)
 {
-	list_append_head(s_p, data);
+	list_append_tail(s, data);
 }
 
-void *stack_pop(stack *s_p)
+void *stack_pop(stack *s)
 {
-	return list_remove_head(s_p);
+	return list_remove_tail(s);
 }
 
-void *stack_peek(stack *s_p)
+void *stack_peek(stack *s)
 {
-	return list_peek_head(s_p);
+	return list_peek_tail(s);
 }
 
-int stack_size(stack *s_p)
+int stack_size(stack *s)
 {
-	return list_size(s_p);
+	return list_size(s);
 }

@@ -3,13 +3,25 @@
 
 #include "list.h"
 
+// Стек
 typedef list stack;
 
+// Возвращает новый стек
 stack *stack_create();
-void stack_destroy(stack *s_p, void (*destroy_data)(void *));
-void stack_push(stack *s_p, void *data);
-void *stack_pop(stack *s_p);
-void *stack_peek(stack *s_p);
-int stack_size(stack *s_p);
+
+// Уничтожает стек
+void stack_destroy(stack *s);
+
+// Кладет элемент в стек
+void stack_push(stack *s, void *data);
+
+// Извлекает элемент из стека
+void *stack_pop(stack *s);
+
+// Возвращает верхний элемент стека
+void *stack_peek(stack *s);
+
+// Возвращает размер стека
+int stack_size(stack *s);
 
 #endif
