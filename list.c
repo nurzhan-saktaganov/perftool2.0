@@ -3,184 +3,182 @@
 #include "list.h"
 
 typedef struct _node {
-	struct _node *prev;
-	struct _node *next;
-	void *data;
+	struct _node *_prev;
+	struct _node *_next;
+	void *_data;
 } node;
 
 struct _list {
-	node *head;
-	node *tail;
-	int size;
+	node *_head;
+	node *_tail;
+	int _size;
 };
 
 struct _list_iterator {
-	node *current;
+	node *_current;
 };
 
 list *list_create()
 {
-	list *l_p = (list *) malloc(sizeof(list));
-	assert(l_p);
-	l_p->head = NULL;
-	l_p->tail = NULL;
-	l_p->size = 0;
-	return l_p;
+	list *l = (list *) malloc(sizeof(list));
+	assert(l);
+	l->_head = l->_tail = NULL;
+	l->_size = 0;
+	return l;
 }
 
-void list_destroy(list *l_p, void (*destroy_data)(void *))
+void list_destroy(list *l)
 {
-	if (l_p == NULL){
-		return;
-	}
-	node *current, *next;
-	current = l_p->head;
-	while (current != NULL){
-		if (destroy_data != NULL){
-			destroy_data(current->data);
-		}
-		next = current->next;
+	assert(l);
+	node *current = l->_head;
+	while (current){
+		node* next = current->_next;
 		free(current);
 		current = next;
 	}
-	free(l_p);
-	return;
+	free(l);
 }
 
-void list_append_head(list *l_p, void *data)
+void list_append_head(list *l, void *data)
 {
+	assert(l);
 	node *new_node = (node *) malloc(sizeof(node));
 	assert(new_node);
-	new_node->data = data;
-	new_node->prev = NULL;
-	new_node->next = l_p->head;
-	if (l_p->head != NULL){
-		l_p->head->prev = new_node;
+
+	new_node->_data = data;
+
+	new_node->_prev = NULL;
+	new_node->_next = l->_head;
+
+	if (l->_head){
+		l->_head->_prev = new_node;
 	} else {
-		l_p->tail = new_node;
+		l->_tail = new_node;
 	}
-	l_p->head = new_node;
-	l_p->size += 1;
-	return;
+
+	l->_head = new_node;
+	l->_size += 1;
 }
 
-void *list_remove_head(list *l_p)
+void *list_remove_head(list *l)
 {
-	if (l_p == NULL || l_p->head == NULL){
-		return NULL;
-	}
-	node *first = l_p->head;
-	void *data = l_p->head->data;
-	l_p->head = l_p->head->next;
-	if (l_p->head != NULL){
-		l_p->head->prev = NULL;
+	assert(list_size(l) > 0);
+
+	node *head = l->_head;
+	void *data = head->_data;
+
+	l->_head = l->_head->_next;
+
+	if (l->_head){
+		l->_head->_prev = NULL;
 	} else {
-		l_p->tail = NULL;
+		l->_tail = NULL;
 	}
-	l_p->size -= 1;
-	free(first);
+
+	l->_size -= 1;
+	free(head);
+
 	return data;
 }
 
-void list_append_tail(list *l_p, void *data)
+void list_append_tail(list *l, void *data)
 {
+	assert(l);
 	node *new_node = (node *) malloc(sizeof(node));
 	assert(new_node);
-	new_node->data = data;
-	new_node->prev = l_p->tail;
-	new_node->next = NULL;
-	if (l_p->tail != NULL){
-		l_p->tail->next = new_node;
+
+	new_node->_data = data;
+
+	new_node->_prev = l->_tail;
+	new_node->_next = NULL;
+
+	if (l->_tail){
+		l->_tail->_next = new_node;
 	} else {
-		l_p->head = new_node;
+		l->_head = new_node;
 	}
-	l_p->tail = new_node;
-	l_p->size += 1;
-	return;
+
+	l->_tail = new_node;
+	l->_size += 1;
 }
 
-void *list_remove_tail(list *l_p)
+void *list_remove_tail(list *l)
 {
-	if (l_p == NULL || l_p->tail == NULL){
-		return NULL;
-	}
-	node *last = l_p->tail;
-	void *data = l_p->tail->data;
-	l_p->tail = l_p->tail->prev;
-	if (l_p->tail != NULL){
-		l_p->tail->next = NULL;
+	assert(list_size(l) > 0);
+
+	node *tail = l->_tail;
+	void *data = tail->_data;
+
+	l->_tail = l->_tail->_prev;
+
+	if (l->_tail){
+		l->_tail->_next = NULL;
 	} else {
-		l_p->head = NULL;
+		l->_head = NULL;
 	}
-	l_p->size -= 1;
-	free(last);
+
+	l->_size -= 1;
+	free(tail);
+
 	return data;
 }
 
-void *list_peek_head(list *l_p)
+void *list_peek_head(list *l)
 {
-	if (l_p == NULL || l_p->head == NULL){
-		return NULL;
-	} 
-	return l_p->head->data;
+	assert(list_size(l) > 0);
+	return l->_head->_data;
 }
 
-void *list_peek_tail(list *l_p)
+void *list_peek_tail(list *l)
 {
-	if (l_p == NULL || l_p->tail == NULL){
-		return NULL;
-	}
-	return l_p->tail->data;
+	assert(list_size(l) > 0);
+	return l->_tail->_data;
 }
 
-int list_size(list *l_p)
+int list_size(list *l)
 {
-	return l_p != NULL ? l_p->size : 0;
+	assert(l);
+	return l->_size;
 }
 
 int list_has_element(list *l, void *data)
 {
-	node *n = l->head;
-	while (n != NULL){
-		if (n->data == data){
+	assert(l);
+	node *current = l->_head;
+	while (current){
+		if (current->_data == data){
 			return 1;
 		}
-		n = n->next;
+		current = current->_next;
 	}
 	return 0;
 }
 
-list_iterator *list_iterator_new(list *l_p)
+list_iterator *list_iterator_new(list *l)
 {
-	if (l_p == NULL){
-		return NULL;
-	}
-	list_iterator *li_p = (list_iterator *) malloc(sizeof(list_iterator));
-	assert(li_p);
-	li_p->current = l_p->head;
-	return li_p;
+	assert(l);
+	list_iterator *i = (list_iterator *) malloc(sizeof(list_iterator));
+	assert(i);
+	i->_current = l->_head;
+	return i;
 }
 
-int list_iterator_has_next(list_iterator *li_p)
+int list_iterator_has_next(list_iterator *i)
 {
-	if (li_p == NULL || li_p->current == NULL){
-		return 0;
-	}
-	return 1;
+	assert(i);
+	return i->_current != NULL;
 }
 
-void *list_iterator_next(list_iterator *li_p)
+void *list_iterator_next(list_iterator *i)
 {
-	void *data = li_p->current->data;
-	li_p->current = li_p->current->next;
+	assert(list_iterator_has_next(i));
+	void *data = i->_current->_data;
+	i->_current = i->_current->_next;
 	return data;
 }
 
-void list_iterator_destroy(list_iterator *li_p)
+void list_iterator_destroy(list_iterator *i)
 {
-	if (li_p == NULL){
-		return;
-	}
-	free(li_p);
-	return;
+	assert(i);
+	free(i);
 }
