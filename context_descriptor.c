@@ -9,9 +9,9 @@
 
 static context_type get_context_type_from_name(const char *context_name)
 {
-	if (context_name == NULL){
-		return CONTEXT_UNKNOWN;
-	} else if (strcmp(context_name, CTN_ARRAY_NAME) == 0){
+	assert(context_name);
+
+	if (strcmp(context_name, CTN_ARRAY_NAME) == 0){
 		return CONTEXT_ARRAY_NAME;
 	} else if (strcmp(context_name, CTN_BARRIER) == 0){
 		return CONTEXT_BARRIER;
@@ -54,26 +54,23 @@ static context_type get_context_type_from_name(const char *context_name)
 	} else if (strcmp(context_name, CTN_WORKSHARE) == 0){
 		return CONTEXT_WORKSHARE;
 	}
-	fprintf (stderr, "Unknown context name: \"%s\"\n", context_name); 
+	fprintf (stderr, "Unknown context name: \"%s\"\n", context_name);
 	return CONTEXT_UNKNOWN;
 }
 
 context_type get_context_string_type(const char *context_string)
 {
-	context_type type;
 	char *context_type_name = get_param_str_value(context_string, "type");
-	type = get_context_type_from_name(context_type_name);
-	if (context_type_name != NULL){
-		free(context_type_name);
-	}
+	context_type type = get_context_type_from_name(context_type_name);
+	free(context_type_name);
 	return type;
 }
 
 static redop_type get_redop_type_from_name(const char *redop_name)
 {
-	if (redop_name == NULL){
-		return REDOP_UNKNOWN;
-	} else if (strcmp(redop_name, RTN_PLUS) == 0){
+	assert(redop_name);
+
+	if (strcmp(redop_name, RTN_PLUS) == 0){
 		return REDOP_PLUS;
 	} else if (strcmp(redop_name, RTN_MINUS) == 0){
 		return REDOP_MINUS;
@@ -104,20 +101,17 @@ static redop_type get_redop_type_from_name(const char *redop_name)
 
 redop_type get_redop_type(const char *context_string)
 {
-	redop_type redop;
 	char *redop_name = get_param_str_value(context_string, "redop");
-	redop = get_redop_type_from_name(redop_name);
-	if (redop_name != NULL){
-		free(redop_name);
-	}
+	redop_type redop = get_redop_type_from_name(redop_name);
+	free(redop_name);
 	return redop;
 }
 
 static behavior_type get_behavior_type_from_name(const char *behavior_name)
 {
-	if (behavior_name == NULL){
-		return BEHAVIOR_UNKNOWN;
-	} else if (strcmp(behavior_name, BTN_PRIVATE) == 0){
+	assert(behavior_name);
+
+	if (strcmp(behavior_name, BTN_PRIVATE) == 0){
 		return BEHAVIOR_PRIVATE;
 	} else if (strcmp(behavior_name, BTN_SHARED) == 0){
 		return BEHAVIOR_SHARED;
@@ -130,20 +124,17 @@ static behavior_type get_behavior_type_from_name(const char *behavior_name)
 
 behavior_type get_behavior_type(const char *context_string)
 {
-	behavior_type behavior;
 	char *behavior_name = get_param_str_value(context_string, "default");
-	behavior = get_behavior_type_from_name(behavior_name);
-	if (behavior_name != NULL){
-		free(behavior_name);
-	}
+	behavior_type behavior = get_behavior_type_from_name(behavior_name);
+	free(behavior_name);
 	return behavior;
 }
 
 static schedule_type get_schedule_type_from_name(const char *schedule_name)
 {
-	if (schedule_name == NULL){
-		return SCHEDULING_UNKNOWN;
-	} else if (strcmp(schedule_name, STN_STATIC) == 0){
+	assert(schedule_name);
+
+	if (strcmp(schedule_name, STN_STATIC) == 0){
 		return SCHEDULING_STATIC;
 	} else if (strcmp(schedule_name, STN_DYNAMIC) == 0){
 		return SCHEDULING_DYNAMIC;
@@ -158,20 +149,17 @@ static schedule_type get_schedule_type_from_name(const char *schedule_name)
 
 schedule_type get_schedule_type(const char *context_string)
 {
-	schedule_type schedule;
 	char *schedule_name = get_param_str_value(context_string, "schedule");
-	schedule = get_schedule_type_from_name(schedule_name);
-	if (schedule_name != NULL){
-		free(schedule_name);
-	}
+	schedule_type schedule = get_schedule_type_from_name(schedule_name);
+	free(schedule_name);
 	return schedule;
 }
 
 static variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
 {
-	if (rt_type_name == NULL) {
-		return RT_UNKNOWN;
-	} else if (strcmp(rt_type_name, VTN_CHAR) == 0) {
+	assert(rt_type_name);
+
+	if (strcmp(rt_type_name, VTN_CHAR) == 0) {
 		return RT_CHAR;
 	} else if (strcmp(rt_type_name, VTN_INT) == 0) {
 		return RT_INT;
@@ -192,11 +180,8 @@ static variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
 
 variable_rt_type get_variable_rt_type(const char *context_string)
 {
-	variable_rt_type variable_type;
 	char *str_val = get_param_str_value(context_string, "vtype");
-	variable_type = get_variable_rt_type_from_name(str_val);
-	if (str_val != NULL){
-		free(str_val);
-	}
+	variable_rt_type variable_type = get_variable_rt_type_from_name(str_val);
+	free(str_val);
 	return variable_type;
 }
