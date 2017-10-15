@@ -101,7 +101,7 @@ typedef enum _redop_type {
 	REDOP_PRODUCT,
 } redop_type;
 
-typedef enum  _behavior_type {
+typedef enum _behavior_type {
 	BEHAVIOR_UNKNOWN,
 	BEHAVIOR_NONE,
 	BEHAVIOR_PRIVATE,
@@ -134,96 +134,6 @@ typedef struct _basic_info {
 	int end_line;
 } basic_info;
 
-typedef struct _parallel_context_descriptor {
-	basic_info bi;
-	list *names_private;
-	list *names_shared;
-	list *names_firstprivate;
-	list *names_copyin;
-	list *names_reduction;
-	redop_type redop;
-	behavior_type default_behavior;
-	char *if_text;
-	char *num_threads;
-	void *parent_event; // для передачи parent_event ptr
-} parallel_context_descriptor;
-
-typedef struct _omploop_context_descriptor {
-	basic_info bi;
-	int is_ordered;
-	int is_nowait;
-	list *names_private;
-	list *names_firstprivate;
-	list *names_lastprivate;
-	list *names_reduction;
-	redop_type redop;
-	schedule_type schedule;
-	char *chunk_size;
-} omploop_context_descriptor;
-
-typedef struct _sections_context_descriptor {
-	basic_info bi;
-	int is_nowait;
-	list *names_private;
-	list *names_firstprivate;
-	list *names_lastprivate;
-	list *names_reduction;
-	redop_type redop;
-} sections_context_descriptor;
-
-typedef struct _section_event_context_descriptor {
-	basic_info bi;
-} section_event_context_descriptor;
-
-typedef struct _single_context_descriptor {
-	basic_info bi;
-	int is_nowait;
-	list *names_private;
-	list *names_firstprivate;
-	list *names_copyprivate;
-} single_context_descriptor;
-
-typedef struct _workshare_context_descriptor {
-	basic_info bi;
-	int is_nowait;
-} workshare_context_descriptor;
-
-typedef struct _master_context_descriptor {
-	basic_info bi;
-} master_context_descriptor;
-
-typedef struct _critical_context_descriptor {
-	basic_info bi;
-	char *critical_name;
-} critical_context_descriptor;
-
-typedef struct _barrier_context_descriptor {
-	basic_info bi;
-} barrier_context_descriptor;
-
-typedef struct _flush_context_descriptor {
-	basic_info bi;
-	list *names_flushed;
-} flush_context_descriptor;
-
-typedef struct _ordered_context_descriptor {
-	basic_info bi;
-} ordered_context_descriptor;
-
-typedef struct _threadprivate_context_descriptor {
-	basic_info bi;
-	list *names_threadprivate;
-} threadprivate_context_descriptor;
-
-typedef struct _variable_name_context_descriptor {
-	basic_info bi;
-	char *var_name;
-	variable_rt_type variable_type;
-	int is_indata;
-	int is_incommon;
-	int is_insave;
-} variable_name_context_descriptor;
-
 typedef struct _array_name_context_descriptor {
 	basic_info bi;
 	char *arr_name;
@@ -234,19 +144,29 @@ typedef struct _array_name_context_descriptor {
 	int is_insave;
 } array_name_context_descriptor;
 
+typedef struct _barrier_context_descriptor {
+	basic_info bi;
+} barrier_context_descriptor;
+
 typedef struct _common_name_context_descriptor {
 	basic_info bi;
 	char *block_name;
 	list *names_components;
 } common_name_context_descriptor;
 
+typedef struct _critical_context_descriptor {
+	basic_info bi;
+	char *critical_name;
+} critical_context_descriptor;
+
 typedef struct _file_name_context_descriptor {
 	basic_info bi;
 } file_name_context_descriptor;
 
-typedef struct _seqloop_context_descriptor {
+typedef struct _flush_context_descriptor {
 	basic_info bi;
-} seqloop_context_descriptor;
+	list *names_flushed;
+} flush_context_descriptor;
 
 typedef struct _func_call_context_descriptor {
 	basic_info bi;
@@ -268,29 +188,109 @@ typedef struct _io_context_descriptor {
 	basic_info bi;
 } io_context_descriptor;
 
+typedef struct _master_context_descriptor {
+	basic_info bi;
+} master_context_descriptor;
+
+typedef struct _omploop_context_descriptor {
+	basic_info bi;
+	int is_ordered;
+	int is_nowait;
+	list *names_private;
+	list *names_firstprivate;
+	list *names_lastprivate;
+	list *names_reduction;
+	redop_type redop;
+	schedule_type schedule;
+	char *chunk_size;
+} omploop_context_descriptor;
+
+typedef struct _ordered_context_descriptor {
+	basic_info bi;
+} ordered_context_descriptor;
+
+typedef struct _parallel_context_descriptor {
+	basic_info bi;
+	list *names_private;
+	list *names_shared;
+	list *names_firstprivate;
+	list *names_copyin;
+	list *names_reduction;
+	redop_type redop;
+	behavior_type default_behavior;
+	char *if_text;
+	char *num_threads;
+	void *parent_event; // для передачи parent_event ptr, TODO remove it when it becomes unnecessary
+} parallel_context_descriptor;
+
+typedef struct _section_event_context_descriptor {
+	basic_info bi;
+} section_event_context_descriptor;
+
+typedef struct _sections_context_descriptor {
+	basic_info bi;
+	int is_nowait;
+	list *names_private;
+	list *names_firstprivate;
+	list *names_lastprivate;
+	list *names_reduction;
+	redop_type redop;
+} sections_context_descriptor;
+
+typedef struct _seqloop_context_descriptor {
+	basic_info bi;
+} seqloop_context_descriptor;
+
+typedef struct _single_context_descriptor {
+	basic_info bi;
+	int is_nowait;
+	list *names_private;
+	list *names_firstprivate;
+	list *names_copyprivate;
+} single_context_descriptor;
+
+typedef struct _threadprivate_context_descriptor {
+	basic_info bi;
+	list *names_threadprivate;
+} threadprivate_context_descriptor;
+
+typedef struct _variable_name_context_descriptor {
+	basic_info bi;
+	char *var_name;
+	variable_rt_type variable_type;
+	int is_indata;
+	int is_incommon;
+	int is_insave;
+} variable_name_context_descriptor;
+
+typedef struct _workshare_context_descriptor {
+	basic_info bi;
+	int is_nowait;
+} workshare_context_descriptor;
+
 typedef union _context_descriptor {
 	basic_info info;
-	parallel_context_descriptor parallel;
-	omploop_context_descriptor omploop;
-	sections_context_descriptor sections;
-	section_event_context_descriptor section;
-	single_context_descriptor single;
-	workshare_context_descriptor workshare;
-	master_context_descriptor master;
-	critical_context_descriptor critical;
-	barrier_context_descriptor barrier;
-	flush_context_descriptor flush;
-	ordered_context_descriptor ordered;
-	threadprivate_context_descriptor threadprivate;
-	variable_name_context_descriptor var_name;
 	array_name_context_descriptor arr_name;
+	barrier_context_descriptor barrier;
 	common_name_context_descriptor common;
+	critical_context_descriptor critical;
 	file_name_context_descriptor file_name;
-	seqloop_context_descriptor seqloop;
+	flush_context_descriptor flush;
 	func_call_context_descriptor func_call;
 	function_context_descriptor function;
 	interval_context_descriptor interval;
 	io_context_descriptor io;
+	master_context_descriptor master;
+	omploop_context_descriptor omploop;
+	ordered_context_descriptor ordered;
+	parallel_context_descriptor parallel;
+	section_event_context_descriptor section;
+	sections_context_descriptor sections;
+	seqloop_context_descriptor seqloop;
+	single_context_descriptor single;
+	threadprivate_context_descriptor threadprivate;
+	variable_name_context_descriptor var_name;
+	workshare_context_descriptor workshare;
 } context_descriptor;
 
 context_type get_context_string_type(const char *context_string);
