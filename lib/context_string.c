@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "list.h"
-#include "context_string.h"
+#include <list.h>
+#include <context_string.h>
 
 /* Ищет строковое значение параметра с именем param_name
  * в строке context_string.
