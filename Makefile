@@ -2,10 +2,16 @@ CC=gcc
 LDFLAGS=
 BIN=bin
 LIB=lib
+SRC=src
 INC=-I$(LIB)
 CFLAGS=-c -Wall $(INC)
 
-all: lib
+all: src
+
+src: context_descriptor.o
+
+context_descriptor.o: lib $(SRC)/context_descriptor.c
+	$(CC) $(CFLAGS) $(SRC)/context_descriptor.c -o $(BIN)/$(SRC)/context_descriptor.o
 
 lib: list.o stack.o context_string.o
 

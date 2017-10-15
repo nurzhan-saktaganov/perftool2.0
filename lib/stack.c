@@ -1,5 +1,5 @@
-#include <stack.h>
-#include <list.h>
+#include "list.h"
+#include "stack.h"
 
 stack *stack_create()
 {

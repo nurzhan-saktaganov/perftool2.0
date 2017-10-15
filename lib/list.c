@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
-#include <list.h>
+#include "list.h"
 
 typedef struct _node {
 	struct _node *_prev;
