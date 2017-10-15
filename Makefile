@@ -3,12 +3,15 @@ LDFLAGS=
 BIN=bin
 LIB=lib
 SRC=src
-INC=-I$(LIB)
+INC=-I$(LIB) -I$(SRC)
 CFLAGS=-c -Wall $(INC)
 
 all: src
 
-src: context_descriptor.o
+src: register_context.o
+
+register_context.o: lib context_descriptor.o register_context.c
+	$(CC) $(CFLAGS) register_context.c -o $(BIN)/$(SRC)/register_context.o
 
 context_descriptor.o: lib $(SRC)/context_descriptor.c
 	$(CC) $(CFLAGS) $(SRC)/context_descriptor.c -o $(BIN)/$(SRC)/context_descriptor.o
