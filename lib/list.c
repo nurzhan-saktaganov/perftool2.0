@@ -29,9 +29,17 @@ list *list_create()
 
 void list_destroy(list *l)
 {
+	list_destroy_with(l, NULL);
+}
+
+void list_destroy_with(list *l, void (*f)(void *))
+{
 	assert(l);
 	node *current = l->_head;
 	while (current){
+		if (f) {
+			f(current->_data);
+		}
 		node* next = current->_next;
 		free(current);
 		current = next;

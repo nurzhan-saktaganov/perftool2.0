@@ -15,6 +15,9 @@ list *list_create();
 // Уничтожает список
 void list_destroy(list *l);
 
+// Уничтожает список. Вызывает функцию f над каждым элементом списка
+void list_destroy_with(list *l, void (*f)(void *));
+
 // Добавляет элемент в начало списка
 void list_append_head(list *l, void *data);
 
