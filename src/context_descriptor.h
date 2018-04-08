@@ -132,6 +132,7 @@ typedef struct _basic_info {
 	char *file_name;
 	int begin_line;
 	int end_line;
+	int id;
 } basic_info;
 
 typedef struct _array_name_context_descriptor {

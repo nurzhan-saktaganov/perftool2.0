@@ -30,15 +30,15 @@ static void register_variable_name_context(const char *context_string, context_d
 static void register_workshare_context(const char *context_string, context_descriptor *cd);
 static void unregister_context(context_descriptor *cd);
 
-static list *registered_descriptors = NULL;
-
-context_descriptor * register_context(const char *context_string)
+context_descriptor * register_context(const char *context_string, int id)
 {
 	context_type type = get_context_string_type(context_string);
 	assert(type != CONTEXT_UNKNOWN);
 
 	context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
+
+	((basic_info *) cd)->id = id;
 
 	switch (type){
 		case CONTEXT_ARRAY_NAME:
@@ -108,11 +108,6 @@ context_descriptor * register_context(const char *context_string)
 			break;
 	}
 
-	if (registered_descriptors == NULL){
-		assert(registered_descriptors = list_create());
-	}
-
-	list_append_tail(registered_descriptors, cd);
 	return cd;
 }
 
@@ -584,7 +579,7 @@ static void unregister_workshare_context(context_descriptor *cd)
 	free(cd);
 }
 
-void clear_registered_contexts()
+void clear_registered_contexts(list *registered_descriptors)
 {
 	assert(registered_descriptors);
 	list_destroy_with(registered_descriptors, (void (*)(void *)) unregister_context);
