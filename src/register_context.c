@@ -582,7 +582,7 @@ static void unregister_workshare_context(context_descriptor *cd)
 void clear_registered_contexts(list *registered_descriptors)
 {
 	assert(registered_descriptors);
-	list_destroy_with(registered_descriptors, (void (*)(void *)) unregister_context);
+	list_destroy_with(registered_descriptors, (list_element_destroy_t *) unregister_context);
 }
 
 static void unregister_context(context_descriptor *cd)

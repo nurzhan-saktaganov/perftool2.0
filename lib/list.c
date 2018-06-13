@@ -32,7 +32,7 @@ void list_destroy(list *l)
 	list_destroy_with(l, NULL);
 }
 
-void list_destroy_with(list *l, void (*f)(void *))
+void list_destroy_with(list *l, list_element_destroy_t f)
 {
 	assert(l);
 	node *current = l->_head;

@@ -9,6 +9,8 @@ typedef struct _list list;
 // Итератор для списка
 typedef struct _list_iterator list_iterator;
 
+typedef void list_element_destroy_t(void *);
+
 // Возвращает новый список
 list *list_create();
 
@@ -16,7 +18,7 @@ list *list_create();
 void list_destroy(list *l);
 
 // Уничтожает список. Вызывает функцию f над каждым элементом списка
-void list_destroy_with(list *l, void (*f)(void *));
+void list_destroy_with(list *l, list_element_destroy_t);
 
 // Добавляет элемент в начало списка
 void list_append_head(list *l, void *data);
