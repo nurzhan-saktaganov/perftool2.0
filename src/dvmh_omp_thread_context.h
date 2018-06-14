@@ -29,4 +29,8 @@ dvmh_omp_interval *
 dvmh_omp_thread_context_current_interval(
         dvmh_omp_thread_context *ctx);
 
+size_t
+dvmh_omp_thread_context_sizeof(
+        dvmh_omp_thread_context *ctx);
+
 #endif

@@ -60,3 +60,14 @@ dvmh_omp_thread_context_current_interval(
     uint id = ctx->stack[ctx->top - 1];
     return &ctx->intervals[id];
 }
+
+size_t
+dvmh_omp_thread_context_sizeof(
+        dvmh_omp_thread_context *ctx)
+{
+    if (ctx == NULL) return 0;
+
+    return sizeof(dvmh_omp_thread_context)
+        + ctx->size * sizeof(dvmh_omp_interval)
+        + ctx->size * sizeof(uint);
+}
