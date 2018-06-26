@@ -19,25 +19,6 @@ static list *registered_descriptors = NULL;
 // Список контекстов во всех потоках. Нужно, чтобы иметь доступ с одного места в dbg_finalize.
 static list *thread_contexts = NULL;
 
-// TODO Check this case.
-static inline dvmh_omp_interval *
-current_interval()
-{
-    return dvmh_omp_thread_context_current_interval(thread_context);
-}
-
-static inline double
-plus_time()
-{
-    return omp_get_wtime();
-}
-
-static inline double
-minus_time()
-{
-    return -omp_get_wtime();
-}
-
 void clear_registered_contexts(list *registered_descriptors)
 {
 	assert(registered_descriptors);
@@ -171,22 +152,30 @@ void DBG_AfterCritical(long *StaticContextHandle, long *ThreadID){};
 
 void DBG_BeforeBarrier(long *StaticContextHandle, long *ThreadID)
 {
-    dvmh_omp_interval_add_barrier_time(current_interval(), minus_time());
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_barrier_time(i, -now);
 };
 
 void DBG_AfterBarrier(long *StaticContextHandle, long *ThreadID)
 {
-    dvmh_omp_interval_add_barrier_time(current_interval(), plus_time());
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_barrier_time(i, now);
 };
 
 void DBG_FlushEvent(long *StaticContextHandle, long *ThreadID)
 {
-    dvmh_omp_interval_add_flush_time(current_interval(), minus_time());
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_flush_time(i, -now);
 };
 
 void DBG_FlushEventEnd(long *StaticContextHandle, long *ThreadID)
 {
-    dvmh_omp_interval_add_flush_time(current_interval(), plus_time());
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_flush_time(i, now);
 };
 
 void DBG_BeforeOrdered (long *StaticContextHandle, long *ThreadID){};
@@ -241,24 +230,31 @@ void DBG_OMPIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long 
 
 void DBG_BeforeIO(long *StaticContextHandle, long *ThreadID)
 {
-    dvmh_omp_interval_add_io_time(current_interval(), minus_time());
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_io_time(i, -now);
 };
 
 void DBG_AfterIO(long *StaticContextHandle, long *ThreadID)
 {
-    dvmh_omp_interval_add_io_time(current_interval(), plus_time());
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_io_time(i, now);
 };
 
 void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
 {
     dvmh_omp_thread_context_enter_interval(thread_context, 0); // TODO pass interval id
-    dvmh_omp_interval *i = current_interval();
-    dvmh_omp_interval_add_used_time(i, minus_time());
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_used_time(i, now);
     dvmh_omp_interval_add_exectuion_count(i, 1L);
 };
 
 void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
 {
-    dvmh_omp_interval_add_used_time(current_interval(), plus_time());
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_used_time(i, now);
     dvmh_omp_thread_context_leave_interval(thread_context);
 };
