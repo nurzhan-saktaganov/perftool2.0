@@ -235,7 +235,8 @@ void DBG_AfterIO(long *StaticContextHandle, long *ThreadID)
 
 void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
 {
-    dvmh_omp_thread_context_enter_interval(thread_context, 0); // TODO pass interval id
+    context_descriptor *cd = (context_descriptor *) StaticContextHandle;
+    dvmh_omp_thread_context_enter_interval(thread_context, cd->info.id);
     dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, now);
