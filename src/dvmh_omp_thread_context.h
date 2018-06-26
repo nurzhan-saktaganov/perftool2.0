@@ -1,6 +1,8 @@
 #ifndef DVMH_OMP_THREAD_CONTEXT_H
 #define DVMH_OMP_THREAD_CONTEXT_H
 
+typedef unsigned int uint;
+
 #include "dvmh_omp_interval.h"
 
 typedef struct _dvmh_omp_thread_context {

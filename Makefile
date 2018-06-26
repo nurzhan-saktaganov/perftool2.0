@@ -1,14 +1,37 @@
-CC=gcc
+CC=gcc-8
 LDFLAGS=
 BIN=bin
 LIB=lib
 SRC=src
 INC=-I$(LIB) -I$(SRC)
-CFLAGS=-c -Wall $(INC)
+CFLAGS=-c -Wall $(INC) -fPIC --std=c99
+OPENMP=-fopenmp
 
-all: src
+all: omp_dbg.so
 
-src: register_context.o
+omp_dbg.so: lib src
+	$(CC) -Wall -shared -fPIC -fopenmp \
+		-o $(BIN)/omp_dbg.so \
+		$(BIN)/$(LIB)/list.o \
+		$(BIN)/$(LIB)/stack.o \
+		$(BIN)/$(LIB)/context_string.o \
+		$(BIN)/$(SRC)/context_descriptor.o \
+		$(BIN)/$(SRC)/register_context.o \
+		$(BIN)/$(SRC)/dvmh_omp_interval.o \
+		$(BIN)/$(SRC)/dvmh_omp_thread_context.o \
+		$(BIN)/$(SRC)/omp_dbg.o
+
+.PHONY: src
+src: context_descriptor.o register_context.o dvmh_omp_interval.o dvmh_omp_thread_context.o omp_dbg.o
+
+omp_dbg.o: $(SRC)/omp_dbg.c
+	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/omp_dbg.c -o $(BIN)/$(SRC)/omp_dbg.o
+
+dvmh_omp_thread_context.o: $(SRC)/dvmh_omp_thread_context.c dvmh_omp_interval.o
+	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/dvmh_omp_thread_context.c -o $(BIN)/$(SRC)/dvmh_omp_thread_context.o
+
+dvmh_omp_interval.o: $(SRC)/dvmh_omp_interval.c
+	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/dvmh_omp_interval.c -o $(BIN)/$(SRC)/dvmh_omp_interval.o
 
 register_context.o: lib context_descriptor.o $(SRC)/register_context.c
 	$(CC) $(CFLAGS) $(SRC)/register_context.c -o $(BIN)/$(SRC)/register_context.o
@@ -16,6 +39,7 @@ register_context.o: lib context_descriptor.o $(SRC)/register_context.c
 context_descriptor.o: lib $(SRC)/context_descriptor.c
 	$(CC) $(CFLAGS) $(SRC)/context_descriptor.c -o $(BIN)/$(SRC)/context_descriptor.o
 
+.PHONY: lib
 lib: list.o stack.o context_string.o
 
 list.o: $(LIB)/list.c
