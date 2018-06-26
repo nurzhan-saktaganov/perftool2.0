@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "list.h"
 #include "context_string.h"
 #include "context_descriptor.h"
 #include "register_context.h"
 
+// All static functions are 'private'. So, there is no need to check input for NULL in them.
 static void register_array_name_context(const char *context_string, context_descriptor *cd);
 static void register_barrier_context(const char *context_string, context_descriptor *cd);
 static void register_common_name_context(const char *context_string, context_descriptor *cd);
@@ -28,17 +30,18 @@ static void register_single_context(const char *context_string, context_descript
 static void register_threadprivate_context(const char *context_string, context_descriptor *cd);
 static void register_variable_name_context(const char *context_string, context_descriptor *cd);
 static void register_workshare_context(const char *context_string, context_descriptor *cd);
-static void unregister_context(context_descriptor *cd);
 
-context_descriptor * register_context(const char *context_string, int id)
+context_descriptor * register_context(const char *context_string, ctx_descriptor_id_t id)
 {
+	assert(context_string != NULL);
+
 	context_type type = get_context_string_type(context_string);
 	assert(type != CONTEXT_UNKNOWN);
 
 	context_descriptor *cd = (context_descriptor *) malloc(sizeof(context_descriptor));
 	assert(cd);
 
-	((basic_info *) cd)->id = id;
+	cd->info.id = id;
 
 	switch (type){
 		case CONTEXT_ARRAY_NAME:
@@ -99,12 +102,18 @@ context_descriptor * register_context(const char *context_string, int id)
 			register_threadprivate_context(context_string, cd);
 			break;
 		case CONTEXT_UNKNOWN:
+			// this should never happen.
+			assert(NULL);
 			break;
 		case CONTEXT_VARIABLE_NAME:
 			register_variable_name_context(context_string, cd);
 			break;
 		case CONTEXT_WORKSHARE:
 			register_workshare_context(context_string, cd);
+			break;
+		default:
+			// this should never happen.
+			assert(NULL);
 			break;
 	}
 
@@ -579,13 +588,8 @@ static void unregister_workshare_context(context_descriptor *cd)
 	free(cd);
 }
 
-void clear_registered_contexts(list *registered_descriptors)
-{
-	assert(registered_descriptors);
-	list_destroy_with(registered_descriptors, (list_element_destroy_t *) unregister_context);
-}
 
-static void unregister_context(context_descriptor *cd)
+void unregister_context(context_descriptor *cd)
 {
 	assert(cd);
 

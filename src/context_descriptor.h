@@ -60,6 +60,8 @@
 #define VTN_FLOAT_COMPLEX  "5"
 #define VTN_DOUBLE_COMPLEX "6"
 
+typedef unsigned int ctx_descriptor_id_t;
+
 typedef enum _context_type {
 	CONTEXT_UNKNOWN,
 	CONTEXT_ARRAY_NAME,
@@ -132,7 +134,7 @@ typedef struct _basic_info {
 	char *file_name;
 	int begin_line;
 	int end_line;
-	int id;
+	ctx_descriptor_id_t id;
 } basic_info;
 
 typedef struct _array_name_context_descriptor {

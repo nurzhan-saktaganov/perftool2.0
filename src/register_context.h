@@ -4,7 +4,7 @@
 #include "list.h"
 #include "context_descriptor.h"
 
-context_descriptor *register_context(const char *context_string, int id);
-void clear_registered_contexts(list *registered_descriptors);
+context_descriptor *register_context(const char *context_string, ctx_descriptor_id_t id);
+void unregister_context(context_descriptor *cd);
 
 #endif

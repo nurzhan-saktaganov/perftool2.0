@@ -38,6 +38,12 @@ minus_time()
     return -omp_get_wtime();
 }
 
+void clear_registered_contexts(list *registered_descriptors)
+{
+	assert(registered_descriptors);
+	list_destroy_with(registered_descriptors, (list_element_destroy_t *) unregister_context);
+}
+
 void DBG_Init(long *ThreadID)
 {   
     int size = list_size(registered_descriptors);
