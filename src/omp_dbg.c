@@ -19,12 +19,6 @@ static list *registered_descriptors = NULL;
 // Список контекстов во всех потоках. Нужно, чтобы иметь доступ с одного места в dbg_finalize.
 static list *thread_contexts = NULL;
 
-void clear_registered_contexts(list *registered_descriptors)
-{
-	assert(registered_descriptors);
-	list_destroy_with(registered_descriptors, (list_element_destroy_t *) unregister_context);
-}
-
 void DBG_Init(long *ThreadID)
 {   
     int size = list_size(registered_descriptors);
@@ -50,23 +44,20 @@ void DBG_Init(long *ThreadID)
 // TODO
 void DBG_Finalize()
 {
-    list *tmp = NULL;
+    list *ctx_descriptors;
     #pragma omp critical (dbg_finalize)
     {
-        if (registered_descriptors != NULL) {
-            tmp = registered_descriptors;
-            registered_descriptors = NULL;
-        }
+        ctx_descriptors = registered_descriptors;
+        registered_descriptors = NULL;
     }
-    if (tmp == NULL) {
-        return;
-    }
+
+    if (ctx_descriptors == NULL) return;
 
     // TODO integrate intervals and print out the results.
 
 
     list_destroy_with(thread_contexts, (list_element_destroy_t *) dvmh_omp_thread_context_destroy);
-    clear_registered_contexts(tmp);
+    list_destroy_with(ctx_descriptors, (list_element_destroy_t *) unregister_context);
     return;
 };
 
