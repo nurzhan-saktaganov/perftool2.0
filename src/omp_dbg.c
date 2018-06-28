@@ -133,9 +133,19 @@ void DBG_MasterBegin(long *StaticContextHandle, long *ThreadID){};
 
 void DBG_MasterEnd(long *StaticContextHandle, long *ThreadID){};
 
-void DBG_BeforeCritical (long *StaticContextHandle, long *ThreadID){};
+void DBG_BeforeCritical (long *StaticContextHandle, long *ThreadID)
+{
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_critical_time(i, -now);
+};
 
-void DBG_CriticalEvent(long *StaticContextHandle, long *ThreadID){};
+void DBG_CriticalEvent(long *StaticContextHandle, long *ThreadID)
+{
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_critical_time(i, now);
+};
 
 void DBG_CriticalEventEnd(long *StaticContextHandle, long *ThreadID){};
 
