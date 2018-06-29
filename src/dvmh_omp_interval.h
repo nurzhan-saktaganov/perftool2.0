@@ -6,11 +6,12 @@
 typedef struct _dvmh_omp_interval {
     uint64_t execution_count;
     int parent_id; // TODO maybe we should remove this
-    double io_time;
-    double sync_barrier_time;
-    double idle_critical_time;
-    double sync_flush_time;
-    double used_time;
+    double io_time; // TODO must be aggregated. See perftool code.
+    double sync_barrier_time; // TODO must be aggregated. See perftool code.
+    double idle_critical_time; // TODO must be aggregated. See perftool code. Reconsider.
+    double sync_flush_time; // TODO must be aggregated. See perftool code.
+    double used_time; // TODO must be integrated. See perftool code.
+    int used_thread_number; // TODO для каждого интервала считаем несредственно использованных. Потом интегрируем по вложенным.
     // TODO store context_desciptor
     // TODO execution time
     // TODO threads num - can be post calculated

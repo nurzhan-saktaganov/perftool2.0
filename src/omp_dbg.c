@@ -81,15 +81,30 @@ DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength
 	*StaticContextHandle = (long) cd;
 }
 
-// TODO
-void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult){};
+// We assume that there is no inner level parallelism.
+void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult)
+{
+    const int is_master_thread = 1;
+    *ThreadID = is_master_thread;
+};
 
+void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
+{
+    const int is_master_thread = *ThreadID;
+    if (is_master_thread) return;
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_used_time(i, -now);
+};
 
-// TODO
-void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID){};
-
-// TODO
-void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID){};
+void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
+{
+    const int is_master_thread = *ThreadID;
+    if (is_master_thread) return;
+    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_used_time(i, now);
+};
 
 // TODO
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID){};
@@ -249,7 +264,7 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
     dvmh_omp_thread_context_enter_interval(thread_context, cd->info.id);
     dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
-    dvmh_omp_interval_add_used_time(i, now);
+    dvmh_omp_interval_add_used_time(i, -now);
     dvmh_omp_interval_add_exectuion_count(i, 1L);
 };
 
