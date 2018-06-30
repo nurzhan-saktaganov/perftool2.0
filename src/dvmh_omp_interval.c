@@ -86,7 +86,7 @@ dvmh_omp_interval_productive_time(
 
 double
 dvmh_omp_interval_efficiency(
-    dvmh_omp_interval *i)
+        dvmh_omp_interval *i)
 {
     return dvmh_omp_interval_productive_time(i) / dvmh_omp_interval_total_time(i);
 }
@@ -94,9 +94,16 @@ dvmh_omp_interval_efficiency(
 
 double
 dvmh_omp_interval_insufficient_parallelism(
-    dvmh_omp_interval *i)
+        dvmh_omp_interval *i)
 {
     return dvmh_omp_interval_total_time(i) - i->used_time;
+}
+
+double
+dvmh_omp_interval_io_time(
+        dvmh_omp_interval *i)
+{
+    return i->io_time;
 }
 
 /*
