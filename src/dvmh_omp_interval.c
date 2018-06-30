@@ -56,7 +56,48 @@ dvmh_omp_interval_add_used_time(
     i->used_time += used_time;
 }
 
+double
+dvmh_omp_interval_total_time(
+        dvmh_omp_interval *i)
+{
+    return i->execution_time * i->used_threads_number;
+}
 
+double
+dvmh_omp_interval_lost_time(
+        dvmh_omp_interval *i)
+{
+    return 0.0
+        + i->sync_barrier_time
+        + i->idle_critical_time
+        + i->sync_flush_time
+        + dvmh_omp_interval_insufficient_parallelism(i);
+}
+
+double
+dvmh_omp_interval_productive_time(
+        dvmh_omp_interval *i)
+{
+    return i->used_time
+        - i->sync_barrier_time
+        - i->idle_critical_time
+        - i->sync_flush_time;
+}
+
+double
+dvmh_omp_interval_efficiency(
+    dvmh_omp_interval *i)
+{
+    return dvmh_omp_interval_productive_time(i) / dvmh_omp_interval_total_time(i);
+}
+
+
+double
+dvmh_omp_interval_insufficient_parallelism(
+    dvmh_omp_interval *i)
+{
+    return dvmh_omp_interval_total_time(i) - i->used_time;
+}
 
 /*
 struct _dvmh_omp_interval {

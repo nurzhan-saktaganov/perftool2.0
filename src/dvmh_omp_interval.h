@@ -54,4 +54,25 @@ dvmh_omp_interval_add_exectuion_count(
         dvmh_omp_interval *i,
         uint64_t count);
 
+
+double
+dvmh_omp_interval_total_time(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_lost_time(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_productive_time(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_efficiency(
+    dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_insufficient_parallelism(
+    dvmh_omp_interval *i);
+
 #endif
