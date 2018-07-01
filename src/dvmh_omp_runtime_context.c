@@ -39,6 +39,14 @@ dvmh_omp_runtime_context_create(
             calloc(num_context_descriptors, sizeof(double));
     assert(ctx->execution_times);
 
+    ctx->end_parallel_times = (double *)
+            calloc(num_threads, sizeof(double));
+    assert(ctx->end_parallel_times);
+
+    ctx->idle_parallel_times = (double *)
+            calloc(num_context_descriptors, sizeof(double));
+    assert(ctx->idle_parallel_times);
+
     return ctx;
 }
 
@@ -65,6 +73,12 @@ dvmh_omp_runtime_context_destroy(
 
     assert(ctx->execution_times);
     free(ctx->execution_times);
+
+    assert(ctx->end_parallel_times);
+    free(ctx->end_parallel_times);
+
+    assert(ctx->idle_parallel_times);
+    free(ctx->idle_parallel_times);
 
     free(ctx);
 }
@@ -157,4 +171,28 @@ dvmh_omp_runtime_context_add_exectuion_time(
     assert(ctx != NULL);
     assert(0 <= id && id < ctx->num_context_descriptors);
     ctx->execution_times[id] += execution_time;
+}
+
+void
+dvmh_omp_runtime_context_end_parallel(
+    dvmh_omp_runtime_context_t *ctx,
+    int thread_id,
+    double when)
+{
+    assert(ctx != NULL);
+    assert(0 <= thread_id && thread_id < ctx->num_threads);
+    ctx->end_parallel_times[thread_id] = when;
+}
+
+void
+dvmh_omp_runtime_context_after_parallel(
+    dvmh_omp_runtime_context_t *ctx,
+    int interval_id,
+    double when)
+{
+    assert(ctx != NULL);
+    assert(0 <= interval_id && interval_id < ctx->num_context_descriptors);
+    for (int i = 0; i < ctx->num_threads; ++i) {
+        ctx->idle_parallel_times[interval_id] = when - ctx->end_parallel_times[i];
+    }
 }

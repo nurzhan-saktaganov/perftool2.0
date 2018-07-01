@@ -124,26 +124,24 @@ void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 {
     const int is_master_thread = *ThreadID;
-    if (is_master_thread) return;
-    dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
-    dvmh_omp_interval_add_used_time(i, now);
 
-    // TODO save 'now' value somewhere to calculate idle_parallel
-    // in thread context maybe
+    if (!is_master_thread) {
+        dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
+        dvmh_omp_interval_add_used_time(i, now);
+    }
+
+    const int thread_id = dvmh_omp_thread_context_thread_id(thread_context);
+    dvmh_omp_runtime_context_end_parallel(runtime_context, thread_id, now);
 };
 
-// TODO
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 {
-    // TODO extract 'now' value to calculate idle_parallel
-    double now = omp_get_wtime();
-    /*
+    context_descriptor *cd = (context_descriptor *) StaticContextHandle;
+    const int interval_id = cd->info.id;
 
-    for (int i = 0; i < thr eads_num; ++i) {
-        // TODO
-    }
-    */
+    double now = omp_get_wtime();
+    dvmh_omp_runtime_context_after_parallel(runtime_context, interval_id, now);
 };
 
 // TODO
@@ -305,6 +303,7 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
     dvmh_omp_interval_add_used_time(i, -now);
     dvmh_omp_interval_add_exectuion_count(i, 1L);
 
+    // calculate execution time.
     dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
     if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {
         dvmh_omp_runtime_context_add_exectuion_time(runtime_context, interval_id, -now);
@@ -323,6 +322,7 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
     dvmh_omp_interval_add_used_time(i, now);
     dvmh_omp_thread_context_leave_interval(thread_context);
 
+    // calculate execution time.
     dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
     dvmh_omp_runtime_context_dec_interval_visitors(runtime_context, interval_id);
     if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {

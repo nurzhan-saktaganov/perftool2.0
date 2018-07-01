@@ -17,6 +17,8 @@ typedef struct _dvmh_omp_runtime_context_t {
     omp_lock_t *interval_locks;
     int *threads_in_interval;
     double *execution_times;
+    double *end_parallel_times;
+    double *idle_parallel_times;
 } dvmh_omp_runtime_context_t;
 
 
@@ -75,5 +77,17 @@ dvmh_omp_runtime_context_add_exectuion_time(
         dvmh_omp_runtime_context_t *ctx,
         int id,
         double execution_time);
+
+void
+dvmh_omp_runtime_context_end_parallel(
+    dvmh_omp_runtime_context_t *ctx,
+    int thread_id,
+    double when);
+
+void
+dvmh_omp_runtime_context_after_parallel(
+    dvmh_omp_runtime_context_t *ctx,
+    int interval_id,
+    double when);
 
 #endif
