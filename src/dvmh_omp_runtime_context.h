@@ -1,14 +1,20 @@
 #ifndef DVMH_OMP_RUNTIME_CONTEXT_H
 #define DVMH_OMP_RUNTIME_CONTEXT_H
 
+#include <omp.h>
+
 #include "context_descriptor.h"
 #include "dvmh_omp_thread_context.h"
 
 typedef struct _dvmh_omp_runtime_context_t {
     int num_threads;
     dvmh_omp_thread_context **thread_contexts;
+
     int num_context_descriptors;
     context_descriptor **context_descriptors;
+
+    // lock for each interval.
+    omp_lock_t *locks;
 } dvmh_omp_runtime_context_t;
 
 
