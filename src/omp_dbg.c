@@ -7,35 +7,49 @@
 #include "register_context.h"
 #include "dvmh_omp_interval.h"
 #include "dvmh_omp_thread_context.h"
+#include "dvmh_omp_runtime_context.h"
 #include "omp_dbg.h"
 
 // Каждый поток будет иметь свой контекст.
 static dvmh_omp_thread_context *thread_context;
 #pragma omp threadprivate(thread_context)
 
+static dvmh_omp_runtime_context_t *runtime_context = NULL;
 // Все потоки будут использовать общие дескрипторы.
 static list *registered_descriptors = NULL;
 
-// Список контекстов во всех потоках. Нужно, чтобы иметь доступ с одного места в dbg_finalize.
-static list *thread_contexts = NULL;
-
 void DBG_Init(long *ThreadID)
 {   
-    int size = list_size(registered_descriptors);
-    assert(size > 0);
+    assert(registered_descriptors != NULL);
+    const int num_context_descriptors = list_size(registered_descriptors);
+    assert(num_context_descriptors > 0);
 
-    thread_contexts = list_create();
-    assert(thread_contexts != NULL);
+    const int num_threads = omp_get_num_threads();
 
-    #pragma omp parallel firstprivate(thread_contexts, size)
+    runtime_context = dvmh_omp_runtime_context_create(num_threads, num_context_descriptors);
+
+    // Move registered descriptors to runtime_context.
+    {
+        list_iterator *it = list_iterator_new(registered_descriptors);
+        while (list_iterator_has_next(it)) {
+            context_descriptor *cd = (context_descriptor *) list_iterator_next(it);
+            dvmh_omp_runtime_context_set_context_descriptor(runtime_context, cd, cd->info.id);
+        }
+        list_iterator_destroy(it);
+
+        list_destroy(registered_descriptors);
+        registered_descriptors = NULL;
+    }
+
+    // Set thread contexts
+    #pragma omp parallel firstprivate(runtime_context, num_context_descriptors)
     {
         #pragma omp critical (dbg_init)
         {
-            const int thread_id = list_size(thread_contexts);
-            // Для каждого потока создаем свой контекст.
-            thread_context = dvmh_omp_thread_context_create(size, thread_id);
+            const int thread_id = omp_get_thread_num();
+            thread_context = dvmh_omp_thread_context_create(num_context_descriptors, thread_id);
             assert(thread_context != NULL);
-            list_append_tail(thread_contexts, thread_context);
+            dvmh_omp_runtime_context_set_thread_context(runtime_context, thread_context, thread_id);
         }
     }
 
@@ -45,21 +59,30 @@ void DBG_Init(long *ThreadID)
 // TODO
 void DBG_Finalize()
 {
-    list *ctx_descriptors;
+    dvmh_omp_runtime_context_t *r_ctx;
+
     #pragma omp critical (dbg_finalize)
     {
-        ctx_descriptors = registered_descriptors;
-        registered_descriptors = NULL;
+        r_ctx = runtime_context;
+        runtime_context = NULL;
     }
 
-    if (ctx_descriptors == NULL) return;
+    if (r_ctx == NULL) return;
 
     // TODO integrate intervals and print out the results.
 
 
-    list_destroy_with(thread_contexts, (list_element_destroy_t *) dvmh_omp_thread_context_destroy);
-    list_destroy_with(ctx_descriptors, (list_element_destroy_t *) unregister_context);
-    return;
+
+    // Cleanup stage
+    for (int i = 0; i < r_ctx->num_threads; ++i) {
+        dvmh_omp_thread_context_destroy(r_ctx->thread_contexts[i]);
+    }
+
+    for (int i = 0; i < r_ctx->num_context_descriptors; ++i) {
+        unregister_context(r_ctx->context_descriptors[i]);
+    }
+
+    dvmh_omp_runtime_context_destroy(r_ctx);
 };
 
 void
