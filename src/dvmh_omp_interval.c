@@ -106,29 +106,69 @@ dvmh_omp_interval_io_time(
     return i->io_time;
 }
 
+double
+dvmh_omp_interval_execution_count(
+        dvmh_omp_interval *i)
+{
+    return i->execution_count;
+}
+
+double
+dvmh_omp_interval_execution_time(
+        dvmh_omp_interval *i)
+{
+    return i->execution_time;
+}
+
+double
+dvmh_omp_interval_sync_barrier_time(
+        dvmh_omp_interval *i)
+{
+    return i->sync_barrier_time;
+}
+
+double
+dvmh_omp_interval_used_time(
+        dvmh_omp_interval *i)
+{
+    return i->used_time;
+}
+
+int
+dvmh_omp_interval_used_threads_num(
+        dvmh_omp_interval *i)
+{
+    return i->used_threads_number;
+}
+
+double
+dvmh_omp_interval_idle_critical_time(
+        dvmh_omp_interval *i)
+{
+    return i->idle_critical_time;
+}
+
+double
+dvmh_omp_interval_sync_flush_time(
+        dvmh_omp_interval *i)
+{
+    return i->sync_flush_time;
+}
+
+double
+dvmh_omp_interval_idle_parallel_time(
+        dvmh_omp_interval *i)
+{
+    return i->idle_parallel_time;
+}
+
 /*
 struct _dvmh_omp_interval {
     context_descriptor *descriptor;
     list *subintervals;
-    events_occurrences *occurrences; //hashtable := thread_id to list of events
-    int calls_count;
-    double io_time;
-    double execution_time;
-    double sync_barrier;
-    double used_time;
-    int used_threads_number;
-    double idle_critical;
-    double sync_flush;
-    double idle_parallel;
     double load_imbalance;
     double thread_prod_max;
     double thread_prod_min;
     double thread_prod_avg;
-    double total_time;
-    double lost_time;
-    double productive_time;
-    double insufficient_parallelism;
-    double efficiency;
-    int is_in_parallel;
 };
 */

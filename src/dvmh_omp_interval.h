@@ -12,6 +12,7 @@ typedef struct _dvmh_omp_interval {
     double sync_flush_time; // TODO must be aggregated. See perftool code.
     double used_time; // TODO must be integrated. See perftool code.
     double execution_time;
+    double idle_parallel_time;
     int used_threads_number; // TODO для каждого интервала считаем несредственно использованных. Потом интегрируем по вложенным.
     // TODO store context_desciptor
     // TODO execution time
@@ -26,6 +27,8 @@ typedef struct _dvmh_omp_interval {
 } dvmh_omp_interval;
 
 // TODO maybe there should be interval init function?
+
+// Setters
 
 void
 dvmh_omp_interval_add_io_time(
@@ -58,6 +61,8 @@ dvmh_omp_interval_add_exectuion_count(
         uint64_t count);
 
 
+// Getters
+
 double
 dvmh_omp_interval_total_time(
         dvmh_omp_interval *i);
@@ -80,6 +85,38 @@ dvmh_omp_interval_insufficient_parallelism(
 
 double
 dvmh_omp_interval_io_time(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_execution_count(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_execution_time(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_sync_barrier_time(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_used_time(
+        dvmh_omp_interval *i);
+
+int
+dvmh_omp_interval_used_threads_num(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_idle_critical_time(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_sync_flush_time(
+        dvmh_omp_interval *i);
+
+double
+dvmh_omp_interval_idle_parallel_time(
         dvmh_omp_interval *i);
 
 #endif
