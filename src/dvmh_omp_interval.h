@@ -11,7 +11,8 @@ typedef struct _dvmh_omp_interval {
     double idle_critical_time; // TODO must be aggregated. See perftool code. Reconsider.
     double sync_flush_time; // TODO must be aggregated. See perftool code.
     double used_time; // TODO must be integrated. See perftool code.
-    int used_thread_number; // TODO для каждого интервала считаем несредственно использованных. Потом интегрируем по вложенным.
+    double execution_time;
+    int used_threads_number; // TODO для каждого интервала считаем несредственно использованных. Потом интегрируем по вложенным.
     // TODO store context_desciptor
     // TODO execution time
     // TODO threads num - can be post calculated
@@ -23,6 +24,8 @@ typedef struct _dvmh_omp_interval {
     // TODO load imbalance
     // TODO lost time
 } dvmh_omp_interval;
+
+// TODO maybe there should be interval init function?
 
 void
 dvmh_omp_interval_add_io_time(

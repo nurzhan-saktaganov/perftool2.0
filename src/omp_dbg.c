@@ -29,11 +29,12 @@ void DBG_Init(long *ThreadID)
 
     #pragma omp parallel firstprivate(thread_contexts, size)
     {
-        // Для каждого потока создаем свой контекст.
-        thread_context = dvmh_omp_thread_context_create(size);
-        assert(thread_context != NULL);
         #pragma omp critical (dbg_init)
         {
+            const int thread_id = list_size(thread_contexts);
+            // Для каждого потока создаем свой контекст.
+            thread_context = dvmh_omp_thread_context_create(size, thread_id);
+            assert(thread_context != NULL);
             list_append_tail(thread_contexts, thread_context);
         }
     }
@@ -104,10 +105,23 @@ void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
     dvmh_omp_interval *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, now);
+
+    // TODO save 'now' value somewhere to calculate idle_parallel
+    // in thread context maybe
 };
 
 // TODO
-void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID){};
+void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
+{
+    // TODO extract 'now' value to calculate idle_parallel
+    double now = omp_get_wtime();
+    /*
+
+    for (int i = 0; i < thr eads_num; ++i) {
+        // TODO
+    }
+    */
+};
 
 // TODO
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize){};

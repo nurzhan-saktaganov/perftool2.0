@@ -10,10 +10,11 @@ typedef struct _dvmh_omp_thread_context {
     uint *stack;
     uint size;
     uint top;
+    int thread_id;
 } dvmh_omp_thread_context;
 
 dvmh_omp_thread_context *
-dvmh_omp_thread_context_create(uint size);
+dvmh_omp_thread_context_create(uint size, int thread_id);
 
 void
 dvmh_omp_thread_context_destroy(

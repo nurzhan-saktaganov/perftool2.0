@@ -5,7 +5,7 @@
 #include "dvmh_omp_thread_context.h"
 
 dvmh_omp_thread_context *
-dvmh_omp_thread_context_create(uint size)
+dvmh_omp_thread_context_create(uint size, int thread_id)
 {
     assert(size != 0);
     dvmh_omp_thread_context *ctx = (dvmh_omp_thread_context *) malloc(sizeof(dvmh_omp_thread_context));
@@ -16,6 +16,7 @@ dvmh_omp_thread_context_create(uint size)
     assert(ctx->stack != NULL);
     ctx->size = size;
     ctx->top = 0;
+    ctx->thread_id = thread_id;
     return ctx;
 }
 
