@@ -10,12 +10,14 @@
 #include "dvmh_omp_runtime_context.h"
 #include "omp_dbg.h"
 
-// Каждый поток будет иметь свой контекст.
+// We use this threadprivate variable to direct access to own thread context from each thread.
 static dvmh_omp_thread_context *thread_context;
 #pragma omp threadprivate(thread_context)
 
+// We store runtime context here.
 static dvmh_omp_runtime_context_t *runtime_context = NULL;
-// Все потоки будут использовать общие дескрипторы.
+
+// Temporary list. We use this only in registration stage.
 static list *registered_descriptors = NULL;
 
 void DBG_Init(long *ThreadID)
@@ -56,7 +58,6 @@ void DBG_Init(long *ThreadID)
     return;
 };
 
-// TODO
 void DBG_Finalize()
 {
     dvmh_omp_runtime_context_t *r_ctx;
@@ -85,8 +86,7 @@ void DBG_Finalize()
     dvmh_omp_runtime_context_destroy(r_ctx);
 };
 
-void
-DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength)
+void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength)
 {
     // Нужно убедиться, что в типе long можем хранить адрес.
     assert(sizeof(long) == sizeof(void *));

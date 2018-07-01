@@ -36,4 +36,8 @@ size_t
 dvmh_omp_thread_context_sizeof(
         dvmh_omp_thread_context *ctx);
 
+int
+dvmh_omp_thread_context_thread_id(
+        dvmh_omp_thread_context *ctx);
+
 #endif

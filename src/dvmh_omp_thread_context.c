@@ -72,3 +72,11 @@ dvmh_omp_thread_context_sizeof(
         + ctx->size * sizeof(dvmh_omp_interval)
         + ctx->size * sizeof(uint);
 }
+
+int
+dvmh_omp_thread_context_thread_id(
+        dvmh_omp_thread_context *ctx)
+{
+    assert(ctx != NULL);
+    return ctx->thread_id;
+}
