@@ -26,7 +26,7 @@ void DBG_Init(long *ThreadID)
     const int num_context_descriptors = list_size(registered_descriptors);
     assert(num_context_descriptors > 0);
 
-    const int num_threads = omp_get_num_threads();
+    const int num_threads = omp_get_max_threads();
 
     runtime_context = dvmh_omp_runtime_context_create(num_threads, num_context_descriptors);
 
