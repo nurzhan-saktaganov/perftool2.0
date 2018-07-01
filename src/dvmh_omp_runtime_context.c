@@ -67,7 +67,8 @@ dvmh_omp_runtime_context_set_thread_context(
     r_ctx->thread_contexts[thread_id] = t_ctx;
 }
 
-void dvmh_omp_runtime_context_set_context_descriptor(
+void
+dvmh_omp_runtime_context_set_context_descriptor(
         dvmh_omp_runtime_context_t *ctx,
         context_descriptor *cd,
         int cd_id)
@@ -76,4 +77,24 @@ void dvmh_omp_runtime_context_set_context_descriptor(
     assert(cd != NULL);
     assert(0 <= cd_id && cd_id < ctx->num_context_descriptors);
     ctx->context_descriptors[cd_id] = cd;
+}
+
+void
+dvmh_omp_runtime_context_lock_interval(
+        dvmh_omp_runtime_context_t *ctx,
+        int id)
+{
+    assert(ctx != NULL);
+    assert(0 <= id && id < ctx->num_context_descriptors);
+    omp_set_lock(ctx->interval_locks + id);
+}
+
+void
+dvmh_omp_runtime_context_unlock_interval(
+        dvmh_omp_runtime_context_t *ctx,
+        int id)
+{
+    assert(ctx != NULL);
+    assert(0 <= id && id < ctx->num_context_descriptors);
+    omp_unset_lock(ctx->interval_locks + id);
 }

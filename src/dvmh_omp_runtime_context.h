@@ -33,9 +33,20 @@ dvmh_omp_runtime_context_set_thread_context(
         dvmh_omp_thread_context *tctx,
         int thread_id);
 
-void dvmh_omp_runtime_context_set_context_descriptor(
+void
+dvmh_omp_runtime_context_set_context_descriptor(
         dvmh_omp_runtime_context_t *ctx,
         context_descriptor *cd,
         int cd_id);
+
+void
+dvmh_omp_runtime_context_lock_interval(
+        dvmh_omp_runtime_context_t *ctx,
+        int id);
+
+void
+dvmh_omp_runtime_context_unlock_interval(
+        dvmh_omp_runtime_context_t *ctx,
+        int id);
 
 #endif
