@@ -15,6 +15,8 @@ typedef struct _dvmh_omp_runtime_context_t {
 
     // lock for each interval.
     omp_lock_t *interval_locks;
+    int *threads_in_interval;
+    double *execution_times;
 } dvmh_omp_runtime_context_t;
 
 
@@ -48,5 +50,30 @@ void
 dvmh_omp_runtime_context_unlock_interval(
         dvmh_omp_runtime_context_t *ctx,
         int id);
+
+// must be under lock.
+void
+dvmh_omp_runtime_context_inc_interval_visitors(
+        dvmh_omp_runtime_context_t *ctx,
+        int id);
+
+// must be under lock.
+int
+dvmh_omp_runtime_context_get_interval_visitors(
+        dvmh_omp_runtime_context_t *ctx,
+        int id);
+
+// must be under lock.
+void
+dvmh_omp_runtime_context_dec_interval_visitors(
+        dvmh_omp_runtime_context_t *ctx,
+        int id);
+
+// must be under lock.
+void
+dvmh_omp_runtime_context_add_exectuion_time(
+        dvmh_omp_runtime_context_t *ctx,
+        int id,
+        double execution_time);
 
 #endif

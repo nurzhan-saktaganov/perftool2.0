@@ -31,6 +31,14 @@ dvmh_omp_runtime_context_create(
         omp_init_lock(ctx->interval_locks + i);
     }
 
+    ctx->threads_in_interval = (int *)
+            calloc(num_context_descriptors, sizeof(int));
+    assert(ctx->threads_in_interval);
+
+    ctx->execution_times = (double *)
+            calloc(num_context_descriptors, sizeof(double));
+    assert(ctx->execution_times);
+
     return ctx;
 }
 
@@ -51,6 +59,12 @@ dvmh_omp_runtime_context_destroy(
         omp_destroy_lock(ctx->interval_locks + i);
     }
     free(ctx->interval_locks);
+
+    assert(ctx->threads_in_interval);
+    free(ctx->threads_in_interval);
+
+    assert(ctx->execution_times);
+    free(ctx->execution_times);
 
     free(ctx);
 }
@@ -97,4 +111,50 @@ dvmh_omp_runtime_context_unlock_interval(
     assert(ctx != NULL);
     assert(0 <= id && id < ctx->num_context_descriptors);
     omp_unset_lock(ctx->interval_locks + id);
+}
+
+
+// must be under lock.
+void
+dvmh_omp_runtime_context_inc_interval_visitors(
+        dvmh_omp_runtime_context_t *ctx,
+        int id)
+{
+    assert(ctx != NULL);
+    assert(0 <= id && id < ctx->num_context_descriptors);
+    ctx->threads_in_interval[id]++;
+}
+
+// must be under lock.
+int
+dvmh_omp_runtime_context_get_interval_visitors(
+        dvmh_omp_runtime_context_t *ctx,
+        int id)
+{
+    assert(ctx != NULL);
+    assert(0 <= id && id < ctx->num_context_descriptors);
+    return ctx->threads_in_interval[id];
+}
+
+// must be under lock.
+void
+dvmh_omp_runtime_context_dec_interval_visitors(
+        dvmh_omp_runtime_context_t *ctx,
+        int id)
+{
+    assert(ctx != NULL);
+    assert(0 <= id && id < ctx->num_context_descriptors);
+    ctx->threads_in_interval[id]--;
+}
+
+// must be under lock.
+void
+dvmh_omp_runtime_context_add_exectuion_time(
+        dvmh_omp_runtime_context_t *ctx,
+        int id,
+        double execution_time)
+{
+    assert(ctx != NULL);
+    assert(0 <= id && id < ctx->num_context_descriptors);
+    ctx->execution_times[id] += execution_time;
 }
