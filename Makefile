@@ -19,13 +19,17 @@ omp_dbg.so: lib src
 		$(BIN)/$(SRC)/register_context.o \
 		$(BIN)/$(SRC)/dvmh_omp_interval.o \
 		$(BIN)/$(SRC)/dvmh_omp_thread_context.o \
+		$(BIN)/$(SRC)/dvmh_omp_runtime_context.o \
 		$(BIN)/$(SRC)/omp_dbg.o
 
 .PHONY: src
-src: context_descriptor.o register_context.o dvmh_omp_interval.o dvmh_omp_thread_context.o omp_dbg.o
+src: context_descriptor.o register_context.o dvmh_omp_interval.o dvmh_omp_thread_context.o dvmh_omp_runtime_context.o omp_dbg.o
 
 omp_dbg.o: $(SRC)/omp_dbg.c
 	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/omp_dbg.c -o $(BIN)/$(SRC)/omp_dbg.o
+
+dvmh_omp_runtime_context.o: $(SRC)/dvmh_omp_runtime_context.c dvmh_omp_thread_context.o
+	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/dvmh_omp_runtime_context.c -o $(BIN)/$(SRC)/dvmh_omp_runtime_context.o
 
 dvmh_omp_thread_context.o: $(SRC)/dvmh_omp_thread_context.c dvmh_omp_interval.o
 	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/dvmh_omp_thread_context.c -o $(BIN)/$(SRC)/dvmh_omp_thread_context.o
