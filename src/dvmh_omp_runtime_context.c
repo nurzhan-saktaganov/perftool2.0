@@ -24,10 +24,11 @@ dvmh_omp_runtime_context_create(
             malloc(num_context_descriptors * sizeof(context_descriptor *));
     assert(ctx->context_descriptors);
 
-    ctx->locks = (omp_lock_t *)
+    ctx->interval_locks = (omp_lock_t *)
             malloc(num_context_descriptors * sizeof(omp_lock_t));
+    assert(ctx->interval_locks != NULL);
     for (int i = 0; i < ctx->num_context_descriptors; ++i) {
-        omp_init_lock(ctx->locks + i);
+        omp_init_lock(ctx->interval_locks + i);
     }
 
     return ctx;
@@ -45,11 +46,11 @@ dvmh_omp_runtime_context_destroy(
     assert(ctx->context_descriptors != NULL);
     free(ctx->context_descriptors);
 
-    assert(ctx->locks != NULL);
+    assert(ctx->interval_locks != NULL);
     for (int i = 0; i < ctx->num_context_descriptors; ++i) {
-        omp_destroy_lock(ctx->locks + i);
+        omp_destroy_lock(ctx->interval_locks + i);
     }
-    free(ctx->locks);
+    free(ctx->interval_locks);
 
     free(ctx);
 }

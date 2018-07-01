@@ -14,7 +14,7 @@ typedef struct _dvmh_omp_runtime_context_t {
     context_descriptor **context_descriptors;
 
     // lock for each interval.
-    omp_lock_t *locks;
+    omp_lock_t *interval_locks;
 } dvmh_omp_runtime_context_t;
 
 
