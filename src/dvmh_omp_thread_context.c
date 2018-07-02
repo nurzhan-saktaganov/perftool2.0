@@ -10,7 +10,7 @@ dvmh_omp_thread_context_create(uint size, int thread_id)
     assert(size != 0);
     dvmh_omp_thread_context *ctx = (dvmh_omp_thread_context *) malloc(sizeof(dvmh_omp_thread_context));
     assert(ctx != NULL);
-    ctx->intervals = (dvmh_omp_interval *) malloc(sizeof(dvmh_omp_interval) * size);
+    ctx->intervals = (dvmh_omp_interval_t *) malloc(sizeof(dvmh_omp_interval_t) * size);
     assert(ctx->intervals != NULL);
     ctx->stack = (uint *) malloc(sizeof(uint) * size);
     assert(ctx->stack != NULL);
@@ -52,7 +52,7 @@ dvmh_omp_thread_context_leave_interval(
     --ctx->top;
 }
 
-dvmh_omp_interval *
+dvmh_omp_interval_t *
 dvmh_omp_thread_context_current_interval(
         dvmh_omp_thread_context *ctx)
 {
@@ -69,7 +69,7 @@ dvmh_omp_thread_context_sizeof(
     if (ctx == NULL) return 0;
 
     return sizeof(dvmh_omp_thread_context)
-        + ctx->size * sizeof(dvmh_omp_interval)
+        + ctx->size * sizeof(dvmh_omp_interval_t)
         + ctx->size * sizeof(uint);
 }
 

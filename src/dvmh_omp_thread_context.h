@@ -6,7 +6,7 @@ typedef unsigned int uint;
 #include "dvmh_omp_interval.h"
 
 typedef struct _dvmh_omp_thread_context {
-    dvmh_omp_interval *intervals;
+    dvmh_omp_interval_t *intervals;
     uint *stack;
     uint size;
     uint top;
@@ -28,7 +28,7 @@ void
 dvmh_omp_thread_context_leave_interval(
         dvmh_omp_thread_context *ctx);
 
-dvmh_omp_interval *
+dvmh_omp_interval_t *
 dvmh_omp_thread_context_current_interval(
         dvmh_omp_thread_context *ctx);
 

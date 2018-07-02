@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct _dvmh_omp_interval {
+typedef struct _dvmh_omp_interval_t {
     uint64_t execution_count;
     int parent_id; // TODO maybe we should remove this
     double io_time; // TODO must be aggregated. See perftool code.
@@ -24,7 +24,7 @@ typedef struct _dvmh_omp_interval {
     // TODO efficiency - can be post calculated
     // TODO load imbalance
     // TODO lost time
-} dvmh_omp_interval;
+} dvmh_omp_interval_t;
 
 // TODO maybe there should be interval init function?
 
@@ -32,32 +32,32 @@ typedef struct _dvmh_omp_interval {
 
 void
 dvmh_omp_interval_add_io_time(
-        dvmh_omp_interval *i,
+        dvmh_omp_interval_t *i,
         double io_time);
 
 void
 dvmh_omp_interval_add_barrier_time(
-        dvmh_omp_interval *i,
+        dvmh_omp_interval_t *i,
         double barrier_time);
 
 void
 dvmh_omp_interval_add_critical_time(
-        dvmh_omp_interval *i,
+        dvmh_omp_interval_t *i,
         double critical_time);
 
 void
 dvmh_omp_interval_add_flush_time(
-        dvmh_omp_interval *i,
+        dvmh_omp_interval_t *i,
         double flush_time);
 
 void
 dvmh_omp_interval_add_used_time(
-        dvmh_omp_interval *i,
+        dvmh_omp_interval_t *i,
         double used_time);
 
 void
 dvmh_omp_interval_add_exectuion_count(
-        dvmh_omp_interval *i,
+        dvmh_omp_interval_t *i,
         uint64_t count);
 
 
@@ -65,58 +65,58 @@ dvmh_omp_interval_add_exectuion_count(
 
 double
 dvmh_omp_interval_total_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_lost_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_productive_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_efficiency(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_insufficient_parallelism(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_io_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_execution_count(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_execution_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_sync_barrier_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_used_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 int
 dvmh_omp_interval_used_threads_num(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_idle_critical_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_sync_flush_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_idle_parallel_time(
-        dvmh_omp_interval *i);
+        dvmh_omp_interval_t *i);
 
 #endif
