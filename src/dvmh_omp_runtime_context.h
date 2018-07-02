@@ -8,7 +8,7 @@
 
 typedef struct _dvmh_omp_runtime_context_t {
     int num_threads;
-    dvmh_omp_thread_context **thread_contexts;
+    dvmh_omp_thread_context_t **thread_contexts;
 
     int num_context_descriptors;
     context_descriptor **context_descriptors;
@@ -34,7 +34,7 @@ dvmh_omp_runtime_context_destroy(
 void
 dvmh_omp_runtime_context_set_thread_context(
         dvmh_omp_runtime_context_t *rctx,
-        dvmh_omp_thread_context *tctx,
+        dvmh_omp_thread_context_t *tctx,
         int thread_id);
 
 void

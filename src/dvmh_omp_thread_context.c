@@ -4,11 +4,11 @@
 #include "dvmh_omp_interval.h"
 #include "dvmh_omp_thread_context.h"
 
-dvmh_omp_thread_context *
+dvmh_omp_thread_context_t *
 dvmh_omp_thread_context_create(uint size, int thread_id)
 {
     assert(size != 0);
-    dvmh_omp_thread_context *ctx = (dvmh_omp_thread_context *) malloc(sizeof(dvmh_omp_thread_context));
+    dvmh_omp_thread_context_t *ctx = (dvmh_omp_thread_context_t *) malloc(sizeof(dvmh_omp_thread_context_t));
     assert(ctx != NULL);
     ctx->intervals = (dvmh_omp_interval_t *) malloc(sizeof(dvmh_omp_interval_t) * size);
     assert(ctx->intervals != NULL);
@@ -22,7 +22,7 @@ dvmh_omp_thread_context_create(uint size, int thread_id)
 
 void
 dvmh_omp_thread_context_destroy(
-        dvmh_omp_thread_context *ctx)
+        dvmh_omp_thread_context_t *ctx)
 {
     assert(ctx != NULL);
     assert(ctx->size != 0);
@@ -35,7 +35,7 @@ dvmh_omp_thread_context_destroy(
 
 void
 dvmh_omp_thread_context_enter_interval(
-       dvmh_omp_thread_context *ctx, uint id)
+       dvmh_omp_thread_context_t *ctx, uint id)
 {
     assert(0 <= id && id < ctx->size);
     assert(ctx->top < ctx->size);
@@ -45,7 +45,7 @@ dvmh_omp_thread_context_enter_interval(
 
 void
 dvmh_omp_thread_context_leave_interval(
-        dvmh_omp_thread_context *ctx)
+        dvmh_omp_thread_context_t *ctx)
 {
     assert(ctx != NULL);
     assert(ctx->top > 0);
@@ -54,7 +54,7 @@ dvmh_omp_thread_context_leave_interval(
 
 dvmh_omp_interval_t *
 dvmh_omp_thread_context_current_interval(
-        dvmh_omp_thread_context *ctx)
+        dvmh_omp_thread_context_t *ctx)
 {
     assert(ctx != NULL);
     assert(ctx->top > 0);
@@ -64,18 +64,18 @@ dvmh_omp_thread_context_current_interval(
 
 size_t
 dvmh_omp_thread_context_sizeof(
-        dvmh_omp_thread_context *ctx)
+        dvmh_omp_thread_context_t *ctx)
 {
     if (ctx == NULL) return 0;
 
-    return sizeof(dvmh_omp_thread_context)
+    return sizeof(dvmh_omp_thread_context_t)
         + ctx->size * sizeof(dvmh_omp_interval_t)
         + ctx->size * sizeof(uint);
 }
 
 int
 dvmh_omp_thread_context_thread_id(
-        dvmh_omp_thread_context *ctx)
+        dvmh_omp_thread_context_t *ctx)
 {
     assert(ctx != NULL);
     return ctx->thread_id;

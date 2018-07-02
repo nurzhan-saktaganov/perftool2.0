@@ -11,7 +11,7 @@
 #include "omp_dbg.h"
 
 // We use this threadprivate variable to direct access to own thread context from each thread.
-static dvmh_omp_thread_context *thread_context;
+static dvmh_omp_thread_context_t *thread_context;
 #pragma omp threadprivate(thread_context)
 
 // We store runtime context here.

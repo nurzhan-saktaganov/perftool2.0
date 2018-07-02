@@ -15,8 +15,8 @@ dvmh_omp_runtime_context_create(
     assert(ctx != NULL);
 
     ctx->num_threads = num_threads;
-    ctx->thread_contexts = (dvmh_omp_thread_context **)
-            malloc(num_threads * sizeof(dvmh_omp_thread_context *));
+    ctx->thread_contexts = (dvmh_omp_thread_context_t **)
+            malloc(num_threads * sizeof(dvmh_omp_thread_context_t *));
     assert(ctx->thread_contexts);
 
     ctx->num_context_descriptors = num_context_descriptors;
@@ -86,7 +86,7 @@ dvmh_omp_runtime_context_destroy(
 void
 dvmh_omp_runtime_context_set_thread_context(
         dvmh_omp_runtime_context_t *r_ctx,
-        dvmh_omp_thread_context *t_ctx,
+        dvmh_omp_thread_context_t *t_ctx,
         int thread_id)
 {
     assert(r_ctx != NULL);
