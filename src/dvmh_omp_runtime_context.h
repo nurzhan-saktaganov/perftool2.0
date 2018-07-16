@@ -33,8 +33,13 @@ dvmh_omp_runtime_context_destroy(
 
 void
 dvmh_omp_runtime_context_set_thread_context(
-        dvmh_omp_runtime_context_t *rctx,
-        dvmh_omp_thread_context_t *tctx,
+        dvmh_omp_runtime_context_t *r_ctx,
+        dvmh_omp_thread_context_t *t_ctx,
+        int thread_id);
+
+dvmh_omp_thread_context_t *
+dvmh_omp_runtime_context_get_thread_context(
+        dvmh_omp_runtime_context_t *r_ctx,
         int thread_id);
 
 void

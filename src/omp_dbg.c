@@ -10,9 +10,9 @@
 #include "dvmh_omp_runtime_context.h"
 #include "omp_dbg.h"
 
-// We use this threadprivate variable to direct access to own thread context from each thread.
-static dvmh_omp_thread_context_t *thread_context;
-#pragma omp threadprivate(thread_context)
+// We use this threadprivate variable to direct access to own thread_id from each thread.
+static int thread_id;
+#pragma omp threadprivate(thread_id)
 
 // We store runtime context here.
 static dvmh_omp_runtime_context_t *runtime_context = NULL;
@@ -48,8 +48,8 @@ void DBG_Init(long *ThreadID)
     {
         #pragma omp critical (dbg_init)
         {
-            const int thread_id = omp_get_thread_num();
-            thread_context = dvmh_omp_thread_context_create(num_context_descriptors, thread_id);
+            thread_id = omp_get_thread_num();
+            dvmh_omp_thread_context_t *thread_context = dvmh_omp_thread_context_create(num_context_descriptors, thread_id);
             assert(thread_context != NULL);
             dvmh_omp_runtime_context_set_thread_context(runtime_context, thread_context, thread_id);
         }
@@ -106,16 +106,16 @@ void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringL
 }
 
 // We assume that there is no inner level parallelism.
-void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult)
-{
-    const int is_master_thread = 1;
-    *ThreadID = is_master_thread;
-};
+void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult){};
 
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 {
-    const int is_master_thread = *ThreadID;
+    const int is_master_thread = thread_id == 0;
     if (is_master_thread) return;
+
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
+
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, -now);
@@ -123,8 +123,11 @@ void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 
 void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 {
-    const int is_master_thread = *ThreadID;
+    const int is_master_thread = thread_id == 0;
     double now = omp_get_wtime();
+
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
 
     if (!is_master_thread) {
         dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
@@ -185,6 +188,8 @@ void DBG_MasterEnd(long *StaticContextHandle, long *ThreadID){};
 
 void DBG_BeforeCritical (long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_critical_time(i, -now);
@@ -192,6 +197,8 @@ void DBG_BeforeCritical (long *StaticContextHandle, long *ThreadID)
 
 void DBG_CriticalEvent(long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_critical_time(i, now);
@@ -203,6 +210,8 @@ void DBG_AfterCritical(long *StaticContextHandle, long *ThreadID){};
 
 void DBG_BeforeBarrier(long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_barrier_time(i, -now);
@@ -210,6 +219,8 @@ void DBG_BeforeBarrier(long *StaticContextHandle, long *ThreadID)
 
 void DBG_AfterBarrier(long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_barrier_time(i, now);
@@ -217,6 +228,8 @@ void DBG_AfterBarrier(long *StaticContextHandle, long *ThreadID)
 
 void DBG_FlushEvent(long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_flush_time(i, -now);
@@ -224,6 +237,8 @@ void DBG_FlushEvent(long *StaticContextHandle, long *ThreadID)
 
 void DBG_FlushEventEnd(long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_flush_time(i, now);
@@ -281,6 +296,8 @@ void DBG_OMPIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long 
 
 void DBG_BeforeIO(long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_io_time(i, -now);
@@ -288,6 +305,8 @@ void DBG_BeforeIO(long *StaticContextHandle, long *ThreadID)
 
 void DBG_AfterIO(long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_io_time(i, now);
@@ -297,6 +316,8 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
 {
     context_descriptor *cd = (context_descriptor *) StaticContextHandle;
     const int interval_id = cd->info.id;
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_thread_context_enter_interval(thread_context, interval_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
@@ -317,6 +338,8 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
     context_descriptor *cd = (context_descriptor *) StaticContextHandle;
     const int interval_id = cd->info.id;
 
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, now);
