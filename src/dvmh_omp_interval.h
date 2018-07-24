@@ -119,4 +119,11 @@ double
 dvmh_omp_interval_idle_parallel_time(
         dvmh_omp_interval_t *i);
 
+void
+dvmh_omp_interval_integrate(
+        dvmh_omp_interval_t **from,
+        int num_threads,
+        int size,
+        dvmh_omp_interval_t *into);
+
 #endif

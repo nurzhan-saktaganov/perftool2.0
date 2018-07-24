@@ -207,3 +207,26 @@ dvmh_omp_runtime_context_after_parallel(
         ctx->idle_parallel_times[interval_id] = when - ctx->end_parallel_times[i];
     }
 }
+
+void
+dvmh_omp_runtime_context_integrate(
+        dvmh_omp_runtime_context_t *r_ctx,
+        dvmh_omp_interval_t *into)
+{
+    assert(r_ctx != NULL);
+    assert(into != NULL);
+
+    dvmh_omp_interval_t **from = (dvmh_omp_interval_t **)
+            malloc(r_ctx->num_threads * sizeof(dvmh_omp_interval_t *));
+    assert(from != NULL);
+
+    for (int i = 0; i < r_ctx->num_threads; ++i) {
+        dvmh_omp_thread_context_t *t_ctx =
+                dvmh_omp_runtime_context_get_thread_context(r_ctx, i);
+        from[i] = dvmh_omp_thread_context_current_interval(t_ctx);
+    }
+
+    dvmh_omp_interval_integrate(from, r_ctx->num_threads, r_ctx->num_context_descriptors, into);
+
+    free(from);
+}

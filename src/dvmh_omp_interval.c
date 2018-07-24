@@ -162,6 +162,17 @@ dvmh_omp_interval_idle_parallel_time(
     return i->idle_parallel_time;
 }
 
+void
+dvmh_omp_interval_integrate(
+        dvmh_omp_interval_t **from,
+        int num_threads,
+        int size,
+        dvmh_omp_interval_t *into)
+{
+    // TODO
+    return;
+}
+
 /*
 struct _dvmh_omp_interval {
     context_descriptor *descriptor;

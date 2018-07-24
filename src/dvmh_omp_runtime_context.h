@@ -4,6 +4,7 @@
 #include <omp.h>
 
 #include "context_descriptor.h"
+#include "dvmh_omp_interval.h"
 #include "dvmh_omp_thread_context.h"
 
 typedef struct _dvmh_omp_runtime_context_t {
@@ -85,14 +86,19 @@ dvmh_omp_runtime_context_add_exectuion_time(
 
 void
 dvmh_omp_runtime_context_end_parallel(
-    dvmh_omp_runtime_context_t *ctx,
-    int thread_id,
-    double when);
+        dvmh_omp_runtime_context_t *ctx,
+        int thread_id,
+        double when);
 
 void
 dvmh_omp_runtime_context_after_parallel(
-    dvmh_omp_runtime_context_t *ctx,
-    int interval_id,
-    double when);
+        dvmh_omp_runtime_context_t *ctx,
+        int interval_id,
+        double when);
+
+void
+dvmh_omp_runtime_context_integrate(
+        dvmh_omp_runtime_context_t *r_ctx,
+        dvmh_omp_interval_t *into);
 
 #endif

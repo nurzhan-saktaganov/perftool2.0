@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <omp.h>
 
 #include "list.h"
@@ -70,11 +71,17 @@ void DBG_Finalize()
 
     if (r_ctx == NULL) return;
 
-    // TODO integrate intervals and print out the results.
+    dvmh_omp_interval_t *summary = (dvmh_omp_interval_t *) malloc(sizeof(dvmh_omp_interval_t));
+    assert(summary != NULL);
 
+    dvmh_omp_runtime_context_integrate(r_ctx, summary);
+
+    // TODO print out the results.
 
 
     // Cleanup stage
+    free(summary);
+
     for (int i = 0; i < r_ctx->num_threads; ++i) {
         dvmh_omp_thread_context_destroy(r_ctx->thread_contexts[i]);
     }
