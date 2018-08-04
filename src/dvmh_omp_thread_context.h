@@ -1,9 +1,11 @@
 #ifndef DVMH_OMP_THREAD_CONTEXT_H
 #define DVMH_OMP_THREAD_CONTEXT_H
 
-typedef unsigned int uint;
+#include <stdbool.h>
 
 #include "dvmh_omp_interval.h"
+
+typedef unsigned int uint;
 
 typedef struct _dvmh_omp_thread_context_t {
     dvmh_omp_interval_t *intervals;
@@ -11,6 +13,7 @@ typedef struct _dvmh_omp_thread_context_t {
     uint size;
     uint top;
     int thread_id;
+    bool is_tree_built;
 } dvmh_omp_thread_context_t;
 
 dvmh_omp_thread_context_t *
@@ -38,6 +41,10 @@ dvmh_omp_thread_context_sizeof(
 
 int
 dvmh_omp_thread_context_thread_id(
+        dvmh_omp_thread_context_t *ctx);
+
+dvmh_omp_interval_t *
+dvmh_omp_thread_context_interval_tree(
         dvmh_omp_thread_context_t *ctx);
 
 #endif

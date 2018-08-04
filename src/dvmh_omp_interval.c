@@ -24,11 +24,20 @@ dvmh_omp_interval_deinit(
     }
 }
 
-void dvmh_omp_interval_set_parent_id(
+void
+dvmh_omp_interval_set_parent_id(
         dvmh_omp_interval_t *i,
         int parent_id)
 {
     i->parent_id = parent_id;
+}
+
+void
+dvmh_omp_interval_set_id(
+        dvmh_omp_interval_t *i,
+        int id)
+{
+    i->id = id;
 }
 
 void
@@ -77,6 +86,24 @@ dvmh_omp_interval_add_used_time(
         double used_time)
 {
     i->used_time += used_time;
+}
+
+// Getters
+
+int
+dvmh_omp_interval_get_parent_id(
+        dvmh_omp_interval_t *i)
+{
+    assert(i != NULL);
+    return i->parent_id;
+}
+
+int
+dvmh_omp_interval_get_id(
+        dvmh_omp_interval_t *i)
+{
+    assert(i != NULL);
+    return i->id;
 }
 
 double

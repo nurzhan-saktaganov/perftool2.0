@@ -325,8 +325,15 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
     const int interval_id = cd->info.id;
     dvmh_omp_thread_context_t *thread_context =
             dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
+
+    dvmh_omp_interval_t *parent = dvmh_omp_thread_context_current_interval(thread_context);
+    const int parent_id = dvmh_omp_interval_get_id(parent);
+
     dvmh_omp_thread_context_enter_interval(thread_context, interval_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
+
+    dvmh_omp_interval_set_parent_id(i, parent_id);
+
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, -now);
     dvmh_omp_interval_add_exectuion_count(i, 1L);

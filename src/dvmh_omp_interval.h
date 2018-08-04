@@ -8,6 +8,7 @@
 
 typedef struct _dvmh_omp_interval_t {
     uint64_t execution_count;
+    int id;
     int parent_id; // TODO maybe we should remove this
     double io_time; // TODO must be aggregated. See perftool code.
     double sync_barrier_time; // TODO must be aggregated. See perftool code.
@@ -42,6 +43,16 @@ dvmh_omp_interval_deinit(
         dvmh_omp_interval_t *i);
 
 void
+dvmh_omp_interval_set_id(
+        dvmh_omp_interval_t *i,
+        int id);
+
+void
+dvmh_omp_interval_set_parent_id(
+        dvmh_omp_interval_t *i,
+        int parent_id);
+
+void
 dvmh_omp_interval_add_io_time(
         dvmh_omp_interval_t *i,
         double io_time);
@@ -73,6 +84,14 @@ dvmh_omp_interval_add_exectuion_count(
 
 
 // Getters
+
+int
+dvmh_omp_interval_get_parent_id(
+        dvmh_omp_interval_t *i);
+
+int
+dvmh_omp_interval_get_id(
+        dvmh_omp_interval_t *i);
 
 double
 dvmh_omp_interval_total_time(

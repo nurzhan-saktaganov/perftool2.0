@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "dvmh_omp_interval.h"
@@ -14,6 +15,7 @@ dvmh_omp_thread_context_create(uint size, int thread_id)
     assert(ctx->intervals != NULL);
     for (int i = 0; i < size; ++i) {
         dvmh_omp_interval_init(&ctx->intervals[i]);
+        dvmh_omp_interval_set_id(&ctx->intervals[i], i);
     }
     ctx->stack = (uint *) malloc(sizeof(uint) * size);
     assert(ctx->stack != NULL);
@@ -85,4 +87,31 @@ dvmh_omp_thread_context_thread_id(
 {
     assert(ctx != NULL);
     return ctx->thread_id;
+}
+
+dvmh_omp_interval_t *
+dvmh_omp_thread_context_interval_tree(
+        dvmh_omp_thread_context_t *ctx)
+{
+    assert(ctx != NULL);
+    assert(ctx->size > 0);
+    assert(ctx->intervals != NULL);
+
+    if ( ctx->is_tree_built ) {
+        return &ctx->intervals[0];
+    }
+
+    // We assume that interval at the zero position represents the whole program.
+    // We also assume that interval at position i occurs in code source before interval at position j if i < j.
+    for (int i = 1; i < ctx->size; ++i) {
+        dvmh_omp_interval_t *current = &ctx->intervals[i];
+        const int parent_id = dvmh_omp_interval_get_parent_id(current);
+        assert(0 <= parent_id && parent_id < ctx->size);
+        dvmh_omp_interval_t *parent = &ctx->intervals[parent_id];
+        dvmh_omp_interval_add_subinterval(parent, current);
+    }
+
+    ctx->is_tree_built = true;
+
+    return &ctx->intervals[0];
 }
