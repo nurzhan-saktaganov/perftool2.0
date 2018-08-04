@@ -198,6 +198,19 @@ dvmh_omp_interval_integrate(
 
 // Subintervals API
 
+void
+dvmh_omp_interval_add_subinterval(
+        dvmh_omp_interval_t *i,
+        dvmh_omp_interval_t *s)
+{
+    assert(i != NULL);
+    assert(s != NULL);
+    if (i->subintervals == NULL) {
+        i->subintervals = list_create();
+    }
+    list_append_tail(i->subintervals, s);
+}
+
 bool
 dvmh_omp_interval_has_subintervals(
         dvmh_omp_interval_t *i)

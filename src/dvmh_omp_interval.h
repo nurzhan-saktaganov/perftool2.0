@@ -143,6 +143,11 @@ typedef struct _dvmh_omp_subintervals_iterator_t {
     list_iterator *it;
 } dvmh_omp_subintervals_iterator_t;
 
+void
+dvmh_omp_interval_add_subinterval(
+        dvmh_omp_interval_t *i,
+        dvmh_omp_interval_t *s);
+
 bool
 dvmh_omp_interval_has_subintervals(
         dvmh_omp_interval_t *i);
