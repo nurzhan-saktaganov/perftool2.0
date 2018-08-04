@@ -2,6 +2,9 @@
 #define DVMH_OMP_INTERVAL_H
 
 #include <stdint.h>
+#include <stdbool.h>
+
+#include "list.h"
 
 typedef struct _dvmh_omp_interval_t {
     uint64_t execution_count;
@@ -14,6 +17,7 @@ typedef struct _dvmh_omp_interval_t {
     double execution_time;
     double idle_parallel_time;
     int used_threads_number; // TODO для каждого интервала считаем несредственно использованных. Потом интегрируем по вложенным.
+    list *subintervals;
     // TODO store context_desciptor
     // TODO execution time
     // TODO threads num - can be post calculated
@@ -29,6 +33,13 @@ typedef struct _dvmh_omp_interval_t {
 // TODO maybe there should be interval init function?
 
 // Setters
+void
+dvmh_omp_interval_init(
+        dvmh_omp_interval_t *i);
+
+void
+dvmh_omp_interval_deinit(
+        dvmh_omp_interval_t *i);
 
 void
 dvmh_omp_interval_add_io_time(
@@ -125,5 +136,31 @@ dvmh_omp_interval_integrate(
         int num_threads,
         int size,
         dvmh_omp_interval_t *into);
+
+// Subintervals API
+
+typedef struct _dvmh_omp_subintervals_iterator_t {
+    list_iterator *it;
+} dvmh_omp_subintervals_iterator_t;
+
+bool
+dvmh_omp_interval_has_subintervals(
+        dvmh_omp_interval_t *i);
+
+dvmh_omp_subintervals_iterator_t *
+dvmh_omp_subintervals_iterator_new(
+        dvmh_omp_interval_t *i);
+
+bool
+dvmh_omp_subinterval_iterator_has_next(
+        dvmh_omp_subintervals_iterator_t *it);
+
+dvmh_omp_interval_t *
+dvmh_omp_subinterval_iterator_next(
+        dvmh_omp_subintervals_iterator_t *it);
+
+void
+dvmh_omp_subintervals_iterator_destroy(
+        dvmh_omp_subintervals_iterator_t *it);
 
 #endif

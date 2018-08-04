@@ -12,6 +12,9 @@ dvmh_omp_thread_context_create(uint size, int thread_id)
     assert(ctx != NULL);
     ctx->intervals = (dvmh_omp_interval_t *) malloc(sizeof(dvmh_omp_interval_t) * size);
     assert(ctx->intervals != NULL);
+    for (int i = 0; i < size; ++i) {
+        dvmh_omp_interval_init(&ctx->intervals[i]);
+    }
     ctx->stack = (uint *) malloc(sizeof(uint) * size);
     assert(ctx->stack != NULL);
     ctx->size = size;
@@ -27,6 +30,9 @@ dvmh_omp_thread_context_destroy(
     assert(ctx != NULL);
     assert(ctx->size != 0);
     assert(ctx->intervals != NULL);
+    for (int i = 0; i < ctx->size; ++i) {
+        dvmh_omp_interval_deinit(&ctx->intervals[i]);
+    }
     free(ctx->intervals);
     assert(ctx->stack != NULL);
     free(ctx->stack);

@@ -1,5 +1,28 @@
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "list.h"
 #include "dvmh_omp_interval.h"
 
+void
+dvmh_omp_interval_init(
+        dvmh_omp_interval_t *i)
+{
+    assert(i != NULL);
+    memset((void *) i, 1, sizeof(dvmh_omp_interval_t));
+}
+
+void
+dvmh_omp_interval_deinit(
+        dvmh_omp_interval_t *i)
+{
+    assert(i != NULL);
+    if (i->subintervals != NULL) {
+        list_destroy(i->subintervals);
+        i->subintervals = NULL;
+    }
+}
 
 void dvmh_omp_interval_set_parent_id(
         dvmh_omp_interval_t *i,
@@ -171,6 +194,53 @@ dvmh_omp_interval_integrate(
 {
     // TODO
     return;
+}
+
+// Subintervals API
+
+bool
+dvmh_omp_interval_has_subintervals(
+        dvmh_omp_interval_t *i)
+{
+    assert(i != NULL);
+    return i->subintervals != NULL;
+}
+
+dvmh_omp_subintervals_iterator_t *
+dvmh_omp_subintervals_iterator_new(
+        dvmh_omp_interval_t *i)
+{
+    assert(i != NULL);
+    dvmh_omp_subintervals_iterator_t *it =
+            (dvmh_omp_subintervals_iterator_t *) malloc(sizeof(dvmh_omp_subintervals_iterator_t ));
+    assert(it != NULL);
+    it->it = list_iterator_new(i->subintervals);
+    return it;
+}
+
+bool
+dvmh_omp_subintervals_iterator_has_next(
+        dvmh_omp_subintervals_iterator_t *it)
+{
+    assert(it != NULL);
+    return list_iterator_has_next(it->it);
+}
+
+dvmh_omp_interval_t *
+dvmh_omp_subintervals_iterator_next(
+        dvmh_omp_subintervals_iterator_t *it)
+{
+    assert(it != NULL);
+    return (dvmh_omp_interval_t *) list_iterator_next(it->it);
+}
+
+void
+dvmh_omp_subintervals_iterator_destroy(
+        dvmh_omp_subintervals_iterator_t *it)
+{
+    assert(it != NULL);
+    list_iterator_destroy(it->it);
+    free(it);
 }
 
 /*
