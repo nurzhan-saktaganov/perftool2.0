@@ -101,9 +101,13 @@ void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringL
     // Создаем список, если еще не создавали.
     if (registered_descriptors == NULL){
 		assert(registered_descriptors = list_create());
+        // create context descriptor for top level interval
+        const int id = list_size(registered_descriptors);
+        context_descriptor *cd = register_context("43*type=interval*file1=MAIN*line1=0*line2=0**", id);
+        list_append_tail(registered_descriptors, cd);
 	}
 
-    // Присваиваем id как порядковый номер возникновения.
+    // Присваиваем id как порядковый номер регистрации.
     const int id = list_size(registered_descriptors);
     context_descriptor *cd = register_context(ContextString, id);
 
