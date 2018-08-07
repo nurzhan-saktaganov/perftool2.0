@@ -56,6 +56,8 @@ void DBG_Init(long *ThreadID)
         }
     }
 
+    // TODO enter to the top level interval in master thread.
+
     return;
 };
 
@@ -70,6 +72,8 @@ void DBG_Finalize()
     }
 
     if (r_ctx == NULL) return;
+
+    // TODO leave the top level interval in master thread.
 
     dvmh_omp_interval_t *summary = (dvmh_omp_interval_t *) malloc(sizeof(dvmh_omp_interval_t));
     assert(summary != NULL);
@@ -330,8 +334,13 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
     dvmh_omp_thread_context_t *thread_context =
             dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
 
-    dvmh_omp_interval_t *parent = dvmh_omp_thread_context_current_interval(thread_context);
-    const int parent_id = dvmh_omp_interval_get_id(parent);
+    int parent_id;
+    if (dvmh_omp_thread_context_has_active_interval(thread_context)) {
+        dvmh_omp_interval_t *parent = dvmh_omp_thread_context_current_interval(thread_context);
+        parent_id = dvmh_omp_interval_get_id(parent);
+    } else {
+        // TODO get parent id from runtime context
+    }
 
     dvmh_omp_thread_context_enter_interval(thread_context, interval_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);

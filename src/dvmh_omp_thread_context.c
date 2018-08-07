@@ -70,6 +70,14 @@ dvmh_omp_thread_context_current_interval(
     return &ctx->intervals[id];
 }
 
+bool
+dvmh_omp_thread_context_has_active_interval(
+        dvmh_omp_thread_context_t *ctx)
+{
+    assert(ctx != NULL);
+    return ctx->top > 0;
+}
+
 size_t
 dvmh_omp_thread_context_sizeof(
         dvmh_omp_thread_context_t *ctx)
@@ -114,4 +122,14 @@ dvmh_omp_thread_context_interval_tree(
     ctx->is_tree_built = true;
 
     return &ctx->intervals[0];
+}
+
+dvmh_omp_interval_t *
+dvmh_omp_thread_context_get_interval(
+        dvmh_omp_thread_context_t *ctx,
+        int id)
+{
+    assert(ctx != NULL);
+    assert(0 <= id && id < ctx->size);
+    return &ctx->intervals[id];
 }
