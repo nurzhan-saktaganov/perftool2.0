@@ -14,6 +14,8 @@ dvmh_omp_runtime_context_create(
             malloc(sizeof(dvmh_omp_runtime_context_t));
     assert(ctx != NULL);
 
+    ctx->threads_spawner_interval_id = -1;
+
     ctx->num_threads = num_threads;
     ctx->thread_contexts = (dvmh_omp_thread_context_t **)
             calloc(num_threads, sizeof(dvmh_omp_thread_context_t *));
@@ -116,6 +118,24 @@ dvmh_omp_runtime_context_set_context_descriptor(
     assert(cd != NULL);
     assert(0 <= cd_id && cd_id < ctx->num_context_descriptors);
     ctx->context_descriptors[cd_id] = cd;
+}
+
+void
+dvmh_omp_runtime_context_set_threads_spawner_id(
+        dvmh_omp_runtime_context_t *ctx,
+        int id)
+{
+    assert(ctx != NULL);
+    assert(0 <= id && id < ctx->num_context_descriptors);
+    ctx->threads_spawner_interval_id = id;
+}
+
+int
+dvmh_omp_runtime_context_get_threads_spawner_id(
+        dvmh_omp_runtime_context_t *ctx)
+{
+    assert(ctx != NULL);
+    return ctx->threads_spawner_interval_id;
 }
 
 void

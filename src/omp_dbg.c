@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <omp.h>
 
 #include "list.h"
@@ -121,35 +122,47 @@ void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringL
 }
 
 // We assume that there is no inner level parallelism.
-void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult){};
+void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThreadsResults, int *IfExprResult)
+{
+    // We are in master thread now
+    dvmh_omp_thread_context_t *thread_context =
+            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
+
+    dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
+    const int spawner_id = dvmh_omp_interval_get_id(i);
+    dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, spawner_id);
+};
 
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
 {
-    const int is_master_thread = thread_id == 0;
+    const bool is_master_thread = thread_id == 0;
     if (is_master_thread) return;
 
     dvmh_omp_thread_context_t *thread_context =
             dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
 
-    dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
+    // Set inital 'root' interval for current thread in current parallel region
+    const int spawner_id = dvmh_omp_runtime_context_get_threads_spawner_id(runtime_context);
+    dvmh_omp_thread_context_enter_interval(thread_context, spawner_id);
+
+    dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, -now);
 };
 
 void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 {
-    const int is_master_thread = thread_id == 0;
+    const bool is_master_thread = thread_id == 0;
     double now = omp_get_wtime();
 
-    dvmh_omp_thread_context_t *thread_context =
-            dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
-
     if (!is_master_thread) {
+        dvmh_omp_thread_context_t *thread_context =
+                dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
         dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
         dvmh_omp_interval_add_used_time(i, now);
+        dvmh_omp_thread_context_leave_interval(thread_context);
     }
 
-    const int thread_id = dvmh_omp_thread_context_thread_id(thread_context);
     dvmh_omp_runtime_context_end_parallel(runtime_context, thread_id, now);
 };
 
@@ -160,6 +173,7 @@ void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 
     double now = omp_get_wtime();
     dvmh_omp_runtime_context_after_parallel(runtime_context, interval_id, now);
+    dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, -1);
 };
 
 // TODO
@@ -334,13 +348,8 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
     dvmh_omp_thread_context_t *thread_context =
             dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
 
-    int parent_id;
-    if (dvmh_omp_thread_context_has_active_interval(thread_context)) {
-        dvmh_omp_interval_t *parent = dvmh_omp_thread_context_current_interval(thread_context);
-        parent_id = dvmh_omp_interval_get_id(parent);
-    } else {
-        // TODO get parent id from runtime context
-    }
+    dvmh_omp_interval_t *parent = dvmh_omp_thread_context_current_interval(thread_context);
+    const int parent_id = dvmh_omp_interval_get_id(parent);
 
     dvmh_omp_thread_context_enter_interval(thread_context, interval_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);

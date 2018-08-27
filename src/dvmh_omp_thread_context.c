@@ -70,14 +70,6 @@ dvmh_omp_thread_context_current_interval(
     return &ctx->intervals[id];
 }
 
-bool
-dvmh_omp_thread_context_has_active_interval(
-        dvmh_omp_thread_context_t *ctx)
-{
-    assert(ctx != NULL);
-    return ctx->top > 0;
-}
-
 size_t
 dvmh_omp_thread_context_sizeof(
         dvmh_omp_thread_context_t *ctx)

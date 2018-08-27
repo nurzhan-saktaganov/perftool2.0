@@ -14,6 +14,8 @@ typedef struct _dvmh_omp_runtime_context_t {
     int num_context_descriptors;
     context_descriptor **context_descriptors;
 
+    volatile int threads_spawner_interval_id;
+
     // lock for each interval.
     omp_lock_t *interval_locks;
     int *threads_in_interval;
@@ -48,6 +50,15 @@ dvmh_omp_runtime_context_set_context_descriptor(
         dvmh_omp_runtime_context_t *ctx,
         context_descriptor *cd,
         int cd_id);
+
+void
+dvmh_omp_runtime_context_set_threads_spawner_id(
+        dvmh_omp_runtime_context_t *ctx,
+        int id);
+
+int
+dvmh_omp_runtime_context_get_threads_spawner_id(
+        dvmh_omp_runtime_context_t *ctx);
 
 void
 dvmh_omp_runtime_context_lock_interval(

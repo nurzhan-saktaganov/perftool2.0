@@ -35,10 +35,6 @@ dvmh_omp_interval_t *
 dvmh_omp_thread_context_current_interval(
         dvmh_omp_thread_context_t *ctx);
 
-bool
-dvmh_omp_thread_context_has_active_interval(
-        dvmh_omp_thread_context_t *ctx);
-
 size_t
 dvmh_omp_thread_context_sizeof(
         dvmh_omp_thread_context_t *ctx);
