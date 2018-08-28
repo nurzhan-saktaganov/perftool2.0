@@ -57,7 +57,19 @@ void DBG_Init(long *ThreadID)
         }
     }
 
-    // TODO enter to the top level interval in master thread.
+    // Enter to the top level interval in master thread.
+    const int root_interval_id = 0;
+    dvmh_omp_thread_context_t *thread_context = dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
+    dvmh_omp_thread_context_enter_interval(thread_context, root_interval_id);
+
+    // Stats
+    dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+    dvmh_omp_interval_add_used_time(i, -now);
+    dvmh_omp_interval_add_exectuion_count(i, 1L);
+
+    // calculate exectuion time
+    dvmh_omp_runtime_context_add_exectuion_time(runtime_context, root_interval_id, -now);
 
     return;
 };
@@ -65,6 +77,8 @@ void DBG_Init(long *ThreadID)
 void DBG_Finalize()
 {
     dvmh_omp_runtime_context_t *r_ctx;
+    const int master_thread_id = 0;
+    const int root_interval_id = 0;
 
     #pragma omp critical (dbg_finalize)
     {
@@ -74,7 +88,18 @@ void DBG_Finalize()
 
     if (r_ctx == NULL) return;
 
-    // TODO leave the top level interval in master thread.
+    dvmh_omp_thread_context_t *thread_context = dvmh_omp_runtime_context_get_thread_context(runtime_context, master_thread_id);
+    dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
+    double now = omp_get_wtime();
+
+    // Stats
+    dvmh_omp_interval_add_used_time(i, now);
+    dvmh_omp_runtime_context_add_exectuion_time(runtime_context, root_interval_id, now);
+
+    // Leave the top level interval in master thread
+    dvmh_omp_thread_context_leave_interval(thread_context);
+
+    // TODO
 
     dvmh_omp_interval_t *summary = (dvmh_omp_interval_t *) malloc(sizeof(dvmh_omp_interval_t));
     assert(summary != NULL);
