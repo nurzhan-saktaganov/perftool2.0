@@ -10,7 +10,18 @@ dvmh_omp_interval_init(
         dvmh_omp_interval_t *i)
 {
     assert(i != NULL);
-    memset((void *) i, 1, sizeof(dvmh_omp_interval_t));
+    i->execution_count = 0;
+    i->id = -1;
+    i->parent_id = DVMH_OMP_INTERVAL_PARENT_UNDEFINED;
+    i->io_time = 0.0;
+    i->sync_barrier_time = 0.0;
+    i->idle_critical_time = 0.0;
+    i->sync_flush_time = 0.0;
+    i->used_time = 0.0;
+    i->execution_time = 0.0;
+    i->idle_parallel_time = 0.0;
+    i->used_threads_number = 0;
+    i->subintervals = NULL;
 }
 
 void
@@ -46,6 +57,14 @@ dvmh_omp_interval_add_exectuion_count(
         uint64_t count)
 {
     i->execution_count += count;
+}
+
+void
+dvmh_omp_interval_add_used_threads_num(
+        dvmh_omp_interval_t *i,
+        int n)
+{
+    i->used_threads_number += n;
 }
 
 void
@@ -86,6 +105,22 @@ dvmh_omp_interval_add_used_time(
         double used_time)
 {
     i->used_time += used_time;
+}
+
+void
+dvmh_omp_interval_add_execution_time(
+        dvmh_omp_interval_t *i,
+        double t)
+{
+    i->execution_time += t;
+}
+
+void
+dvmh_omp_interval_add_idle_parallel_time(
+        dvmh_omp_interval_t *i,
+        double t)
+{
+    i->idle_parallel_time += t;
 }
 
 // Getters

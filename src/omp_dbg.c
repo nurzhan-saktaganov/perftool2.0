@@ -99,18 +99,12 @@ void DBG_Finalize()
     // Leave the top level interval in master thread
     dvmh_omp_thread_context_leave_interval(thread_context);
 
-    // TODO
-
-    dvmh_omp_interval_t *summary = (dvmh_omp_interval_t *) malloc(sizeof(dvmh_omp_interval_t));
-    assert(summary != NULL);
-
-    dvmh_omp_runtime_context_integrate(r_ctx, summary);
+    dvmh_omp_interval_t *tree = dvmh_omp_runtime_context_integrate(r_ctx);
 
     // TODO print out the results.
 
+    dvmh_omp_runtime_context_integrated_free(runtime_context, tree);
 
-    // Cleanup stage
-    free(summary);
 
     for (int i = 0; i < r_ctx->num_threads; ++i) {
         dvmh_omp_thread_context_destroy(r_ctx->thread_contexts[i]);

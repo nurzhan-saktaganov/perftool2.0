@@ -107,9 +107,13 @@ dvmh_omp_runtime_context_after_parallel(
         int interval_id,
         double when);
 
-void
+dvmh_omp_interval_t *
 dvmh_omp_runtime_context_integrate(
+        dvmh_omp_runtime_context_t *r_ctx);
+
+void
+dvmh_omp_runtime_context_integrated_free(
         dvmh_omp_runtime_context_t *r_ctx,
-        dvmh_omp_interval_t *into);
+        dvmh_omp_interval_t *tree);
 
 #endif

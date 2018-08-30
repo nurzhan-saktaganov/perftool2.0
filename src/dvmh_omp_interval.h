@@ -31,6 +31,10 @@ typedef struct _dvmh_omp_interval_t {
     // TODO lost time
 } dvmh_omp_interval_t;
 
+
+#define DVMH_OMP_INTERVAL_PARENT_UNDEFINED -1
+#define DVMH_OMP_INTERVAL_NO_PARENT -2
+
 // TODO maybe there should be interval init function?
 
 // Setters
@@ -78,10 +82,24 @@ dvmh_omp_interval_add_used_time(
         double used_time);
 
 void
+dvmh_omp_interval_add_execution_time(
+        dvmh_omp_interval_t *i,
+        double t);
+
+void
+dvmh_omp_interval_add_idle_parallel_time(
+        dvmh_omp_interval_t *i,
+        double t);
+
+void
 dvmh_omp_interval_add_exectuion_count(
         dvmh_omp_interval_t *i,
         uint64_t count);
 
+void
+dvmh_omp_interval_add_used_threads_num(
+        dvmh_omp_interval_t *i,
+        int n);
 
 // Getters
 
@@ -176,11 +194,11 @@ dvmh_omp_subintervals_iterator_new(
         dvmh_omp_interval_t *i);
 
 bool
-dvmh_omp_subinterval_iterator_has_next(
+dvmh_omp_subintervals_iterator_has_next(
         dvmh_omp_subintervals_iterator_t *it);
 
 dvmh_omp_interval_t *
-dvmh_omp_subinterval_iterator_next(
+dvmh_omp_subintervals_iterator_next(
         dvmh_omp_subintervals_iterator_t *it);
 
 void

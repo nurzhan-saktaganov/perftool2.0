@@ -228,25 +228,142 @@ dvmh_omp_runtime_context_after_parallel(
     }
 }
 
-void
-dvmh_omp_runtime_context_integrate(
-        dvmh_omp_runtime_context_t *r_ctx,
-        dvmh_omp_interval_t *into)
+static dvmh_omp_interval_t *
+dvmh_omp_runtime_context_build_interval_tree(
+        dvmh_omp_runtime_context_t *r_ctx)
 {
+    dvmh_omp_interval_t *tree;
     assert(r_ctx != NULL);
-    assert(into != NULL);
 
-    dvmh_omp_interval_t **from = (dvmh_omp_interval_t **)
-            malloc(r_ctx->num_threads * sizeof(dvmh_omp_interval_t *));
-    assert(from != NULL);
+    // number of intervals is no more than context descriptors
+    int *parents = (int *) malloc(r_ctx->num_context_descriptors * sizeof(int));
+    assert(parents != NULL);
 
-    for (int i = 0; i < r_ctx->num_threads; ++i) {
-        dvmh_omp_thread_context_t *t_ctx =
-                dvmh_omp_runtime_context_get_thread_context(r_ctx, i);
-        from[i] = dvmh_omp_thread_context_current_interval(t_ctx);
+    for (int i = 1; i < r_ctx->num_context_descriptors; ++i ) {
+        parents[i] = DVMH_OMP_INTERVAL_PARENT_UNDEFINED;
     }
 
-    dvmh_omp_interval_integrate(from, r_ctx->num_threads, r_ctx->num_context_descriptors, into);
+    for (int tid = 0; tid < r_ctx->num_threads; ++tid) {
+        dvmh_omp_thread_context_t *t_ctx = dvmh_omp_runtime_context_get_thread_context(r_ctx, tid);
+        for (int id = 0; id < r_ctx->num_context_descriptors; ++id) {
+            dvmh_omp_interval_t *i = dvmh_omp_thread_context_get_interval(t_ctx, id);
 
-    free(from);
+            // TODO
+            if (dvmh_omp_interval_execution_count(i) == 0)
+                continue;
+
+            int parent_id = dvmh_omp_interval_get_parent_id(i);
+            assert(parent_id != DVMH_OMP_INTERVAL_PARENT_UNDEFINED);
+
+            if (parents[id] == DVMH_OMP_INTERVAL_PARENT_UNDEFINED)
+                parents[id] = parent_id;
+            assert(parents[id] == parent_id);
+        }
+    }
+
+    tree = (dvmh_omp_interval_t *) malloc(r_ctx->num_context_descriptors * sizeof(dvmh_omp_interval_t));
+    assert(tree != NULL);
+
+    for(int id = 0; id < r_ctx->num_context_descriptors; ++id) {
+        dvmh_omp_interval_t *i = &tree[id];
+        dvmh_omp_interval_init(i);
+        dvmh_omp_interval_set_id(i, id);
+    }
+
+    // interval with id 0 has not parent
+    for (int id = 1; id < r_ctx->num_context_descriptors; ++id) {
+        const int parent_id = parents[id];
+        if (parent_id == DVMH_OMP_INTERVAL_PARENT_UNDEFINED)
+            continue;
+
+        dvmh_omp_interval_t *i = &tree[id];
+        dvmh_omp_interval_t *p = &tree[parent_id];
+
+        dvmh_omp_interval_add_subinterval(p, i);
+    }
+
+    free(parents);
+
+    return tree;
+}
+
+static void
+dvmh_omp_runtime_context_traverse(
+        dvmh_omp_runtime_context_t *r_ctx,
+        dvmh_omp_interval_t *node)
+{
+        assert(r_ctx != NULL);
+        assert(node != NULL);
+
+        const int id = dvmh_omp_interval_get_id(node);
+
+        if (dvmh_omp_interval_has_subintervals(node)) {
+            dvmh_omp_subintervals_iterator_t *it = dvmh_omp_subintervals_iterator_new(node);
+
+            while (dvmh_omp_subintervals_iterator_has_next(it)) {
+                dvmh_omp_interval_t *child = dvmh_omp_subintervals_iterator_next(it);
+                dvmh_omp_runtime_context_traverse(r_ctx, child);
+
+                // add aggregated metrics of child into same metrics of current one
+                dvmh_omp_interval_add_io_time(node, dvmh_omp_interval_io_time(child));
+                dvmh_omp_interval_add_barrier_time(node, dvmh_omp_interval_sync_barrier_time(child));
+                dvmh_omp_interval_add_critical_time(node, dvmh_omp_interval_idle_critical_time(child));
+                dvmh_omp_interval_add_flush_time(node, dvmh_omp_interval_sync_flush_time(child));
+
+                dvmh_omp_interval_add_idle_parallel_time(node, dvmh_omp_interval_idle_parallel_time(child));
+            }
+
+            dvmh_omp_subintervals_iterator_destroy(it);
+        }
+
+        for (int tid = 0; tid < r_ctx->num_threads; ++tid) {
+            dvmh_omp_thread_context_t *t_ctx = dvmh_omp_runtime_context_get_thread_context(r_ctx, tid);
+            dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(t_ctx, id);
+
+            if (dvmh_omp_interval_used_time(local) == 0.0)
+                continue;
+
+            // collect from thread local data
+            dvmh_omp_interval_add_io_time(node, dvmh_omp_interval_io_time(local));
+            dvmh_omp_interval_add_barrier_time(node, dvmh_omp_interval_sync_barrier_time(local));
+            dvmh_omp_interval_add_critical_time(node, dvmh_omp_interval_idle_critical_time(local));
+            dvmh_omp_interval_add_flush_time(node, dvmh_omp_interval_sync_flush_time(local));
+
+            dvmh_omp_interval_add_used_time(node, dvmh_omp_interval_used_time(local));
+
+            dvmh_omp_interval_add_used_threads_num(node, 1);
+            dvmh_omp_interval_add_exectuion_count(node, 1);
+        }
+
+        // and some global metrics
+        dvmh_omp_interval_add_execution_time(node, r_ctx->execution_times[id]);
+        dvmh_omp_interval_add_idle_parallel_time(node, r_ctx->idle_parallel_times[id]);
+}
+
+dvmh_omp_interval_t *
+dvmh_omp_runtime_context_integrate(
+        dvmh_omp_runtime_context_t *r_ctx)
+{
+    assert(r_ctx != NULL);
+
+    dvmh_omp_interval_t *tree = dvmh_omp_runtime_context_build_interval_tree(r_ctx);
+
+    dvmh_omp_runtime_context_traverse(r_ctx, tree);
+
+    return tree;
+}
+
+void
+dvmh_omp_runtime_context_integrated_free(
+        dvmh_omp_runtime_context_t *r_ctx,
+        dvmh_omp_interval_t *tree)
+{
+    assert(r_ctx != NULL);
+    assert(tree != NULL);
+
+    for (int id = 0; id < r_ctx->num_context_descriptors; ++id) {
+        dvmh_omp_interval_deinit(&tree[id]);
+    }
+
+    free(tree);
 }
