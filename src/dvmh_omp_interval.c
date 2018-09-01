@@ -22,6 +22,10 @@ dvmh_omp_interval_init(
     i->idle_parallel_time = 0.0;
     i->used_threads_number = 0;
     i->subintervals = NULL;
+    i->thread_prod_avg = 0.0;
+    i->thread_prod_max = 0.0;
+    i->thread_prod_min = 0.0;
+    i->load_imbalance = 0.0;
 }
 
 void
@@ -65,6 +69,38 @@ dvmh_omp_interval_add_used_threads_num(
         int n)
 {
     i->used_threads_number += n;
+}
+
+void
+dvmh_omp_interval_set_thread_prod_avg(
+        dvmh_omp_interval_t *i,
+        double t)
+{
+    i->thread_prod_avg = t;
+}
+
+void
+dvmh_omp_interval_set_thread_prod_max(
+        dvmh_omp_interval_t *i,
+        double t)
+{
+    i->thread_prod_max = t;
+}
+
+void
+dvmh_omp_interval_set_thread_prod_min(
+        dvmh_omp_interval_t *i,
+        double t)
+{
+    i->thread_prod_min = t;
+}
+
+void
+dvmh_omp_interval_add_load_imbalance(
+        dvmh_omp_interval_t *i,
+        double t)
+{
+    i->load_imbalance += t;
 }
 
 void
@@ -251,32 +287,28 @@ double
 dvmh_omp_interval_load_imbalance_time(
         dvmh_omp_interval_t *i)
 {
-    // TODO implement
-    return 1;
+    return i->load_imbalance;
 }
 
 double
 dvmh_omp_interval_thread_prod_max(
         dvmh_omp_interval_t *i)
 {
-    // TODO implement
-    return 1;
+    return i->thread_prod_max;
 }
 
 double
 dvmh_omp_interval_thread_prod_min(
         dvmh_omp_interval_t *i)
 {
-    // TODO implement
-    return 1;
+    return i->thread_prod_min;
 }
 
 double
 dvmh_omp_interval_thread_prod_avg(
         dvmh_omp_interval_t *i)
 {
-    // TODO implement
-    return 1;
+    return i->thread_prod_avg;
 }
 
 int

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <float.h>
 
 #include "dvmh_omp_runtime_context.h"
 
@@ -326,6 +327,26 @@ dvmh_omp_runtime_context_traverse(
             dvmh_omp_subintervals_iterator_destroy(it);
         }
 
+        double thread_prod_avg = 0.0;
+        double thread_prod_max = 0.0;
+        double thread_prod_min = DBL_MAX;
+
+        for (int tid = 0; tid < r_ctx->num_threads; ++tid) {
+            dvmh_omp_thread_context_t *t_ctx = dvmh_omp_runtime_context_get_thread_context(r_ctx, tid);
+            dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(t_ctx, id);
+
+            const double thread_prod_time = dvmh_omp_interval_productive_time(local);
+            if (thread_prod_min > thread_prod_time) thread_prod_min = thread_prod_time;
+            if (thread_prod_max < thread_prod_time) thread_prod_max = thread_prod_time;
+            thread_prod_avg += thread_prod_time;
+        }
+
+        thread_prod_avg /= r_ctx->num_threads;
+
+        dvmh_omp_interval_set_thread_prod_avg(node, thread_prod_avg);
+        dvmh_omp_interval_set_thread_prod_max(node, thread_prod_max);
+        dvmh_omp_interval_set_thread_prod_min(node, thread_prod_min);
+
         for (int tid = 0; tid < r_ctx->num_threads; ++tid) {
             dvmh_omp_thread_context_t *t_ctx = dvmh_omp_runtime_context_get_thread_context(r_ctx, tid);
             dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(t_ctx, id);
@@ -343,6 +364,8 @@ dvmh_omp_runtime_context_traverse(
 
             dvmh_omp_interval_add_used_threads_num(node, 1);
             dvmh_omp_interval_add_exectuion_count(node, 1);
+
+            dvmh_omp_interval_add_load_imbalance(node, thread_prod_max - dvmh_omp_interval_productive_time(local));
         }
 
         // and some global metrics
