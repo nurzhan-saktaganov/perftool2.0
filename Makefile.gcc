@@ -1,18 +1,17 @@
-CC=icc
+CC=gcc
 LDFLAGS=
 BIN=bin
 LIB=lib
 SRC=src
 INC=-I$(LIB) -I$(SRC)
-STDC99=-std=c99
+STDC99=--std=c99
 CFLAGS=-c -Wall $(INC) -fPIC $(STDC99)
-OPENMP=-qopenmp
+OPENMP=-fopenmp
 
 all: omp_dbg.so
 
 omp_dbg.so: lib src
 	$(CC) -Wall -shared -fPIC $(OPENMP) \
-		-Wl,--version-script=exportmap.exp \
 		-o $(BIN)/omp_dbg.so \
 		$(BIN)/$(LIB)/list.o \
 		$(BIN)/$(LIB)/stack.o \
