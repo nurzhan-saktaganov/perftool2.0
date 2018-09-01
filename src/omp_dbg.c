@@ -509,4 +509,6 @@ print_interval_tree_csv(
 	fprintf(fd, "parent id\r\n");
     /* write rows */
     print_interval_node(fd, ctx, tree);
+
+    fclose(fd);
 }
