@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <omp.h>
+#include <stdio.h>
 
 #include "list.h"
 #include "context_descriptor.h"
@@ -74,6 +75,12 @@ void DBG_Init(long *ThreadID)
     return;
 };
 
+static void
+print_interval_tree_csv(
+    const char *filename,
+    dvmh_omp_runtime_context_t *ctx,
+    dvmh_omp_interval_t *tree);
+
 void DBG_Finalize()
 {
     dvmh_omp_runtime_context_t *r_ctx;
@@ -101,7 +108,8 @@ void DBG_Finalize()
 
     dvmh_omp_interval_t *tree = dvmh_omp_runtime_context_integrate(r_ctx);
 
-    // TODO print out the results.
+    // print out the results.
+    print_interval_tree_csv("interval_stats_v2.csv", runtime_context, tree);
 
     dvmh_omp_runtime_context_integrated_free(runtime_context, tree);
 
@@ -408,3 +416,97 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
     }
     dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
 };
+
+static void
+print_interval_node(
+    FILE *fd,
+    dvmh_omp_runtime_context_t *ctx,
+    dvmh_omp_interval_t *node
+)
+{
+    assert(node != NULL);
+
+    if (dvmh_omp_interval_has_subintervals(node)) {
+        dvmh_omp_subintervals_iterator_t *it = dvmh_omp_subintervals_iterator_new(node);
+
+        while (dvmh_omp_subintervals_iterator_has_next(it)) {
+            dvmh_omp_interval_t *child = dvmh_omp_subintervals_iterator_next(it);
+            print_interval_node(fd, ctx, child);
+        }
+
+        dvmh_omp_subintervals_iterator_destroy(it);
+    }
+
+    const int id = dvmh_omp_interval_get_id(node);
+    context_descriptor *cd = dvmh_omp_runtime_context_context_descriptor(ctx, id);
+
+    /* write row */
+    fprintf(fd, "%d,", id);
+    fprintf(fd, "%d,", dvmh_omp_interval_execution_count(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_io_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_execution_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_sync_barrier_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_used_time(node));
+    fprintf(fd, "%d,", dvmh_omp_interval_used_threads_num(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_idle_critical_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_sync_flush_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_idle_parallel_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_load_imbalance_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_thread_prod_max(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_thread_prod_min(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_thread_prod_avg(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_total_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_lost_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_productive_time(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_insufficient_parallelism(node));
+    fprintf(fd, "%lf,", dvmh_omp_interval_efficiency(node));
+    fprintf(fd, "%d,", dvmv_omp_interval_is_in_parallel(node));
+    fprintf(fd, "%d,", cd->info.begin_line);
+    fprintf(fd, "%s,", cd->info.file_name);
+
+    if (dvmh_omp_interval_get_id(node) == 0) {
+        fprintf(fd, "%d", dvmh_omp_interval_get_parent_id(node));
+    } else {
+        fprintf(fd, "%d\r\n", dvmh_omp_interval_get_parent_id(node));
+    }
+}
+
+static void
+print_interval_tree_csv(
+    const char *filename,
+    dvmh_omp_runtime_context_t *ctx,
+    dvmh_omp_interval_t *tree)
+{
+    assert(tree != NULL);
+    assert(filename != NULL);
+
+    FILE *fd = fopen(filename, "w");
+    assert(fd != NULL);
+
+    /* write header */
+    fprintf(fd, "id,");
+	fprintf(fd, "calls count,");
+	fprintf(fd, "io time,");
+	fprintf(fd, "execution time,");
+	fprintf(fd, "idle barrier time,");
+	fprintf(fd, "used time,");
+	fprintf(fd, "used threads,");
+	fprintf(fd, "idle critical time,");
+	fprintf(fd, "flush time,");
+	fprintf(fd, "idle parallel,");
+	fprintf(fd, "load imbalance time,");
+	fprintf(fd, "thread prod max,");
+	fprintf(fd, "thread prod min,");
+	fprintf(fd, "thread prod avg,");
+	fprintf(fd, "total time,");
+	fprintf(fd, "lost time,");
+	fprintf(fd, "productive time,");
+	fprintf(fd, "insufficient parallelism,");
+	fprintf(fd, "efficiency,");
+	fprintf(fd, "in parallel,");
+	fprintf(fd, "begin line,");
+	fprintf(fd, "file name,");
+	fprintf(fd, "parent id\r\n");
+    /* write rows */
+    print_interval_node(fd, ctx, tree);
+}

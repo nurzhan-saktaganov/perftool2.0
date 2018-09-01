@@ -135,7 +135,7 @@ double
 dvmh_omp_interval_io_time(
         dvmh_omp_interval_t *i);
 
-double
+int
 dvmh_omp_interval_execution_count(
         dvmh_omp_interval_t *i);
 
@@ -167,12 +167,25 @@ double
 dvmh_omp_interval_idle_parallel_time(
         dvmh_omp_interval_t *i);
 
-void
-dvmh_omp_interval_integrate(
-        dvmh_omp_interval_t **from,
-        int num_threads,
-        int size,
-        dvmh_omp_interval_t *into);
+double
+dvmh_omp_interval_load_imbalance_time(
+        dvmh_omp_interval_t *i);
+
+double
+dvmh_omp_interval_thread_prod_max(
+        dvmh_omp_interval_t *i);
+
+double
+dvmh_omp_interval_thread_prod_min(
+        dvmh_omp_interval_t *i);
+
+double
+dvmh_omp_interval_thread_prod_avg(
+        dvmh_omp_interval_t *i);
+
+int
+dvmv_omp_interval_is_in_parallel(
+        dvmh_omp_interval_t *i);
 
 // Subintervals API
 

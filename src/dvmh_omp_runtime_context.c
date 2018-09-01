@@ -120,6 +120,16 @@ dvmh_omp_runtime_context_set_context_descriptor(
     ctx->context_descriptors[cd_id] = cd;
 }
 
+context_descriptor *
+dvmh_omp_runtime_context_context_descriptor(
+        dvmh_omp_runtime_context_t *ctx,
+        int cd_id)
+{
+    assert(ctx != NULL);
+    assert(0 <= cd_id && cd_id < ctx->num_context_descriptors);
+    return ctx->context_descriptors[cd_id];
+}
+
 void
 dvmh_omp_runtime_context_set_threads_spawner_id(
         dvmh_omp_runtime_context_t *ctx,

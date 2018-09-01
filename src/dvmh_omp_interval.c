@@ -191,7 +191,7 @@ dvmh_omp_interval_io_time(
     return i->io_time;
 }
 
-double
+int
 dvmh_omp_interval_execution_count(
         dvmh_omp_interval_t *i)
 {
@@ -247,15 +247,43 @@ dvmh_omp_interval_idle_parallel_time(
     return i->idle_parallel_time;
 }
 
-void
-dvmh_omp_interval_integrate(
-        dvmh_omp_interval_t **from,
-        int num_threads,
-        int size,
-        dvmh_omp_interval_t *into)
+double
+dvmh_omp_interval_load_imbalance_time(
+        dvmh_omp_interval_t *i)
 {
-    // TODO
-    return;
+    // TODO implement
+    return 1;
+}
+
+double
+dvmh_omp_interval_thread_prod_max(
+        dvmh_omp_interval_t *i)
+{
+    // TODO implement
+    return 1;
+}
+
+double
+dvmh_omp_interval_thread_prod_min(
+        dvmh_omp_interval_t *i)
+{
+    // TODO implement
+    return 1;
+}
+
+double
+dvmh_omp_interval_thread_prod_avg(
+        dvmh_omp_interval_t *i)
+{
+    // TODO implement
+    return 1;
+}
+
+int
+dvmv_omp_interval_is_in_parallel(
+        dvmh_omp_interval_t *i)
+{
+    return dvmh_omp_interval_used_threads_num(i) > 1;
 }
 
 // Subintervals API
@@ -317,14 +345,3 @@ dvmh_omp_subintervals_iterator_destroy(
     list_iterator_destroy(it->it);
     free(it);
 }
-
-/*
-struct _dvmh_omp_interval {
-    context_descriptor *descriptor;
-    list *subintervals;
-    double load_imbalance;
-    double thread_prod_max;
-    double thread_prod_min;
-    double thread_prod_avg;
-};
-*/

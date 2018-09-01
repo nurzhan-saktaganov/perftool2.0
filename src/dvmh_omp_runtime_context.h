@@ -51,6 +51,11 @@ dvmh_omp_runtime_context_set_context_descriptor(
         context_descriptor *cd,
         int cd_id);
 
+context_descriptor *
+dvmh_omp_runtime_context_context_descriptor(
+        dvmh_omp_runtime_context_t *ctx,
+        int cd_id);
+
 void
 dvmh_omp_runtime_context_set_threads_spawner_id(
         dvmh_omp_runtime_context_t *ctx,
