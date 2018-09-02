@@ -13,6 +13,9 @@
 #include "dvmh_omp_runtime_context.h"
 #include "omp_dbg.h"
 
+#define ROOT_INTERVAL_CONTEXT_DESCRIPTOR "43*type=interval*file1=MAIN*line1=0*line2=0**"
+#define METRICS_FILE_NAME "interval_stats_v2.csv"
+
 // We use this threadprivate variable to direct access to own thread_id from each thread.
 static int thread_id;
 #pragma omp threadprivate(thread_id)
@@ -109,7 +112,7 @@ void DBG_Finalize()
     dvmh_omp_interval_t *tree = dvmh_omp_runtime_context_integrate(r_ctx);
 
     // print out the results.
-    print_interval_tree_csv("interval_stats_v2.csv", runtime_context, tree);
+    print_interval_tree_csv(METRICS_FILE_NAME , runtime_context, tree);
 
     dvmh_omp_runtime_context_integrated_free(runtime_context, tree);
 
@@ -135,7 +138,7 @@ void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringL
 		assert(registered_descriptors = list_create());
         // create context descriptor for top level interval
         const int id = list_size(registered_descriptors);
-        context_descriptor *cd = register_context("43*type=interval*file1=MAIN*line1=0*line2=0**", id);
+        context_descriptor *cd = register_context(ROOT_INTERVAL_CONTEXT_DESCRIPTOR, id);
         list_append_tail(registered_descriptors, cd);
 	}
 
