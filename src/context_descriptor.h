@@ -223,7 +223,6 @@ typedef struct _parallel_context_descriptor {
 	behavior_type default_behavior;
 	char *if_text;
 	char *num_threads;
-	void *parent_event; // для передачи parent_event ptr, TODO remove it when it becomes unnecessary
 } parallel_context_descriptor;
 
 typedef struct _section_event_context_descriptor {

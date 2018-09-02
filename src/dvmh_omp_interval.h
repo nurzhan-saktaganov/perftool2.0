@@ -9,7 +9,7 @@
 typedef struct _dvmh_omp_interval_t {
     uint64_t execution_count;
     int id;
-    int parent_id; // TODO maybe we should remove this
+    int parent_id;
     double io_time; // TODO must be aggregated. See perftool code.
     double sync_barrier_time; // TODO must be aggregated. See perftool code.
     double idle_critical_time; // TODO must be aggregated. See perftool code. Reconsider.
@@ -23,23 +23,11 @@ typedef struct _dvmh_omp_interval_t {
     double thread_prod_min;
     double thread_prod_avg;
     double load_imbalance;
-    // TODO store context_desciptor
-    // TODO execution time
-    // TODO threads num - can be post calculated
-    // TODO idle parallel time - 
-    // TODO total time - post calc
-    // TODO productive time - can be post calculated
-    // TODO insufficient parallelism - post calc
-    // TODO efficiency - can be post calculated
-    // TODO load imbalance
-    // TODO lost time
 } dvmh_omp_interval_t;
 
 
 #define DVMH_OMP_INTERVAL_PARENT_UNDEFINED -1
 #define DVMH_OMP_INTERVAL_NO_PARENT -2
-
-// TODO maybe there should be interval init function?
 
 // Setters
 void
