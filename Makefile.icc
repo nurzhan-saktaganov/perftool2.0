@@ -15,7 +15,6 @@ omp_dbg.so: lib src
 		-Wl,--version-script=exportmap.exp \
 		-o $(BIN)/omp_dbg.so \
 		$(BIN)/$(LIB)/list.o \
-		$(BIN)/$(LIB)/stack.o \
 		$(BIN)/$(LIB)/context_string.o \
 		$(BIN)/$(SRC)/context_descriptor.o \
 		$(BIN)/$(SRC)/register_context.o \
@@ -46,13 +45,10 @@ context_descriptor.o: lib $(SRC)/context_descriptor.c
 	$(CC) $(CFLAGS) $(SRC)/context_descriptor.c -o $(BIN)/$(SRC)/context_descriptor.o
 
 .PHONY: lib
-lib: list.o stack.o context_string.o
+lib: list.o context_string.o
 
 list.o: $(LIB)/list.c
 	$(CC) $(CFLAGS) $(LIB)/list.c -o $(BIN)/$(LIB)/list.o
-
-stack.o: $(LIB)/stack.c
-	$(CC) $(CFLAGS) $(LIB)/stack.c -o $(BIN)/$(LIB)/stack.o
 
 context_string.o: $(LIB)/context_string.c
 	$(CC) $(CFLAGS) $(LIB)/context_string.c -o $(BIN)/$(LIB)/context_string.o

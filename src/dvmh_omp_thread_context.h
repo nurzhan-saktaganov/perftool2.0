@@ -8,19 +8,25 @@
 typedef unsigned int uint;
 
 typedef struct _dvmh_omp_thread_context_t {
+    // buffer to collect thread local metrics
     dvmh_omp_interval_t *intervals;
+    // intervals call stack
     uint *stack;
+    // count of intervals
     uint size;
-    uint top;
+    // pointer to the top of stack
+    int top;
     int thread_id;
-    bool is_tree_built;
 } dvmh_omp_thread_context_t;
 
-dvmh_omp_thread_context_t *
-dvmh_omp_thread_context_create(uint size, int thread_id);
+void
+dvmh_omp_thread_context_init(
+        dvmh_omp_thread_context_t *ctx,
+        uint size,
+        int thread_id);
 
 void
-dvmh_omp_thread_context_destroy(
+dvmh_omp_thread_context_deinit(
         dvmh_omp_thread_context_t *ctx);
 
 void
@@ -35,16 +41,8 @@ dvmh_omp_interval_t *
 dvmh_omp_thread_context_current_interval(
         dvmh_omp_thread_context_t *ctx);
 
-size_t
-dvmh_omp_thread_context_sizeof(
-        dvmh_omp_thread_context_t *ctx);
-
 int
 dvmh_omp_thread_context_thread_id(
-        dvmh_omp_thread_context_t *ctx);
-
-dvmh_omp_interval_t *
-dvmh_omp_thread_context_interval_tree(
         dvmh_omp_thread_context_t *ctx);
 
 dvmh_omp_interval_t *

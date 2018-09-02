@@ -6,15 +6,19 @@
 
 #include "list.h"
 
+#define DVMH_OMP_INTERVAL_NO_PARENT -2
+
+#define DVMH_OMP_INTERVAL_ID_UNDEFINED -1
+
 typedef struct _dvmh_omp_interval_t {
     uint64_t execution_count;
     int id;
     int parent_id;
-    double io_time; // TODO must be aggregated. See perftool code.
-    double sync_barrier_time; // TODO must be aggregated. See perftool code.
-    double idle_critical_time; // TODO must be aggregated. See perftool code. Reconsider.
-    double sync_flush_time; // TODO must be aggregated. See perftool code.
-    double used_time; // TODO must be integrated. See perftool code.
+    double io_time;
+    double sync_barrier_time;
+    double idle_critical_time;
+    double sync_flush_time;
+    double used_time;
     double execution_time;
     double idle_parallel_time;
     int used_threads_number; // TODO для каждого интервала считаем несредственно использованных. Потом интегрируем по вложенным.
@@ -24,10 +28,6 @@ typedef struct _dvmh_omp_interval_t {
     double thread_prod_avg;
     double load_imbalance;
 } dvmh_omp_interval_t;
-
-
-#define DVMH_OMP_INTERVAL_PARENT_UNDEFINED -1
-#define DVMH_OMP_INTERVAL_NO_PARENT -2
 
 // Setters
 void
@@ -84,12 +84,12 @@ dvmh_omp_interval_add_idle_parallel_time(
         double t);
 
 void
-dvmh_omp_interval_add_exectuion_count(
+dvmh_omp_interval_add_execution_count(
         dvmh_omp_interval_t *i,
         uint64_t count);
 
 void
-dvmh_omp_interval_add_used_threads_num(
+dvmh_omp_interval_set_used_threads_num(
         dvmh_omp_interval_t *i,
         int n);
 
@@ -196,14 +196,16 @@ dvmh_omp_interval_thread_prod_avg(
         dvmh_omp_interval_t *i);
 
 int
-dvmv_omp_interval_is_in_parallel(
+dvmh_omp_interval_is_in_parallel(
+        dvmh_omp_interval_t *i);
+
+bool
+dvmh_omp_interval_has_been_executed(
         dvmh_omp_interval_t *i);
 
 // Subintervals API
 
-typedef struct _dvmh_omp_subintervals_iterator_t {
-    list_iterator *it;
-} dvmh_omp_subintervals_iterator_t;
+typedef list_iterator dvmh_omp_subintervals_iterator_t;
 
 void
 dvmh_omp_interval_add_subinterval(

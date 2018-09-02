@@ -10,22 +10,11 @@ dvmh_omp_interval_init(
         dvmh_omp_interval_t *i)
 {
     assert(i != NULL);
-    i->execution_count = 0;
-    i->id = -1;
-    i->parent_id = DVMH_OMP_INTERVAL_PARENT_UNDEFINED;
-    i->io_time = 0.0;
-    i->sync_barrier_time = 0.0;
-    i->idle_critical_time = 0.0;
-    i->sync_flush_time = 0.0;
-    i->used_time = 0.0;
-    i->execution_time = 0.0;
-    i->idle_parallel_time = 0.0;
-    i->used_threads_number = 0;
-    i->subintervals = NULL;
-    i->thread_prod_avg = 0.0;
-    i->thread_prod_max = 0.0;
-    i->thread_prod_min = 0.0;
-    i->load_imbalance = 0.0;
+
+    // zeroing all fields of struct
+    memset(i, 1, sizeof(dvmh_omp_interval_t));
+    i->id = DVMH_OMP_INTERVAL_ID_UNDEFINED;
+    i->parent_id = DVMH_OMP_INTERVAL_ID_UNDEFINED;
 }
 
 void
@@ -34,6 +23,7 @@ dvmh_omp_interval_deinit(
 {
     assert(i != NULL);
     if (i->subintervals != NULL) {
+        // just destroy connections
         list_destroy(i->subintervals);
         i->subintervals = NULL;
     }
@@ -56,7 +46,7 @@ dvmh_omp_interval_set_id(
 }
 
 void
-dvmh_omp_interval_add_exectuion_count(
+dvmh_omp_interval_add_execution_count(
         dvmh_omp_interval_t *i,
         uint64_t count)
 {
@@ -64,7 +54,7 @@ dvmh_omp_interval_add_exectuion_count(
 }
 
 void
-dvmh_omp_interval_add_used_threads_num(
+dvmh_omp_interval_set_used_threads_num(
         dvmh_omp_interval_t *i,
         int n)
 {
@@ -312,10 +302,17 @@ dvmh_omp_interval_thread_prod_avg(
 }
 
 int
-dvmv_omp_interval_is_in_parallel(
+dvmh_omp_interval_is_in_parallel(
         dvmh_omp_interval_t *i)
 {
     return dvmh_omp_interval_used_threads_num(i) > 1;
+}
+
+bool
+dvmh_omp_interval_has_been_executed(
+        dvmh_omp_interval_t *i)
+{
+    return dvmh_omp_interval_used_time(i) > 0.0;
 }
 
 // Subintervals API
@@ -346,11 +343,7 @@ dvmh_omp_subintervals_iterator_new(
         dvmh_omp_interval_t *i)
 {
     assert(i != NULL);
-    dvmh_omp_subintervals_iterator_t *it =
-            (dvmh_omp_subintervals_iterator_t *) malloc(sizeof(dvmh_omp_subintervals_iterator_t ));
-    assert(it != NULL);
-    it->it = list_iterator_new(i->subintervals);
-    return it;
+    return (dvmh_omp_subintervals_iterator_t *) list_iterator_new(i->subintervals);
 }
 
 bool
@@ -358,7 +351,7 @@ dvmh_omp_subintervals_iterator_has_next(
         dvmh_omp_subintervals_iterator_t *it)
 {
     assert(it != NULL);
-    return list_iterator_has_next(it->it);
+    return list_iterator_has_next((list_iterator *) it);
 }
 
 dvmh_omp_interval_t *
@@ -366,7 +359,7 @@ dvmh_omp_subintervals_iterator_next(
         dvmh_omp_subintervals_iterator_t *it)
 {
     assert(it != NULL);
-    return (dvmh_omp_interval_t *) list_iterator_next(it->it);
+    return (dvmh_omp_interval_t *) list_iterator_next((list_iterator *) it);
 }
 
 void
@@ -374,6 +367,5 @@ dvmh_omp_subintervals_iterator_destroy(
         dvmh_omp_subintervals_iterator_t *it)
 {
     assert(it != NULL);
-    list_iterator_destroy(it->it);
-    free(it);
+    list_iterator_destroy(it);
 }
