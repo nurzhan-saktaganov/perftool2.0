@@ -21,7 +21,7 @@ typedef struct _dvmh_omp_interval_t {
     double used_time;
     double execution_time;
     double idle_parallel_time;
-    int used_threads_number; // TODO для каждого интервала считаем несредственно использованных. Потом интегрируем по вложенным.
+    int used_threads_number;
     list *subintervals;
     double thread_prod_max;
     double thread_prod_min;

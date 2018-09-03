@@ -262,7 +262,7 @@ dvmh_omp_runtime_context_dec_interval_visitors(
 
 // must be under lock.
 void
-dvmh_omp_runtime_context_add_exectuion_time(
+dvmh_omp_runtime_context_add_execution_time(
         dvmh_omp_runtime_context_t *ctx,
         int id,
         double execution_time)
@@ -295,7 +295,7 @@ dvmh_omp_runtime_context_after_parallel(
     assert(ctx->end_parallel_times != NULL);
     assert(ctx->idle_parallel_times != NULL);
     assert(0 <= interval_id && interval_id < ctx->num_context_descriptors);
-    // TODO maybe subtract form max end_parallel_times?
+    // TODO maybe subtract from max end_parallel_times?
     for (int i = 0; i < ctx->num_threads; ++i) {
         ctx->idle_parallel_times[interval_id] = when - ctx->end_parallel_times[i];
     }

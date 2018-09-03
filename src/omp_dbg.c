@@ -23,10 +23,9 @@ static int thread_id;
 // We store runtime context here.
 static dvmh_omp_runtime_context_t *runtime_context = NULL;
 
-// Temporary list. We use this only in registration stage.
+// Temporary list. We use this to store context descriptors.
 static list *registered_descriptors = NULL;
 
-// TODO set parent id as NO PARENT
 void DBG_Init(long *ThreadID)
 {   
     assert(registered_descriptors != NULL);
@@ -62,12 +61,14 @@ void DBG_Init(long *ThreadID)
 
     // Stats
     dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
+    dvmh_omp_interval_set_parent_id(i, DVMH_OMP_INTERVAL_NO_PARENT);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, -now);
     dvmh_omp_interval_add_execution_count(i, 1L);
 
-    // calculate exectuion time
-    dvmh_omp_runtime_context_add_exectuion_time(runtime_context, root_interval_id, -now);
+    // Calculate execution time. There is no need in lock.
+    dvmh_omp_runtime_context_add_execution_time(runtime_context, root_interval_id, -now);
+    dvmh_omp_runtime_context_set_interval_non_parallel(runtime_context, root_interval_id);
 
     return;
 };
@@ -80,40 +81,43 @@ print_interval_tree_csv(
 
 void DBG_Finalize()
 {
-    dvmh_omp_runtime_context_t *ctx;
+    list *registered_descriptors_copy;
     const int master_thread_id = 0;
     const int root_interval_id = 0;
 
+    // TODO can we call this from non-parallel region?
     #pragma omp critical (dbg_finalize)
     {
-        ctx = runtime_context;
-        runtime_context = NULL;
+        registered_descriptors_copy = registered_descriptors;
+        registered_descriptors = NULL;
     }
 
-    if (ctx == NULL) return;
+    if (registered_descriptors_copy == NULL) return;
 
+    // We have to close the root interval.
     dvmh_omp_thread_context_t *thread_context = dvmh_omp_runtime_context_get_thread_context(runtime_context, master_thread_id);
     dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
 
     // Stats
     dvmh_omp_interval_add_used_time(i, now);
-    dvmh_omp_runtime_context_add_exectuion_time(runtime_context, root_interval_id, now);
+    // There is no need in lock
+    dvmh_omp_runtime_context_add_execution_time(runtime_context, root_interval_id, now);
 
     // Leave the top level interval in master thread
     dvmh_omp_thread_context_leave_interval(thread_context);
 
-    dvmh_omp_interval_t *tree = dvmh_omp_runtime_context_integrate(ctx);
+    dvmh_omp_interval_t *tree = dvmh_omp_runtime_context_integrate(runtime_context);
 
     // print out the results.
     print_interval_tree_csv(METRICS_FILE_NAME , runtime_context, tree);
 
     // cleanup stage
     dvmh_omp_runtime_context_integrated_free(runtime_context, tree);
-    dvmh_omp_runtime_context_deinit(ctx);
-    free(ctx);
-    list_destroy_with(registered_descriptors, (list_element_destroy_t *) unregister_context);
-    registered_descriptors = NULL;
+    dvmh_omp_runtime_context_deinit(runtime_context);
+    free(runtime_context);
+    runtime_context = NULL;
+    list_destroy_with(registered_descriptors_copy, (list_element_destroy_t *) unregister_context);
 };
 
 void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength)
@@ -149,6 +153,8 @@ void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThre
     dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
     const int spawner_id = dvmh_omp_interval_get_id(i);
     dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, spawner_id);
+    dvmh_omp_runtime_context_set_interval_non_parallel(runtime_context, spawner_id);
+    dvmh_omp_runtime_context_set_parallel_mode(runtime_context);
 };
 
 void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
@@ -186,6 +192,7 @@ void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 {
+    dvmh_omp_runtime_context_unset_parallel_mode(runtime_context);
     context_descriptor *cd = (context_descriptor *) StaticContextHandle;
     const int interval_id = cd->info.id;
 
@@ -194,31 +201,22 @@ void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
     dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, -1);
 };
 
-// TODO
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize){};
 
-// TODO
 void DBG_OMPIter(long *StaticContextHandle, long *ThreadID, long *Index){};
 
-// TODO
 void DBG_AfterOMPLoop (long *StaticContextHandle, long *ThreadID){};
 
-// TODO
 void DBG_BeforeSections (long *StaticContextHandle, long *ThreadID){};
 
-// TODO
 void DBG_AfterSections(long *StaticContextHandle, long *ThreadID){};
 
-// TODO
 void DBG_SectionEvent(long *StaticContextHandle1, long *ThreadID){};
 
-// TODO
 void DBG_SectionEventEnd(long *StaticContextHandle1, long *ThreadID){};
 
-// TODO
 void DBG_BeforeSingle (long *StaticContextHandle, long *ThreadID){};
 
-// TODO
 void DBG_SingleEvent(long *StaticContextHandle, long *ThreadID){};
 
 void DBG_SingleEventEnd(long *StaticContextHandle, long *ThreadID){};
@@ -379,12 +377,20 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
     dvmh_omp_interval_add_execution_count(i, 1L);
 
     // calculate execution time.
-    dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
-    if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {
-        dvmh_omp_runtime_context_add_exectuion_time(runtime_context, interval_id, -now);
+    if ( dvmh_omp_runtime_context_is_parallel_mode(runtime_context)) {
+
+        dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
+        if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {
+            dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, -now);
+        }
+        dvmh_omp_runtime_context_inc_interval_visitors(runtime_context, interval_id);
+        dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
+    } else {
+        // Don't use lock if it is non-parallel region.
+        dvmh_omp_runtime_context_set_interval_non_parallel(runtime_context, interval_id);
+        dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, -now);
     }
-    dvmh_omp_runtime_context_inc_interval_visitors(runtime_context, interval_id);
-    dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
+
 };
 
 void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
@@ -400,12 +406,18 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
     dvmh_omp_thread_context_leave_interval(thread_context);
 
     // calculate execution time.
-    dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
-    dvmh_omp_runtime_context_dec_interval_visitors(runtime_context, interval_id);
-    if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {
-        dvmh_omp_runtime_context_add_exectuion_time(runtime_context, interval_id, now);
+    if (dvmh_omp_runtime_context_is_parallel_mode(runtime_context)) {
+
+        dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
+        dvmh_omp_runtime_context_dec_interval_visitors(runtime_context, interval_id);
+        if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {
+            dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, now);
+        }
+        dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
+    } else {
+        // Don't use lock if it is non-parallel region.
+        dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, now);
     }
-    dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
 };
 
 static void

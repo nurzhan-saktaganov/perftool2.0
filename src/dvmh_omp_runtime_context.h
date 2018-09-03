@@ -19,11 +19,11 @@ typedef struct _dvmh_omp_runtime_context_t {
     // lock for each interval.
     omp_lock_t *interval_locks;
     int *threads_in_interval;
-    double *execution_times; // TODO for non-parallel and root
+    double *execution_times;
     double *end_parallel_times;
     double *idle_parallel_times;
-    bool *is_interval_in_parallel; // TODO set it
-    bool is_parallel_region; // TODO set it
+    bool *is_interval_in_parallel;
+    bool is_parallel_region;
 } dvmh_omp_runtime_context_t;
 
 void
@@ -108,7 +108,7 @@ dvmh_omp_runtime_context_dec_interval_visitors(
 
 // must be under lock.
 void
-dvmh_omp_runtime_context_add_exectuion_time(
+dvmh_omp_runtime_context_add_execution_time(
         dvmh_omp_runtime_context_t *ctx,
         int id,
         double execution_time);
