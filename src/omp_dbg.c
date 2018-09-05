@@ -202,8 +202,11 @@ void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 {
     dvmh_omp_runtime_context_unset_parallel_mode(runtime_context);
-    context_descriptor *cd = (context_descriptor *) StaticContextHandle;
-    const int interval_id = cd->info.id; // TODO it is wrong. Check all cases of getting interval id
+
+    // We are in master thread now
+    dvmh_omp_thread_context_t *thread_context = dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
+    dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
+    const int interval_id = dvmh_omp_interval_get_id(i);
 
     double now = omp_get_wtime();
     dvmh_omp_runtime_context_after_parallel(runtime_context, interval_id, now - world_start);
@@ -404,12 +407,10 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
 
 void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
 {
-    context_descriptor *cd = (context_descriptor *) StaticContextHandle;
-    const int interval_id = cd->info.id;
-
     dvmh_omp_thread_context_t *thread_context =
             dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
+    const int interval_id = dvmh_omp_interval_get_id(i);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, now);
     dvmh_omp_thread_context_leave_interval(thread_context);
