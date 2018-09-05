@@ -19,7 +19,7 @@ typedef struct _dvmh_omp_runtime_context_t {
     // lock for each interval.
     omp_lock_t *interval_locks;
     int *threads_in_interval;
-    double *execution_times;
+    double *execution_times; // TODO how to make it lock free?
     double *end_parallel_times;
     double *idle_parallel_times;
     bool *is_interval_in_parallel;

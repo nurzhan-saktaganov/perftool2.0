@@ -295,9 +295,9 @@ dvmh_omp_runtime_context_after_parallel(
     assert(ctx->end_parallel_times != NULL);
     assert(ctx->idle_parallel_times != NULL);
     assert(0 <= interval_id && interval_id < ctx->num_context_descriptors);
-    // TODO maybe subtract from max end_parallel_times?
+    // TODO maybe subtract from max end_parallel_times? See perftool sources.
     for (int i = 0; i < ctx->num_threads; ++i) {
-        ctx->idle_parallel_times[interval_id] = when - ctx->end_parallel_times[i];
+        ctx->idle_parallel_times[interval_id] += when - ctx->end_parallel_times[i];
     }
 }
 
@@ -315,10 +315,7 @@ dvmh_omp_runtime_context_build_interval_tree(
     int *parents = (int *) malloc(ctx->num_context_descriptors * sizeof(int));
     assert(parents != NULL);
 
-    // parent of root interval
-    parents[0] = DVMH_OMP_INTERVAL_NO_PARENT;
-
-    for (int i = 1; i < ctx->num_context_descriptors; ++i ) {
+    for (int i = 0; i < ctx->num_context_descriptors; ++i ) {
         parents[i] = DVMH_OMP_INTERVAL_ID_UNDEFINED;
     }
 
@@ -333,11 +330,6 @@ dvmh_omp_runtime_context_build_interval_tree(
             }
 
             const int parent_id = dvmh_omp_interval_get_parent_id(i);
-
-            // skip root interval, it has no parent.
-            if (parent_id == DVMH_OMP_INTERVAL_NO_PARENT) {
-                continue;
-            }
 
             // if interval has been executed, it has a parent (except root).
             assert(parent_id != DVMH_OMP_INTERVAL_ID_UNDEFINED);
@@ -361,12 +353,15 @@ dvmh_omp_runtime_context_build_interval_tree(
             continue;
         }
 
+        dvmh_omp_interval_t *i = &tree[id];
+
+        dvmh_omp_interval_set_parent_id(i, parent_id);
+
         // root interval
         if (parent_id == DVMH_OMP_INTERVAL_NO_PARENT) {
             continue;
         }
 
-        dvmh_omp_interval_t *i = &tree[id];
         dvmh_omp_interval_t *p = &tree[parent_id];
 
         // make connection
@@ -412,6 +407,7 @@ dvmh_omp_runtime_context_collect_metrics(
 
         if (ctx->is_interval_in_parallel[node_id]) {
             dvmh_omp_interval_set_used_threads_num(node, ctx->num_threads);
+            dvmh_omp_interval_set_parallel(node);
         } else {
             dvmh_omp_interval_set_used_threads_num(node, max_used_threads_num);
         }
@@ -423,6 +419,10 @@ dvmh_omp_runtime_context_collect_metrics(
         for (int thread_id = 0; thread_id < ctx->num_threads; ++thread_id) {
             dvmh_omp_thread_context_t *tctx = dvmh_omp_runtime_context_get_thread_context(ctx, thread_id);
             dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(tctx, node_id);
+
+            // TODO should we check for dvmh_omp_interval_has_been_executed?
+            // TODO if so, we should redefine thread_prod_avg.
+            // See perftool sources.
 
             const double thread_prod_time = dvmh_omp_interval_productive_time(local);
             if (thread_prod_time < thread_prod_min) thread_prod_min = thread_prod_time;
@@ -442,6 +442,7 @@ dvmh_omp_runtime_context_collect_metrics(
             dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(tctx, node_id);
 
             // it affects this parameter even if it has not been executed.
+            // TODO is it so?
             dvmh_omp_interval_add_load_imbalance(node, thread_prod_max - dvmh_omp_interval_productive_time(local));
 
             if (!dvmh_omp_interval_has_been_executed(local)) {

@@ -26,6 +26,12 @@ static dvmh_omp_runtime_context_t *runtime_context = NULL;
 // Temporary list. We use this to store context descriptors.
 static list *registered_descriptors = NULL;
 
+// TODO there is no guarantee that omp_get_wtime returns the same value for same point of time in different threads.
+// We need to normalize them if we want to compare t1 and t2, where t1 and t2 are got from different threads.
+// We can use thread private global variable for this purpose.
+
+// TODO how to calculate execution time via lock-free way?
+
 void DBG_Init(long *ThreadID)
 {   
     assert(registered_descriptors != NULL);
@@ -38,7 +44,7 @@ void DBG_Init(long *ThreadID)
     assert(runtime_context != NULL);
     dvmh_omp_runtime_context_init(runtime_context, num_threads, num_context_descriptors);
 
-    // Move registered descriptors to runtime_context.
+    // Copy pointers to registered descriptors of runtime_context.
     {
         list_iterator *it = list_iterator_new(registered_descriptors);
         while (list_iterator_has_next(it)) {
@@ -102,6 +108,7 @@ void DBG_Finalize()
     // Stats
     dvmh_omp_interval_add_used_time(i, now);
     // There is no need in lock
+    // TODO What if it was called from not master thread? Then we need to normalize time.
     dvmh_omp_runtime_context_add_execution_time(runtime_context, root_interval_id, now);
 
     // Leave the top level interval in master thread
@@ -179,26 +186,26 @@ void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
     const bool is_master_thread = thread_id == 0;
     double now = omp_get_wtime();
 
-    if (!is_master_thread) {
-        dvmh_omp_thread_context_t *thread_context =
-                dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
-        dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
-        dvmh_omp_interval_add_used_time(i, now);
-        dvmh_omp_thread_context_leave_interval(thread_context);
-    }
-
     dvmh_omp_runtime_context_end_parallel(runtime_context, thread_id, now);
+
+    if (is_master_thread) return;
+
+    // Leave thread spawner interval in slave threads.
+    dvmh_omp_thread_context_t *thread_context = dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
+    dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
+    dvmh_omp_interval_add_used_time(i, now);
+    dvmh_omp_thread_context_leave_interval(thread_context);
 };
 
 void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 {
     dvmh_omp_runtime_context_unset_parallel_mode(runtime_context);
     context_descriptor *cd = (context_descriptor *) StaticContextHandle;
-    const int interval_id = cd->info.id;
+    const int interval_id = cd->info.id; // TODO it is wrong. Check all cases of getting interval id
 
     double now = omp_get_wtime();
     dvmh_omp_runtime_context_after_parallel(runtime_context, interval_id, now);
-    dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, -1);
+    dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, DVMH_OMP_INTERVAL_ID_UNDEFINED);
 };
 
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize){};

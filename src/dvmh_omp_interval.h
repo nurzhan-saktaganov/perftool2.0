@@ -6,9 +6,8 @@
 
 #include "list.h"
 
-#define DVMH_OMP_INTERVAL_NO_PARENT -2
-
-#define DVMH_OMP_INTERVAL_ID_UNDEFINED -1
+#define DVMH_OMP_INTERVAL_NO_PARENT -1
+#define DVMH_OMP_INTERVAL_ID_UNDEFINED -2
 
 typedef struct _dvmh_omp_interval_t {
     uint64_t execution_count;
@@ -27,6 +26,7 @@ typedef struct _dvmh_omp_interval_t {
     double thread_prod_min;
     double thread_prod_avg;
     double load_imbalance;
+    bool parallel;
 } dvmh_omp_interval_t;
 
 // Setters
@@ -112,6 +112,10 @@ void
 dvmh_omp_interval_add_load_imbalance(
         dvmh_omp_interval_t *i,
         double t);
+
+void
+dvmh_omp_interval_set_parallel(
+        dvmh_omp_interval_t *i);
 
 // Getters
 

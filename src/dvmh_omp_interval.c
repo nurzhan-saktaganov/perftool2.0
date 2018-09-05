@@ -149,6 +149,13 @@ dvmh_omp_interval_add_idle_parallel_time(
     i->idle_parallel_time += t;
 }
 
+void
+dvmh_omp_interval_set_parallel(
+        dvmh_omp_interval_t *i)
+{
+    i->parallel = true;
+}
+
 // Getters
 
 int
@@ -171,7 +178,9 @@ double
 dvmh_omp_interval_total_time(
         dvmh_omp_interval_t *i)
 {
-    return i->execution_time * i->used_threads_number;
+    return 1.0
+        * dvmh_omp_interval_execution_time(i)
+        * dvmh_omp_interval_used_threads_num(i);
 }
 
 double
@@ -179,9 +188,9 @@ dvmh_omp_interval_lost_time(
         dvmh_omp_interval_t *i)
 {
     return 0.0
-        + i->sync_barrier_time
-        + i->idle_critical_time
-        + i->sync_flush_time
+        + dvmh_omp_interval_sync_barrier_time(i)
+        + dvmh_omp_interval_idle_critical_time(i)
+        + dvmh_omp_interval_sync_flush_time(i)
         + dvmh_omp_interval_insufficient_parallelism(i);
 }
 
@@ -189,10 +198,10 @@ double
 dvmh_omp_interval_productive_time(
         dvmh_omp_interval_t *i)
 {
-    return i->used_time
-        - i->sync_barrier_time
-        - i->idle_critical_time
-        - i->sync_flush_time;
+    return dvmh_omp_interval_used_time(i)
+        - dvmh_omp_interval_sync_barrier_time(i)
+        - dvmh_omp_interval_idle_critical_time(i)
+        - dvmh_omp_interval_sync_flush_time(i);
 }
 
 double
@@ -207,7 +216,7 @@ double
 dvmh_omp_interval_insufficient_parallelism(
         dvmh_omp_interval_t *i)
 {
-    return dvmh_omp_interval_total_time(i) - i->used_time;
+    return dvmh_omp_interval_total_time(i) - dvmh_omp_interval_used_time(i);
 }
 
 double
@@ -305,7 +314,7 @@ int
 dvmh_omp_interval_is_in_parallel(
         dvmh_omp_interval_t *i)
 {
-    return dvmh_omp_interval_used_threads_num(i) > 1;
+    return i->parallel ? 1 : 0;
 }
 
 bool
