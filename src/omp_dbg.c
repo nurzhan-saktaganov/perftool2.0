@@ -92,7 +92,6 @@ void DBG_Finalize()
     const int master_thread_id = 0;
     const int root_interval_id = 0;
 
-    // TODO can we call this from non-parallel region?
     #pragma omp critical (dbg_finalize)
     {
         registered_descriptors_copy = registered_descriptors;
