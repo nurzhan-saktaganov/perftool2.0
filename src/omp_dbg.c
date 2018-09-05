@@ -18,19 +18,16 @@
 
 // We use this threadprivate variable to direct access to own thread_id from each thread.
 static int thread_id;
-#pragma omp threadprivate(thread_id)
+// There is no guarantee that omp_get_wtime() return values are synced between threads.
+// We have to 'normalize' it's return values if we want to compare t1 and t2; t1 and t2 are obtained from different threads.
+static double world_start;
+#pragma omp threadprivate(thread_id, world_start)
 
 // We store runtime context here.
 static dvmh_omp_runtime_context_t *runtime_context = NULL;
 
 // Temporary list. We use this to store context descriptors.
 static list *registered_descriptors = NULL;
-
-// TODO there is no guarantee that omp_get_wtime returns the same value for same point of time in different threads.
-// We need to normalize them if we want to compare t1 and t2, where t1 and t2 are got from different threads.
-// We can use thread private global variable for this purpose.
-
-// TODO how to calculate execution time via lock-free way?
 
 void DBG_Init(long *ThreadID)
 {   
@@ -54,10 +51,12 @@ void DBG_Init(long *ThreadID)
         list_iterator_destroy(it);
     }
 
-    // Set thread id variable
+    // Set threadprivate variables
     #pragma omp parallel
     {
         thread_id = omp_get_thread_num();
+        #pragma omp barrier
+        world_start = omp_get_wtime();
     }
 
     // Enter to the top level interval in master thread.
@@ -68,7 +67,9 @@ void DBG_Init(long *ThreadID)
     // Stats
     dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
     dvmh_omp_interval_set_parent_id(i, DVMH_OMP_INTERVAL_NO_PARENT);
-    double now = omp_get_wtime();
+
+    // We subtract world_start because DBG_Finalize could be called from different threads.
+    double now = omp_get_wtime() - world_start;
     dvmh_omp_interval_add_used_time(i, -now);
     dvmh_omp_interval_add_execution_count(i, 1L);
 
@@ -103,12 +104,13 @@ void DBG_Finalize()
     // We have to close the root interval.
     dvmh_omp_thread_context_t *thread_context = dvmh_omp_runtime_context_get_thread_context(runtime_context, master_thread_id);
     dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
-    double now = omp_get_wtime();
+
+    // We subtract world_start because DBG_Finalize could be called from different threads.
+    double now = omp_get_wtime() - world_start;
 
     // Stats
     dvmh_omp_interval_add_used_time(i, now);
     // There is no need in lock
-    // TODO What if it was called from not master thread? Then we need to normalize time.
     dvmh_omp_runtime_context_add_execution_time(runtime_context, root_interval_id, now);
 
     // Leave the top level interval in master thread
@@ -186,7 +188,7 @@ void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
     const bool is_master_thread = thread_id == 0;
     double now = omp_get_wtime();
 
-    dvmh_omp_runtime_context_end_parallel(runtime_context, thread_id, now);
+    dvmh_omp_runtime_context_end_parallel(runtime_context, thread_id, now - world_start);
 
     if (is_master_thread) return;
 
@@ -204,7 +206,7 @@ void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
     const int interval_id = cd->info.id; // TODO it is wrong. Check all cases of getting interval id
 
     double now = omp_get_wtime();
-    dvmh_omp_runtime_context_after_parallel(runtime_context, interval_id, now);
+    dvmh_omp_runtime_context_after_parallel(runtime_context, interval_id, now - world_start);
     dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, DVMH_OMP_INTERVAL_ID_UNDEFINED);
 };
 
@@ -385,10 +387,10 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
 
     // calculate execution time.
     if ( dvmh_omp_runtime_context_is_parallel_mode(runtime_context)) {
-
+        double normalized_now = now - world_start;
         dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
         if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {
-            dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, -now);
+            dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, -normalized_now);
         }
         dvmh_omp_runtime_context_inc_interval_visitors(runtime_context, interval_id);
         dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
@@ -414,11 +416,11 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
 
     // calculate execution time.
     if (dvmh_omp_runtime_context_is_parallel_mode(runtime_context)) {
-
+        double normalized_now = now - world_start;
         dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
         dvmh_omp_runtime_context_dec_interval_visitors(runtime_context, interval_id);
         if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {
-            dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, now);
+            dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, normalized_now);
         }
         dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
     } else {
