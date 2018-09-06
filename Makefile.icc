@@ -8,7 +8,7 @@ STDC99=-std=c99
 CFLAGS=-c -Wall $(INC) -fPIC $(STDC99)
 OPENMP=-qopenmp
 
-all: omp_dbg.so
+all: directories omp_dbg.so
 
 omp_dbg.so: lib src
 	$(CC) -Wall -shared -fPIC $(OPENMP) \
@@ -23,8 +23,12 @@ omp_dbg.so: lib src
 		$(BIN)/$(SRC)/dvmh_omp_runtime_context.o \
 		$(BIN)/$(SRC)/omp_dbg.o
 
-.PHONY: src
+.PHONY: directories src
 src: context_descriptor.o register_context.o dvmh_omp_interval.o dvmh_omp_thread_context.o dvmh_omp_runtime_context.o omp_dbg.o
+
+directories:
+	mkdir -p $(BIN)/$(SRC)
+	mkdir -p $(BIN)/$(LIB)
 
 omp_dbg.o: $(SRC)/omp_dbg.c
 	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/omp_dbg.c -o $(BIN)/$(SRC)/omp_dbg.o
