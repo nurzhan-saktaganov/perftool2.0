@@ -33,10 +33,10 @@ dvmh_omp_runtime_context.o: $(SRC)/dvmh_omp_runtime_context.c dvmh_omp_thread_co
 	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/dvmh_omp_runtime_context.c -o $(BIN)/$(SRC)/dvmh_omp_runtime_context.o
 
 dvmh_omp_thread_context.o: $(SRC)/dvmh_omp_thread_context.c dvmh_omp_interval.o
-	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/dvmh_omp_thread_context.c -o $(BIN)/$(SRC)/dvmh_omp_thread_context.o
+	$(CC) $(CFLAGS) $(SRC)/dvmh_omp_thread_context.c -o $(BIN)/$(SRC)/dvmh_omp_thread_context.o
 
 dvmh_omp_interval.o: $(SRC)/dvmh_omp_interval.c
-	$(CC) $(CFLAGS) $(OPENMP) $(SRC)/dvmh_omp_interval.c -o $(BIN)/$(SRC)/dvmh_omp_interval.o
+	$(CC) $(CFLAGS) $(SRC)/dvmh_omp_interval.c -o $(BIN)/$(SRC)/dvmh_omp_interval.o
 
 register_context.o: lib context_descriptor.o $(SRC)/register_context.c
 	$(CC) $(CFLAGS) $(SRC)/register_context.c -o $(BIN)/$(SRC)/register_context.o
