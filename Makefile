@@ -16,7 +16,12 @@ LIB=lib
 SRC=src
 INC=-I$(LIB) -I$(SRC)
 
-CFLAGS=-c -Wall $(INC) -fPIC $(STDC99)
+MICFLAG=
+ifeq ($(MIC), 1)
+	MICFLAG = -mmic
+endif
+
+CFLAGS=-c -Wall $(MICFLAG) $(INC) -fPIC $(STDC99)
 
 ifeq ($(PERFTOOL_1_COMPATIBILIY), 1)
 	CFLAGS += -DPERFTOOL_1_COMPATIBILIY
@@ -25,7 +30,7 @@ endif
 all: directories omp_dbg.so
 
 omp_dbg.so: lib src
-	$(CC) -Wall -shared -fPIC $(OPENMP) \
+	$(CC) -Wall $(MICFLAG) -shared -fPIC $(OPENMP) \
 		$(EXPORTMAP) \
 		-o $(BIN)/omp_dbg.so \
 		$(BIN)/$(LIB)/list.o \
