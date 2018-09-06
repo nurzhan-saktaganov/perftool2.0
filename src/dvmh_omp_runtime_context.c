@@ -415,14 +415,18 @@ dvmh_omp_runtime_context_collect_metrics(
         double thread_prod_avg = 0.0;
         double thread_prod_max = 0.0;
         double thread_prod_min = DBL_MAX;
+        int thread_prod_avg_divider = 0;
 
         for (int thread_id = 0; thread_id < ctx->num_threads; ++thread_id) {
             dvmh_omp_thread_context_t *tctx = dvmh_omp_runtime_context_get_thread_context(ctx, thread_id);
             dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(tctx, node_id);
 
-            // TODO should we check for dvmh_omp_interval_has_been_executed?
-            // TODO if so, we should redefine thread_prod_avg.
-            // See perftool sources.
+#ifdef PERFTOOL_1_COMPATIBILIY
+            if (!dvmh_omp_interval_has_been_executed(local)) {
+                continue;
+            }
+#endif
+            thread_prod_avg_divider++;
 
             const double thread_prod_time = dvmh_omp_interval_productive_time(local);
             if (thread_prod_time < thread_prod_min) thread_prod_min = thread_prod_time;
@@ -430,7 +434,7 @@ dvmh_omp_runtime_context_collect_metrics(
             thread_prod_avg += thread_prod_time;
         }
 
-        thread_prod_avg /= ctx->num_threads;
+        thread_prod_avg /= thread_prod_avg_divider;
 
         dvmh_omp_interval_set_thread_prod_avg(node, thread_prod_avg);
         dvmh_omp_interval_set_thread_prod_max(node, thread_prod_max);
@@ -441,13 +445,13 @@ dvmh_omp_runtime_context_collect_metrics(
             dvmh_omp_thread_context_t *tctx = dvmh_omp_runtime_context_get_thread_context(ctx, thread_id);
             dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(tctx, node_id);
 
-            // it affects this parameter even if it has not been executed.
-            // TODO is it so?
-            dvmh_omp_interval_add_load_imbalance(node, thread_prod_max - dvmh_omp_interval_productive_time(local));
-
+#ifdef PERFTOOL_1_COMPATIBILIY
             if (!dvmh_omp_interval_has_been_executed(local)) {
                 continue;
             }
+#endif
+
+            dvmh_omp_interval_add_load_imbalance(node, thread_prod_max - dvmh_omp_interval_productive_time(local));
 
             dvmh_omp_interval_add_io_time(node, dvmh_omp_interval_io_time(local));
             dvmh_omp_interval_add_barrier_time(node, dvmh_omp_interval_sync_barrier_time(local));
