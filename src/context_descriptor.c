@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 #include <stdlib.h>
 #include "list.h"
 #include "context_string.h"

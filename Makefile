@@ -1,11 +1,11 @@
 ifeq ($(INTEL_COMPILER), 1)
 	CC=icc
-	STDC99=-std=c99
+	STDC99=-std=gnu99
 	OPENMP=-qopenmp
 	EXPORTMAP=-Wl,--version-script=exportmap.exp
 else
 	CC=gcc
-	STDC99=--std=c99
+	STDC99=--std=gnu99
 	OPENMP=-fopenmp
 	EXPORTMAP=
 endif
