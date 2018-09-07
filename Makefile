@@ -27,7 +27,7 @@ ifeq ($(PERFTOOL_1_COMPATIBILIY), 1)
 	CFLAGS += -DPERFTOOL_1_COMPATIBILIY
 endif
 
-all: directories omp_dbg.so
+all: builddir omp_dbg.so
 
 omp_dbg.so: lib src
 	$(CC) -Wall $(MICFLAG) -shared -fPIC $(OPENMP) \
@@ -42,10 +42,10 @@ omp_dbg.so: lib src
 		$(BIN)/$(SRC)/dvmh_omp_runtime_context.o \
 		$(BIN)/$(SRC)/omp_dbg.o
 
-.PHONY: directories src
+.PHONY: builddir src
 src: context_descriptor.o register_context.o dvmh_omp_interval.o dvmh_omp_thread_context.o dvmh_omp_runtime_context.o omp_dbg.o
 
-directories:
+builddir:
 	mkdir -p $(BIN)/$(SRC)
 	mkdir -p $(BIN)/$(LIB)
 
