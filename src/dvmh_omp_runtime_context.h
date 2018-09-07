@@ -57,6 +57,10 @@ dvmh_omp_runtime_context_set_threads_spawner_id(
         dvmh_omp_runtime_context_t *ctx,
         int id);
 
+void
+dvmh_omp_runtime_context_unset_threads_spawner_id(
+        dvmh_omp_runtime_context_t *ctx);
+
 int
 dvmh_omp_runtime_context_get_threads_spawner_id(
         dvmh_omp_runtime_context_t *ctx);

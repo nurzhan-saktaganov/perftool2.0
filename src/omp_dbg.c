@@ -13,7 +13,7 @@
 #include "dvmh_omp_runtime_context.h"
 #include "omp_dbg.h"
 
-#define ROOT_INTERVAL_CONTEXT_DESCRIPTOR "43*type=interval*file1=MAIN*line1=0*line2=0**"
+#define ROOT_INTERVAL_CONTEXT_DESCRIPTOR "42*type=interval*file=MAIN*line1=0*line2=0**"
 #define METRICS_FILE_NAME "interval_stats_v2.csv"
 
 // We use this threadprivate variable to direct access to own thread_id from each thread.
@@ -29,8 +29,36 @@ static dvmh_omp_runtime_context_t *runtime_context = NULL;
 // Temporary list. We use this to store context descriptors.
 static list *registered_descriptors = NULL;
 
+#define  _UNIX_UNDERSCORE_
+#ifdef  _WIN_INTEL_FORT_
+#define DBG_Init_Handles DBG_INIT_HANDLES
+#endif
+
+#ifdef  _UNIX_IBM_FORT_
+#define DBG_Init_Handles dbg_init_handles
+#endif
+
+#ifdef  _UNIX_UNDERSCORE_
+#define DBG_Init_Handles  dbg_init_handles_
+#endif
+
+
+// It is some dirty trick.
+// Normally all DBG_Get_Handle functions are called inside of DBG_Init_Handles.
+// DBG_Init_Handles is defined in dbg_init.h header file.
+// We need that all DBG_Get_Handle functions be called before DBG_Init.
+// So, we explicitly call DBG_Get_Handle in DBG_Init.
+// We use 'handles_has_been_inited' flag in order to prevent
+// double-call DBG_Get_Handle for same context descriptors.
+void DBG_Init_Handles(void);
+
+static bool handles_has_been_inited = false;
+
 void DBG_Init(long *ThreadID)
-{   
+{
+    DBG_Init_Handles();
+    handles_has_been_inited = true;
+
     assert(registered_descriptors != NULL);
     const int num_context_descriptors = list_size(registered_descriptors);
     assert(num_context_descriptors > 0);
@@ -126,10 +154,15 @@ void DBG_Finalize()
     free(runtime_context);
     runtime_context = NULL;
     list_destroy_with(registered_descriptors_copy, (list_element_destroy_t *) unregister_context);
+    handles_has_been_inited = false;
 };
 
 void DBG_Get_Handle(long *StaticContextHandle, char* ContextString, long StringLength)
 {
+    if (handles_has_been_inited) {
+        return;
+    }
+
     // Нужно убедиться, что в типе long можем хранить адрес.
     assert(sizeof(long) == sizeof(void *));
 
@@ -180,6 +213,7 @@ void DBG_ParallelEvent (long *StaticContextHandle, long *ThreadID)
     dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
     double now = omp_get_wtime();
     dvmh_omp_interval_add_used_time(i, -now);
+    dvmh_omp_interval_set_parent_id(i, DVMH_OMP_INTERVAL_NO_PARENT);
 };
 
 void DBG_ParallelEventEnd (long *StaticContextHandle, long *ThreadID)
@@ -209,7 +243,7 @@ void DBG_AfterParallel (long *StaticContextHandle, long *ThreadID)
 
     double now = omp_get_wtime();
     dvmh_omp_runtime_context_after_parallel(runtime_context, interval_id, now - world_start);
-    dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, DVMH_OMP_INTERVAL_ID_UNDEFINED);
+    dvmh_omp_runtime_context_unset_threads_spawner_id(runtime_context);
 };
 
 void DBG_BeforeOMPLoop(long *StaticContextHandle, long *ThreadID, long *Init, long *Last, long *Step, int *ChunkSize){};
@@ -377,8 +411,9 @@ void DBG_AfterIO(long *StaticContextHandle, long *ThreadID)
 
 void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
 {
-    context_descriptor *cd = (context_descriptor *) StaticContextHandle;
+    context_descriptor *cd = (context_descriptor *) *StaticContextHandle;
     const int interval_id = cd->info.id;
+
     dvmh_omp_thread_context_t *thread_context =
             dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
 

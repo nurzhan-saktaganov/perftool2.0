@@ -12,7 +12,7 @@ dvmh_omp_interval_init(
     assert(i != NULL);
 
     // zeroing all fields of struct
-    memset(i, 1, sizeof(dvmh_omp_interval_t));
+    memset(i, 0, sizeof(dvmh_omp_interval_t));
     i->id = DVMH_OMP_INTERVAL_ID_UNDEFINED;
     i->parent_id = DVMH_OMP_INTERVAL_ID_UNDEFINED;
 }

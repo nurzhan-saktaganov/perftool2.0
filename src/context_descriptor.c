@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,9 +10,9 @@
 
 static context_type get_context_type_from_name(const char *context_name)
 {
-	assert(context_name);
-
-	if (strcmp(context_name, CTN_ARRAY_NAME) == 0){
+    if (context_name == NULL) {
+        return CONTEXT_UNKNOWN;
+	} else if (strcmp(context_name, CTN_ARRAY_NAME) == 0){
 		return CONTEXT_ARRAY_NAME;
 	} else if (strcmp(context_name, CTN_BARRIER) == 0){
 		return CONTEXT_BARRIER;
@@ -70,9 +69,9 @@ context_type get_context_string_type(const char *context_string)
 
 static redop_type get_redop_type_from_name(const char *redop_name)
 {
-	assert(redop_name);
-
-	if (strcmp(redop_name, RTN_PLUS) == 0){
+    if (redop_name == NULL) {
+        return REDOP_UNKNOWN;
+	} else if (strcmp(redop_name, RTN_PLUS) == 0){
 		return REDOP_PLUS;
 	} else if (strcmp(redop_name, RTN_MINUS) == 0){
 		return REDOP_MINUS;
@@ -111,9 +110,9 @@ redop_type get_redop_type(const char *context_string)
 
 static behavior_type get_behavior_type_from_name(const char *behavior_name)
 {
-	assert(behavior_name);
-
-	if (strcmp(behavior_name, BTN_PRIVATE) == 0){
+    if (behavior_name == NULL){
+        return BEHAVIOR_UNKNOWN;
+    } else if (strcmp(behavior_name, BTN_PRIVATE) == 0){
 		return BEHAVIOR_PRIVATE;
 	} else if (strcmp(behavior_name, BTN_SHARED) == 0){
 		return BEHAVIOR_SHARED;
@@ -134,9 +133,9 @@ behavior_type get_behavior_type(const char *context_string)
 
 static schedule_type get_schedule_type_from_name(const char *schedule_name)
 {
-	assert(schedule_name);
-
-	if (strcmp(schedule_name, STN_STATIC) == 0){
+    if (schedule_name == NULL){
+        return SCHEDULING_UNKNOWN;
+    } else if (strcmp(schedule_name, STN_STATIC) == 0){
 		return SCHEDULING_STATIC;
 	} else if (strcmp(schedule_name, STN_DYNAMIC) == 0){
 		return SCHEDULING_DYNAMIC;
@@ -159,9 +158,9 @@ schedule_type get_schedule_type(const char *context_string)
 
 static variable_rt_type get_variable_rt_type_from_name(const char *rt_type_name)
 {
-	assert(rt_type_name);
-
-	if (strcmp(rt_type_name, VTN_CHAR) == 0) {
+    if (rt_type_name == NULL) {
+        return RT_UNKNOWN;
+    } else if (strcmp(rt_type_name, VTN_CHAR) == 0) {
 		return RT_CHAR;
 	} else if (strcmp(rt_type_name, VTN_INT) == 0) {
 		return RT_INT;

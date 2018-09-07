@@ -28,6 +28,7 @@ dvmh_omp_thread_context_init(
 
     ctx->top = -1;
     ctx->thread_id = thread_id;
+    ctx->size = size;
 }
 
 void

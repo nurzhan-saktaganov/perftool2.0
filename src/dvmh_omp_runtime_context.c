@@ -158,6 +158,14 @@ dvmh_omp_runtime_context_set_threads_spawner_id(
     ctx->threads_spawner_interval_id = id;
 }
 
+void
+dvmh_omp_runtime_context_unset_threads_spawner_id(
+        dvmh_omp_runtime_context_t *ctx)
+{
+    assert(ctx != NULL);
+    ctx->threads_spawner_interval_id = DVMH_OMP_INTERVAL_ID_UNDEFINED;
+}
+
 int
 dvmh_omp_runtime_context_get_threads_spawner_id(
         dvmh_omp_runtime_context_t *ctx)
@@ -331,8 +339,15 @@ dvmh_omp_runtime_context_build_interval_tree(
 
             const int parent_id = dvmh_omp_interval_get_parent_id(i);
 
-            // if interval has been executed, it has a parent (except root).
+            // if interval has been executed, it has parent id
+            // or it's parent id is DVMH_OMP_INTERVAL_NO_PARENT (for root and thread local root intervals)
             assert(parent_id != DVMH_OMP_INTERVAL_ID_UNDEFINED);
+
+            // Skip thread local root intervals. Their parent ids conflict
+            // with parent id of same interval in master thread.
+            if (parent_id == DVMH_OMP_INTERVAL_NO_PARENT && id != 0) {
+                continue;
+            }
 
             // if parent has not been set yet.
             if (parents[id] == DVMH_OMP_INTERVAL_ID_UNDEFINED) {
