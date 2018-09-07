@@ -350,6 +350,13 @@ void DBG_SIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *I
 
 void DBG_OMPIfIter(long *StaticContextHandle, long *ThreadID, long *Index, long *IfVar){};
 
+void DBG_Type_Control(){};
+
+long DBG_Get_Addr(void *VarPtr)
+{
+	return (long) VarPtr;
+};
+
 void DBG_BeforeIO(long *StaticContextHandle, long *ThreadID)
 {
     dvmh_omp_thread_context_t *thread_context =
