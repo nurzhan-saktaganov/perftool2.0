@@ -424,10 +424,7 @@ dvmh_omp_runtime_context_collect_metrics(
         }
 
         if (ctx->is_interval_in_parallel[node_id]) {
-            dvmh_omp_interval_set_used_threads_num(node, ctx->num_threads);
             dvmh_omp_interval_set_parallel(node);
-        } else {
-            dvmh_omp_interval_set_used_threads_num(node, max_used_threads_num);
         }
 
         double thread_prod_avg = 0.0;
@@ -458,6 +455,8 @@ dvmh_omp_runtime_context_collect_metrics(
         dvmh_omp_interval_set_thread_prod_max(node, thread_prod_max);
         dvmh_omp_interval_set_thread_prod_min(node, thread_prod_min);
 
+        bool is_threads_spawner = false;
+
         // collect metrics from thread local data
         for (int thread_id = 0; thread_id < ctx->num_threads; ++thread_id) {
             dvmh_omp_thread_context_t *tctx = dvmh_omp_runtime_context_get_thread_context(ctx, thread_id);
@@ -482,6 +481,7 @@ dvmh_omp_runtime_context_collect_metrics(
 
             if (thread_id != 0 && !dvmh_omp_interval_is_in_parallel(node) ) {
                 // This is a threads spawner interval
+                is_threads_spawner = true;
                 dvmh_omp_interval_add_extra_used_time(node, dvmh_omp_interval_used_time(local));
             }
         }
@@ -489,6 +489,12 @@ dvmh_omp_runtime_context_collect_metrics(
         // and some global metrics
         dvmh_omp_interval_add_execution_time(node, ctx->execution_times[node_id]);
         dvmh_omp_interval_add_idle_parallel_time(node, ctx->idle_parallel_times[node_id]);
+
+        if (is_threads_spawner || dvmh_omp_interval_is_in_parallel(node)) {
+            dvmh_omp_interval_set_used_threads_num(node, ctx->num_threads);
+        } else {
+            dvmh_omp_interval_set_used_threads_num(node, max_used_threads_num);
+        }
 }
 
 dvmh_omp_interval_t *
