@@ -412,6 +412,9 @@ dvmh_omp_runtime_context_collect_metrics(
 
                 dvmh_omp_interval_add_idle_parallel_time(node, dvmh_omp_interval_idle_parallel_time(child));
 
+                dvmh_omp_interval_add_extra_used_time(node, dvmh_omp_interval_extra_used_time(child));
+                dvmh_omp_interval_add_used_time(node, dvmh_omp_interval_extra_used_time(child));
+
                 const int used_threads_number = dvmh_omp_interval_used_threads_num(child);
                 if (used_threads_number > max_used_threads_num) {
                     max_used_threads_num = used_threads_number;
@@ -476,6 +479,11 @@ dvmh_omp_runtime_context_collect_metrics(
             dvmh_omp_interval_add_used_time(node, dvmh_omp_interval_used_time(local));
 
             dvmh_omp_interval_add_execution_count(node, dvmh_omp_interval_execution_count(local));
+
+            if (thread_id != 0 && !dvmh_omp_interval_is_in_parallel(node) ) {
+                // This is a threads spawner interval
+                dvmh_omp_interval_add_extra_used_time(node, dvmh_omp_interval_used_time(local));
+            }
         }
 
         // and some global metrics

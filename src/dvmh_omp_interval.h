@@ -18,6 +18,7 @@ typedef struct _dvmh_omp_interval_t {
     double idle_critical_time;
     double sync_flush_time;
     double used_time;
+    double extra_used_time;
     double execution_time;
     double idle_parallel_time;
     int used_threads_number;
@@ -72,6 +73,11 @@ void
 dvmh_omp_interval_add_used_time(
         dvmh_omp_interval_t *i,
         double used_time);
+
+void
+dvmh_omp_interval_add_extra_used_time(
+        dvmh_omp_interval_t *i,
+        double t);
 
 void
 dvmh_omp_interval_add_execution_time(
@@ -165,6 +171,10 @@ dvmh_omp_interval_sync_barrier_time(
 
 double
 dvmh_omp_interval_used_time(
+        dvmh_omp_interval_t *i);
+
+double
+dvmh_omp_interval_extra_used_time(
         dvmh_omp_interval_t *i);
 
 int

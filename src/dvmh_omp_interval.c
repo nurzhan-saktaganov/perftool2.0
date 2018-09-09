@@ -58,7 +58,7 @@ dvmh_omp_interval_set_used_threads_num(
         dvmh_omp_interval_t *i,
         int n)
 {
-    i->used_threads_number += n;
+    i->used_threads_number = n;
 }
 
 void
@@ -131,6 +131,14 @@ dvmh_omp_interval_add_used_time(
         double used_time)
 {
     i->used_time += used_time;
+}
+
+void
+dvmh_omp_interval_add_extra_used_time(
+        dvmh_omp_interval_t *i,
+        double t)
+{
+    i->extra_used_time += t;
 }
 
 void
@@ -252,6 +260,13 @@ dvmh_omp_interval_used_time(
         dvmh_omp_interval_t *i)
 {
     return i->used_time;
+}
+
+double
+dvmh_omp_interval_extra_used_time(
+        dvmh_omp_interval_t *i)
+{
+    return i->extra_used_time;
 }
 
 int
