@@ -194,7 +194,7 @@ void DBG_BeforeParallel (long *StaticContextHandle, long *ThreadID, int *NumThre
     dvmh_omp_interval_t *i = dvmh_omp_thread_context_current_interval(thread_context);
     const int spawner_id = dvmh_omp_interval_get_id(i);
     dvmh_omp_runtime_context_set_threads_spawner_id(runtime_context, spawner_id);
-    dvmh_omp_runtime_context_set_interval_non_parallel(runtime_context, spawner_id);
+    dvmh_omp_runtime_context_set_interval_threads_spawner(runtime_context, spawner_id);
     dvmh_omp_runtime_context_set_parallel_mode(runtime_context);
 };
 

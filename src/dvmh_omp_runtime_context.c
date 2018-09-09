@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <float.h>
+#include <string.h>
 
 #include "dvmh_omp_runtime_context.h"
 
@@ -48,6 +49,12 @@ dvmh_omp_runtime_context_init(
 
     ctx->idle_parallel_times = (double *) calloc(num_context_descriptors, sizeof(double));
     assert(ctx->idle_parallel_times != NULL);
+
+    ctx->thread_prod_times = (double *) calloc(num_threads, sizeof(double));
+    assert(ctx->thread_prod_times != NULL);
+
+    ctx->is_interval_threads_spawner = (bool *) calloc(num_context_descriptors, sizeof(bool));
+    assert(ctx->is_interval_threads_spawner != NULL);
 
     ctx->is_interval_in_parallel = (bool *) calloc(num_context_descriptors, sizeof(bool));
     assert(ctx->is_interval_in_parallel != NULL);
@@ -107,6 +114,14 @@ dvmh_omp_runtime_context_deinit(
     assert(ctx->idle_parallel_times != NULL);
     free(ctx->idle_parallel_times);
     ctx->idle_parallel_times = NULL;
+
+    assert(ctx->thread_prod_times != NULL);
+    free(ctx->thread_prod_times);
+    ctx->thread_prod_times = NULL;
+
+    assert(ctx->is_interval_threads_spawner != NULL);
+    free(ctx->is_interval_threads_spawner);
+    ctx->is_interval_threads_spawner = NULL;
 
     assert(ctx->is_interval_in_parallel != NULL);
     free(ctx->is_interval_in_parallel);
@@ -207,6 +222,17 @@ dvmh_omp_runtime_context_set_interval_non_parallel(
     assert(ctx->is_interval_in_parallel != NULL);
     assert(0 <= id && id < ctx->num_context_descriptors);
     ctx->is_interval_in_parallel[id] = false;
+}
+
+void
+dvmh_omp_runtime_context_set_interval_threads_spawner(
+        dvmh_omp_runtime_context_t *ctx,
+        int id)
+{
+    assert(ctx != NULL);
+    assert(ctx->is_interval_threads_spawner != NULL);
+    assert(0 <= id && id < ctx->num_context_descriptors);
+    ctx->is_interval_threads_spawner[id] = true;
 }
 
 void
@@ -396,6 +422,10 @@ dvmh_omp_runtime_context_collect_metrics(
 
         const int node_id = dvmh_omp_interval_get_id(node);
 
+        double *interval_thread_prod_times = (double *) malloc(ctx->num_threads * sizeof(double));
+        assert(interval_thread_prod_times != NULL);
+        memcpy(interval_thread_prod_times, ctx->thread_prod_times, ctx->num_threads * sizeof(double));
+
         // breadth first search approach
         int max_used_threads_num = 1;
         if (dvmh_omp_interval_has_subintervals(node)) {
@@ -427,23 +457,44 @@ dvmh_omp_runtime_context_collect_metrics(
             dvmh_omp_interval_set_parallel(node);
         }
 
+        const bool is_threads_spawner = ctx->is_interval_threads_spawner[node_id];
+
+        for (int thread_id = 0; thread_id < ctx->num_threads; ++thread_id) {
+            if (is_threads_spawner || dvmh_omp_interval_is_in_parallel(node)) {
+                dvmh_omp_thread_context_t *tctx = dvmh_omp_runtime_context_get_thread_context(ctx, thread_id);
+                dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(tctx, node_id);
+                interval_thread_prod_times[thread_id] = dvmh_omp_interval_productive_time(local);
+                if (is_threads_spawner) {
+                    ctx->thread_prod_times[thread_id] += dvmh_omp_interval_productive_time(local);
+                }
+            } else {
+                interval_thread_prod_times[thread_id] = ctx->thread_prod_times[thread_id] - interval_thread_prod_times[thread_id];
+            }
+        }
+
+        if (!is_threads_spawner && !dvmh_omp_interval_is_in_parallel(node)) {
+            const int master_thread_id = 0;
+            dvmh_omp_thread_context_t *tctx = dvmh_omp_runtime_context_get_thread_context(ctx, master_thread_id);
+            dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(tctx, node_id);
+            interval_thread_prod_times[master_thread_id] = dvmh_omp_interval_productive_time(local);
+        }
+
         double thread_prod_avg = 0.0;
         double thread_prod_max = 0.0;
         double thread_prod_min = DBL_MAX;
         int thread_prod_avg_divider = 0;
 
         for (int thread_id = 0; thread_id < ctx->num_threads; ++thread_id) {
-            dvmh_omp_thread_context_t *tctx = dvmh_omp_runtime_context_get_thread_context(ctx, thread_id);
-            dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(tctx, node_id);
 
 #ifdef PERFTOOL_1_COMPATIBILIY
-            if (!dvmh_omp_interval_has_been_executed(local)) {
+            if (interval_thread_prod_times[thread_id] == 0.0) {
                 continue;
             }
 #endif
+
             thread_prod_avg_divider++;
 
-            const double thread_prod_time = dvmh_omp_interval_productive_time(local);
+            const double thread_prod_time = interval_thread_prod_times[thread_id];
             if (thread_prod_time < thread_prod_min) thread_prod_min = thread_prod_time;
             if (thread_prod_time > thread_prod_max) thread_prod_max = thread_prod_time;
             thread_prod_avg += thread_prod_time;
@@ -455,20 +506,18 @@ dvmh_omp_runtime_context_collect_metrics(
         dvmh_omp_interval_set_thread_prod_max(node, thread_prod_max);
         dvmh_omp_interval_set_thread_prod_min(node, thread_prod_min);
 
-        bool is_threads_spawner = false;
-
         // collect metrics from thread local data
         for (int thread_id = 0; thread_id < ctx->num_threads; ++thread_id) {
             dvmh_omp_thread_context_t *tctx = dvmh_omp_runtime_context_get_thread_context(ctx, thread_id);
             dvmh_omp_interval_t *local = dvmh_omp_thread_context_get_interval(tctx, node_id);
 
 #ifdef PERFTOOL_1_COMPATIBILIY
-            if (!dvmh_omp_interval_has_been_executed(local)) {
+            if (interval_thread_prod_times[thread_id] == 0.0 ) {
                 continue;
             }
 #endif
 
-            dvmh_omp_interval_add_load_imbalance(node, thread_prod_max - dvmh_omp_interval_productive_time(local));
+            dvmh_omp_interval_add_load_imbalance(node, thread_prod_max - interval_thread_prod_times[thread_id]);
 
             dvmh_omp_interval_add_io_time(node, dvmh_omp_interval_io_time(local));
             dvmh_omp_interval_add_barrier_time(node, dvmh_omp_interval_sync_barrier_time(local));
@@ -479,9 +528,7 @@ dvmh_omp_runtime_context_collect_metrics(
 
             dvmh_omp_interval_add_execution_count(node, dvmh_omp_interval_execution_count(local));
 
-            if (thread_id != 0 && !dvmh_omp_interval_is_in_parallel(node) ) {
-                // This is a threads spawner interval
-                is_threads_spawner = true;
+            if (is_threads_spawner && thread_id != 0) {
                 dvmh_omp_interval_add_extra_used_time(node, dvmh_omp_interval_used_time(local));
             }
         }
@@ -495,6 +542,8 @@ dvmh_omp_runtime_context_collect_metrics(
         } else {
             dvmh_omp_interval_set_used_threads_num(node, max_used_threads_num);
         }
+
+        free(interval_thread_prod_times);
 }
 
 dvmh_omp_interval_t *
@@ -513,6 +562,10 @@ dvmh_omp_runtime_context_integrate(
 
     // create links
     dvmh_omp_runtime_context_build_interval_tree(ctx, tree);
+
+    // It will be modified during metrics collection.
+    // We need to zeroing it in case of multiple calls of current function.
+    memset(ctx->thread_prod_times, 0, ctx->num_threads * sizeof(double));
 
     // collect metrics
     dvmh_omp_interval_t *root = tree;

@@ -22,6 +22,8 @@ typedef struct _dvmh_omp_runtime_context_t {
     double *execution_times; // TODO how to make it lock free?
     double *end_parallel_times;
     double *idle_parallel_times;
+    double *thread_prod_times;
+    bool *is_interval_threads_spawner;
     bool *is_interval_in_parallel;
     bool is_parallel_region;
 } dvmh_omp_runtime_context_t;
@@ -79,6 +81,11 @@ dvmh_omp_runtime_context_is_parallel_mode(
 
 void
 dvmh_omp_runtime_context_set_interval_non_parallel(
+        dvmh_omp_runtime_context_t *ctx,
+        int id);
+
+void
+dvmh_omp_runtime_context_set_interval_threads_spawner(
         dvmh_omp_runtime_context_t *ctx,
         int id);
 
