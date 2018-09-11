@@ -85,6 +85,11 @@ void DBG_Init(long *ThreadID)
         thread_id = omp_get_thread_num();
         #pragma omp barrier
         world_start = omp_get_wtime();
+
+        // By assigning zero we assume that omp_get_wtime() result is synced between threads. It's temporary solution.
+        // It appears to be so (at least on intel compiler 'icc (ICC) 19.0.0.070 20180524').
+        // But this behavior is not guaranteed by the OpenMP standard.
+        world_start = 0.0;
     }
 
     // Enter to the top level interval in master thread.
