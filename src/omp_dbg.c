@@ -429,13 +429,13 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
 
     dvmh_omp_interval_set_parent_id(i, parent_id);
-
-    double now = omp_get_wtime();
-    dvmh_omp_interval_add_used_time(i, -now);
     dvmh_omp_interval_add_execution_count(i, 1L);
+
+    double now;
 
     // calculate execution time.
     if ( dvmh_omp_runtime_context_is_parallel_mode(runtime_context)) {
+        now = omp_get_wtime();
         double normalized_now = now - world_start;
         dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
         if (dvmh_omp_runtime_context_get_interval_visitors(runtime_context, interval_id) == 0) {
@@ -445,10 +445,12 @@ void DBG_BeforeInterval (long *StaticContextHandle, long *ThreadID, long *Interv
         dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
     } else {
         // Don't use lock if it is non-parallel region.
+        now = omp_get_wtime();
         dvmh_omp_runtime_context_set_interval_non_parallel(runtime_context, interval_id);
         dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, -now);
     }
 
+    dvmh_omp_interval_add_used_time(i, -now);
 };
 
 void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *IntervalIndex)
@@ -457,12 +459,11 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
             dvmh_omp_runtime_context_get_thread_context(runtime_context, thread_id);
     dvmh_omp_interval_t *i= dvmh_omp_thread_context_current_interval(thread_context);
     const int interval_id = dvmh_omp_interval_get_id(i);
-    double now = omp_get_wtime();
-    dvmh_omp_interval_add_used_time(i, now);
-    dvmh_omp_thread_context_leave_interval(thread_context);
+    double now;
 
     // calculate execution time.
     if (dvmh_omp_runtime_context_is_parallel_mode(runtime_context)) {
+        now = omp_get_wtime();
         double normalized_now = now - world_start;
         dvmh_omp_runtime_context_lock_interval(runtime_context, interval_id);
         dvmh_omp_runtime_context_dec_interval_visitors(runtime_context, interval_id);
@@ -472,8 +473,12 @@ void DBG_AfterInterval (long *StaticContextHandle, long *ThreadID, long *Interva
         dvmh_omp_runtime_context_unlock_interval(runtime_context, interval_id);
     } else {
         // Don't use lock if it is non-parallel region.
+        now = omp_get_wtime();
         dvmh_omp_runtime_context_add_execution_time(runtime_context, interval_id, now);
     }
+
+    dvmh_omp_interval_add_used_time(i, now);
+    dvmh_omp_thread_context_leave_interval(thread_context);
 };
 
 static void
